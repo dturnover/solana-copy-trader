@@ -1,0 +1,18 @@
+{
+  "engine": "poll",
+  "rpc": {
+    "endpoint": "https://rpc.shyft.to?api_key=YOUR_SHYFT_API_KEY"
+  },
+  "poll_interval_seconds": 5,
+  "geyser": {
+    "endpoint": "your-shyft-grpc-endpoint.example.com:443",
+    "x_token": "YOUR_SHYFT_X_TOKEN"
+  },
+  "lag_experiment": {
+    "hypothetical_sol_in": 0.5,
+    "lag_scenarios_ms": [500, 2000]
+  },
+  "tracked_wallets": [
+    { "label": "cupsy", "pubkey": "REPLACE_WITH_ACTUAL_WALLET_PUBKEY" }
+  ]
+}

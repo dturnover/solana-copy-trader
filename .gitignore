@@ -1,0 +1,15 @@
+build/
+vcpkg_installed/
+generated/
+compile_commands.json
+*.o
+*.obj
+
+# Real config contains the geyser provider token and (from Phase 2 on) wallet
+# key material -- never commit it. config.example.json is the tracked template.
+config/config.json
+
+# Hot wallet key material (Phase 2+)
+*.key
+*.keypair
+wallet/
