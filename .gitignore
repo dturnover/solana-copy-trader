@@ -13,3 +13,6 @@ config/config.json
 *.key
 *.keypair
 wallet/
+
+# Experiment output data
+lag_samples.csv

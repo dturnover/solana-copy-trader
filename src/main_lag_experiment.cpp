@@ -1,14 +1,25 @@
 // Measures how much a hypothetical buy's price degrades between detecting a
-// tracked wallet's pump.fun buy and executing some milliseconds later --
-// i.e. the actual cost of copy-trading lag, using live bonding-curve
-// reserves rather than theorizing about it. This is deliberately a separate
-// tool from copytrader: it's a research/validation instrument, not part of
-// the live trading path, and its output should inform whether paying for
-// the real-time gRPC engine (and eventually live execution) is worth it.
+// pump.fun buy and executing some milliseconds later -- i.e. the actual cost
+// of copy-trading lag, using live bonding-curve reserves rather than
+// theorizing about it.
+//
+// Two modes:
+//  - tracked-wallet mode: sample only buys from configured wallets
+//  - firehose mode (lag_experiment.firehose=true): poll the pump.fun program
+//    itself and sample ANY sufficiently-fresh buy. Lag cost doesn't depend on
+//    who traded, only on how the curve moves afterward, so this collects far
+//    more samples, far fresher, with no wallet-picking required.
+//
+// This is deliberately a separate tool from copytrader: it's a research
+// instrument whose output should inform whether paying for the real-time
+// gRPC engine (and eventually live execution) is worth it.
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <filesystem>
+#include <fstream>
 #include <numeric>
+#include <optional>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -19,6 +30,7 @@
 #include "parsing/tx_parser_json.h"
 #include "parsing/venue_pumpfun.h"
 #include "rpc/rpc_client.h"
+#include "solana/pubkey.h"
 #include "util/logging.h"
 #include "util/time.h"
 
@@ -38,15 +50,66 @@ double simulate_effective_price(uint64_t virtual_sol_reserves, uint64_t virtual_
     return sol_in / tokens_out;
 }
 
+double mean_of(const std::vector<double>& v) {
+    if (v.empty()) return 0.0;
+    return std::accumulate(v.begin(), v.end(), 0.0) / static_cast<double>(v.size());
+}
+
+// Median is the headline stat: bonding-curve moves are heavy-tailed (one
+// 300% rug/pump sample would swamp a mean built from fifty 1% samples).
+double median_of(std::vector<double> v) {
+    if (v.empty()) return 0.0;
+    std::sort(v.begin(), v.end());
+    size_t mid = v.size() / 2;
+    if (v.size() % 2 == 1) return v[mid];
+    return (v[mid - 1] + v[mid]) / 2.0;
+}
+
 struct LagStats {
     std::vector<double> pct_price_change; // positive = price got worse for a buyer
 };
 
-void report_running_average(int lag_ms, const LagStats& stats) {
-    double sum = std::accumulate(stats.pct_price_change.begin(), stats.pct_price_change.end(), 0.0);
-    double mean = sum / static_cast<double>(stats.pct_price_change.size());
-    LOG_INFO("  lag~" + std::to_string(lag_ms) + "ms: n=" + std::to_string(stats.pct_price_change.size()) +
-             " running_avg_price_change=" + std::to_string(mean) + "%");
+int64_t now_wall_ms() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::system_clock::now().time_since_epoch())
+        .count();
+}
+
+// In firehose mode the transaction wasn't fetched via a known wallet, so the
+// "wallet" for the sample is the transaction's fee payer (first signer in
+// jsonParsed accountKeys).
+std::optional<solana::Pubkey> extract_fee_payer(const nlohmann::json& tx_result) {
+    if (!tx_result.contains("transaction") || !tx_result["transaction"].contains("message")) {
+        return std::nullopt;
+    }
+    const auto& msg = tx_result["transaction"]["message"];
+    if (!msg.contains("accountKeys") || !msg["accountKeys"].is_array()) return std::nullopt;
+    for (const auto& key : msg["accountKeys"]) {
+        if (key.is_object() && key.value("signer", false) && key.contains("pubkey")) {
+            solana::Pubkey pk;
+            if (solana::Pubkey::from_base58(key["pubkey"].get<std::string>(), pk)) {
+                return pk;
+            }
+        }
+    }
+    return std::nullopt;
+}
+
+void append_csv_row(const std::string& path, const std::string& row) {
+    std::error_code ec;
+    auto size = std::filesystem::file_size(path, ec);
+    bool need_header = ec || size == 0;
+
+    std::ofstream f(path, std::ios::app);
+    if (!f.is_open()) {
+        LOG_WARN("Could not open CSV file for append: " + path);
+        return;
+    }
+    if (need_header) {
+        f << "epoch_ms,label,signature,mint,on_chain_age_ms,target_lag_ms,actual_elapsed_ms,"
+             "baseline_price,later_price,pct_change\n";
+    }
+    f << row << "\n";
 }
 
 } // namespace
@@ -72,38 +135,74 @@ int main(int argc, char** argv) {
     std::sort(lag_scenarios_ms.begin(), lag_scenarios_ms.end());
     double sol_in = config.lag_experiment_sol_in;
 
+    struct Source {
+        solana::Pubkey address;
+        std::string label;
+    };
+    std::vector<Source> sources;
+    if (config.lag_firehose) {
+        sources.push_back({parsing::pumpfun::kProgramId, "firehose"});
+    } else {
+        for (const auto& w : config.tracked_wallets) {
+            sources.push_back({w.pubkey, w.label});
+        }
+    }
+
     std::string scenarios_str;
     for (int ms : lag_scenarios_ms) scenarios_str += std::to_string(ms) + "ms ";
     LOG_INFO("Lag-cost experiment: hypothetical order size " + std::to_string(sol_in) +
              " SOL, lag scenarios: " + scenarios_str);
-    LOG_INFO("Tracking " + std::to_string(config.tracked_wallets.size()) + " wallet(s) for pump.fun buys only.");
+    if (config.lag_firehose) {
+        LOG_INFO("Mode: FIREHOSE -- sampling any pump.fun buy" +
+                 std::string(config.lag_max_tx_age_ms > 0
+                                  ? " fresher than " + std::to_string(config.lag_max_tx_age_ms) + "ms"
+                                  : "") +
+                 (config.lag_csv_path.empty() ? "" : ", logging samples to " + config.lag_csv_path));
+    } else {
+        LOG_INFO("Mode: tracked wallets (" + std::to_string(sources.size()) + "), pump.fun buys only.");
+    }
 
     rpc::RpcClient client(config.rpc_endpoint);
     std::unordered_map<solana::Pubkey, std::string, solana::PubkeyHash> last_seen_signature;
+    std::unordered_map<solana::Pubkey, bool, solana::PubkeyHash> primed;
     std::unordered_map<int, LagStats> stats_by_lag;
 
     while (true) {
-        for (const auto& wallet : config.tracked_wallets) {
-            std::string address = wallet.pubkey.to_base58();
+        for (const auto& source : sources) {
+            std::string address = source.address.to_base58();
             std::string until;
-            auto seen_it = last_seen_signature.find(wallet.pubkey);
+            auto seen_it = last_seen_signature.find(source.address);
             if (seen_it != last_seen_signature.end()) until = seen_it->second;
 
             std::vector<rpc::SignatureInfo> new_sigs;
             try {
-                new_sigs = client.get_signatures_for_address(address, until, 20);
+                new_sigs = client.get_signatures_for_address(address, until, 15);
             } catch (const std::exception& e) {
-                LOG_WARN("Poll failed for " + wallet.label + ": " + e.what());
+                LOG_WARN("Poll failed for " + source.label + ": " + e.what());
+                continue;
+            }
+            if (new_sigs.empty()) continue;
+
+            // In firehose mode the very first batch is history, not live flow
+            // -- record the newest signature as the cursor and start sampling
+            // from the next poll so every processed tx is genuinely fresh.
+            if (config.lag_firehose && !primed[source.address]) {
+                primed[source.address] = true;
+                last_seen_signature[source.address] = new_sigs.back().signature;
+                LOG_INFO("Firehose primed at " + new_sigs.back().signature.substr(0, 16) + "..., sampling begins");
                 continue;
             }
 
-            if (!new_sigs.empty()) {
-                LOG_DEBUG("Found " + std::to_string(new_sigs.size()) + " new signature(s) for " + wallet.label);
-            }
+            int scanned = 0, buys = 0, stale = 0, sampled = 0;
 
             for (const auto& sig_info : new_sigs) {
-                last_seen_signature[wallet.pubkey] = sig_info.signature;
+                last_seen_signature[source.address] = sig_info.signature;
                 if (sig_info.has_error) continue;
+                ++scanned;
+
+                // Throttle getTransaction bursts -- Shyft's free tier allows
+                // ~10 req/sec and a firehose batch can be 15 signatures.
+                std::this_thread::sleep_for(std::chrono::milliseconds(120));
 
                 int64_t detected_at = util::now_micros();
                 std::optional<nlohmann::json> tx_result;
@@ -115,35 +214,44 @@ int main(int argc, char** argv) {
                 }
                 if (!tx_result) continue;
 
-                auto trade = parsing::parse_json_transaction(*tx_result, wallet.pubkey, wallet.label,
-                                                              sig_info.signature, detected_at);
-                if (!trade) {
-                    LOG_DEBUG("sig=" + sig_info.signature + " matched no known venue -- programs invoked: [" +
-                              parsing::extract_program_ids(*tx_result) + "]");
-                    continue;
+                int64_t on_chain_age_ms = -1;
+                if (tx_result->contains("blockTime") && (*tx_result)["blockTime"].is_number()) {
+                    on_chain_age_ms = now_wall_ms() - (*tx_result)["blockTime"].get<int64_t>() * 1000;
                 }
-                if (trade->direction != parsing::Direction::Buy) {
-                    LOG_DEBUG("sig=" + sig_info.signature + " was a pump.fun SELL -- skipping (this experiment "
-                              "only measures buy-side lag cost for now)");
+
+                // Freshness gate: a stale baseline measures ambient drift,
+                // not lag cost, so skip anything the poll caught too late.
+                if (config.lag_max_tx_age_ms > 0 && on_chain_age_ms > config.lag_max_tx_age_ms) {
+                    ++stale;
                     continue;
                 }
 
-                int64_t on_chain_age_ms = -1;
-                if (tx_result->contains("blockTime") && (*tx_result)["blockTime"].is_number()) {
-                    int64_t block_time_s = (*tx_result)["blockTime"].get<int64_t>();
-                    int64_t now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                         std::chrono::system_clock::now().time_since_epoch())
-                                         .count();
-                    on_chain_age_ms = now_ms - block_time_s * 1000;
+                solana::Pubkey wallet;
+                std::string wallet_label = source.label;
+                if (config.lag_firehose) {
+                    auto payer = extract_fee_payer(*tx_result);
+                    if (!payer) continue;
+                    wallet = *payer;
+                } else {
+                    wallet = source.address;
                 }
+
+                auto trade = parsing::parse_json_transaction(*tx_result, wallet, wallet_label,
+                                                              sig_info.signature, detected_at);
+                if (!trade) {
+                    if (!config.lag_firehose) {
+                        LOG_DEBUG("sig=" + sig_info.signature + " matched no known venue -- programs invoked: [" +
+                                  parsing::extract_program_ids(*tx_result) + "]");
+                    }
+                    continue;
+                }
+                if (trade->direction != parsing::Direction::Buy) continue;
+                if (trade->bonding_curve == solana::Pubkey{}) continue;
+                ++buys;
 
                 std::string bonding_curve_b58 = trade->bonding_curve.to_base58();
                 auto baseline_bytes = client.get_account_info(bonding_curve_b58);
-                if (!baseline_bytes) {
-                    LOG_WARN("Could not read bonding curve account for mint=" + trade->mint.to_base58() +
-                             " -- skipping sample");
-                    continue;
-                }
+                if (!baseline_bytes) continue;
                 auto baseline_state = parsing::pumpfun::decode_bonding_curve(*baseline_bytes);
                 if (!baseline_state) {
                     LOG_WARN("Bonding curve account for mint=" + trade->mint.to_base58() +
@@ -151,18 +259,15 @@ int main(int argc, char** argv) {
                              "wrong for this transaction, skipping sample");
                     continue;
                 }
+                if (baseline_state->complete) continue; // already migrated, curve is dead
 
-                double baseline_price =
-                    simulate_effective_price(baseline_state->virtual_sol_reserves, baseline_state->virtual_token_reserves, sol_in);
-                if (baseline_price <= 0) {
-                    LOG_WARN("Could not simulate a baseline price for mint=" + trade->mint.to_base58() +
-                             " (drained/invalid reserves?) -- skipping sample");
-                    continue;
-                }
+                double baseline_price = simulate_effective_price(
+                    baseline_state->virtual_sol_reserves, baseline_state->virtual_token_reserves, sol_in);
+                if (baseline_price <= 0) continue;
 
-                LOG_INFO(wallet.label + " BUY detected mint=" + trade->mint.to_base58() +
-                         " on_chain_age_ms=" + std::to_string(on_chain_age_ms) +
-                         " baseline_price_lamports_per_token=" + std::to_string(baseline_price));
+                LOG_INFO(wallet_label + " BUY mint=" + trade->mint.to_base58() +
+                         " age_ms=" + std::to_string(on_chain_age_ms) +
+                         " baseline_price=" + std::to_string(baseline_price));
 
                 int64_t baseline_us = util::now_micros();
                 for (int target_lag_ms : lag_scenarios_ms) {
@@ -175,21 +280,41 @@ int main(int argc, char** argv) {
                     auto later_bytes = client.get_account_info(bonding_curve_b58);
                     if (!later_bytes) continue;
                     auto later_state = parsing::pumpfun::decode_bonding_curve(*later_bytes);
-                    if (!later_state) continue;
+                    if (!later_state || later_state->complete) continue;
 
-                    double later_price =
-                        simulate_effective_price(later_state->virtual_sol_reserves, later_state->virtual_token_reserves, sol_in);
+                    double later_price = simulate_effective_price(
+                        later_state->virtual_sol_reserves, later_state->virtual_token_reserves, sol_in);
                     if (later_price <= 0) continue;
 
                     int64_t actual_elapsed_ms = (util::now_micros() - baseline_us) / 1000;
                     double pct_change = (later_price - baseline_price) / baseline_price * 100.0;
 
-                    stats_by_lag[target_lag_ms].pct_price_change.push_back(pct_change);
-                    LOG_INFO("  target_lag=" + std::to_string(target_lag_ms) +
-                             "ms actual_elapsed=" + std::to_string(actual_elapsed_ms) +
-                             "ms price_change=" + std::to_string(pct_change) + "%");
-                    report_running_average(target_lag_ms, stats_by_lag[target_lag_ms]);
+                    auto& stats = stats_by_lag[target_lag_ms];
+                    stats.pct_price_change.push_back(pct_change);
+                    ++sampled;
+
+                    LOG_INFO("  lag=" + std::to_string(target_lag_ms) +
+                             "ms elapsed=" + std::to_string(actual_elapsed_ms) +
+                             "ms change=" + std::to_string(pct_change) + "% | n=" +
+                             std::to_string(stats.pct_price_change.size()) +
+                             " median=" + std::to_string(median_of(stats.pct_price_change)) +
+                             "% mean=" + std::to_string(mean_of(stats.pct_price_change)) + "%");
+
+                    if (!config.lag_csv_path.empty()) {
+                        append_csv_row(config.lag_csv_path,
+                                       std::to_string(now_wall_ms()) + "," + wallet_label + "," +
+                                           sig_info.signature + "," + trade->mint.to_base58() + "," +
+                                           std::to_string(on_chain_age_ms) + "," + std::to_string(target_lag_ms) +
+                                           "," + std::to_string(actual_elapsed_ms) + "," +
+                                           std::to_string(baseline_price) + "," + std::to_string(later_price) +
+                                           "," + std::to_string(pct_change));
+                    }
                 }
+            }
+
+            if (config.lag_firehose && scanned > 0) {
+                LOG_INFO("cycle: scanned=" + std::to_string(scanned) + " fresh_buys=" + std::to_string(buys) +
+                         " stale_skipped=" + std::to_string(stale) + " samples_taken=" + std::to_string(sampled));
             }
         }
 

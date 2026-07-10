@@ -10,7 +10,10 @@
   },
   "lag_experiment": {
     "hypothetical_sol_in": 0.5,
-    "lag_scenarios_ms": [500, 2000]
+    "lag_scenarios_ms": [500, 2000],
+    "firehose": true,
+    "max_tx_age_ms": 5000,
+    "csv_path": "lag_samples.csv"
   },
   "tracked_wallets": [
     { "label": "cupsy", "pubkey": "REPLACE_WITH_ACTUAL_WALLET_PUBKEY" }

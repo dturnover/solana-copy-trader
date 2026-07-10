@@ -31,6 +31,19 @@ struct AppConfig {
     std::vector<int> lag_scenarios_ms = {500, 2000};
     double lag_experiment_sol_in = 0.5;
 
+    // Firehose mode: instead of tracked wallets, poll the pump.fun program
+    // itself and sample ANY buy as a lag-cost data point. Lag cost doesn't
+    // depend on who traded -- only on how the curve moves afterward -- so
+    // this yields orders of magnitude more samples than waiting on specific
+    // wallets, and fresher ones (see lag_max_tx_age_ms).
+    bool lag_firehose = false;
+    // Skip transactions older than this (per blockTime) so the baseline
+    // reserve read still approximates the state right after the trade.
+    // 0 disables the filter.
+    int lag_max_tx_age_ms = 0;
+    // Append one row per sample here for offline analysis. Empty disables.
+    std::string lag_csv_path;
+
     std::vector<TrackedWalletConfig> tracked_wallets;
 };
 

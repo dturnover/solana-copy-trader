@@ -85,3 +85,27 @@ engine this reflects poll-cycle timing, not real trade latency). Cross-check
 a few against a block explorer for the same wallet/time window to confirm
 signal quality before moving on to Phase 2 (live execution) or upgrading to
 the `geyser` engine for real-time speed.
+
+## Lag-cost experiment
+
+Before spending money on real-time streaming or live execution, measure
+whether copy-trading lag eats the edge:
+
+```bash
+./build/lag_experiment config/config.json
+```
+
+With `lag_experiment.firehose: true` (recommended) it polls the pump.fun
+program itself and samples **any** fresh buy -- lag cost doesn't depend on
+who traded, so this gets a large sample fast with no wallet-picking. For
+each sampled buy it reads the bonding curve's live reserves immediately
+("baseline") and again after each configured lag (e.g. 500ms/2000ms), then
+reports the per-sample and running median/mean price change a copier would
+have eaten. `max_tx_age_ms` drops transactions detected too late for the
+baseline to be meaningful; `csv_path` appends every sample for offline
+analysis.
+
+Interpretation rule of thumb: if the median price change at your realistic
+execution lag exceeds a couple percent (before fees and priority tips),
+naive copy-buying on these curves is structurally unprofitable no matter
+which wallet you follow.

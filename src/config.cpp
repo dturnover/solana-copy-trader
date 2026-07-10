@@ -60,6 +60,15 @@ AppConfig load_config(const std::string& path) {
         if (lag.contains("hypothetical_sol_in")) {
             config.lag_experiment_sol_in = lag["hypothetical_sol_in"].get<double>();
         }
+        if (lag.contains("firehose")) {
+            config.lag_firehose = lag["firehose"].get<bool>();
+        }
+        if (lag.contains("max_tx_age_ms")) {
+            config.lag_max_tx_age_ms = lag["max_tx_age_ms"].get<int>();
+        }
+        if (lag.contains("csv_path")) {
+            config.lag_csv_path = lag["csv_path"].get<std::string>();
+        }
     }
 
     if (!j.contains("tracked_wallets") || !j["tracked_wallets"].is_array() ||
