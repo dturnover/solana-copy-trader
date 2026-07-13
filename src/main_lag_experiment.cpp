@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <deque>
 #include <filesystem>
 #include <fstream>
 #include <numeric>
@@ -23,6 +24,7 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "config.h"
@@ -163,40 +165,74 @@ int main(int argc, char** argv) {
     }
 
     rpc::RpcClient client(config.rpc_endpoint);
-    std::unordered_map<solana::Pubkey, std::string, solana::PubkeyHash> last_seen_signature;
+    std::unordered_map<solana::Pubkey, std::string, solana::PubkeyHash> last_seen_signature; // tracked-wallet cursor
     std::unordered_map<solana::Pubkey, bool, solana::PubkeyHash> primed;
     std::unordered_map<int, LagStats> stats_by_lag;
+
+    // Firehose-mode dedup: pump.fun's total transaction volume outpaces any
+    // sane per-poll `limit`, so an incremental `until` cursor (fine for a
+    // single wallet's modest volume) just falls further behind a growing
+    // backlog forever -- which is exactly what produced 100% staleness.
+    // Instead, every poll asks for the newest N signatures unconditionally
+    // and skips ones already seen, sampling a representative slice of
+    // *current* activity instead of exhaustively draining history.
+    std::deque<std::string> seen_order;
+    std::unordered_set<std::string> seen_set;
+    constexpr size_t kSeenCap = 1000;
+    auto mark_seen = [&](const std::string& sig) {
+        seen_set.insert(sig);
+        seen_order.push_back(sig);
+        if (seen_order.size() > kSeenCap) {
+            seen_set.erase(seen_order.front());
+            seen_order.pop_front();
+        }
+    };
 
     while (true) {
         for (const auto& source : sources) {
             std::string address = source.address.to_base58();
-            std::string until;
-            auto seen_it = last_seen_signature.find(source.address);
-            if (seen_it != last_seen_signature.end()) until = seen_it->second;
 
             std::vector<rpc::SignatureInfo> new_sigs;
             try {
-                new_sigs = client.get_signatures_for_address(address, until, 15);
+                if (config.lag_firehose) {
+                    new_sigs = client.get_signatures_for_address(address, "", 15);
+                } else {
+                    std::string until;
+                    auto seen_it = last_seen_signature.find(source.address);
+                    if (seen_it != last_seen_signature.end()) until = seen_it->second;
+                    new_sigs = client.get_signatures_for_address(address, until, 15);
+                }
             } catch (const std::exception& e) {
                 LOG_WARN("Poll failed for " + source.label + ": " + e.what());
                 continue;
             }
             if (new_sigs.empty()) continue;
 
-            // In firehose mode the very first batch is history, not live flow
-            // -- record the newest signature as the cursor and start sampling
-            // from the next poll so every processed tx is genuinely fresh.
+            if (!config.lag_firehose) {
+                last_seen_signature[source.address] = new_sigs.back().signature;
+            }
+
+            // First batch is a snapshot of recent history, not live flow --
+            // mark it all seen and start sampling from the next poll so
+            // every processed tx is genuinely fresh.
             if (config.lag_firehose && !primed[source.address]) {
                 primed[source.address] = true;
-                last_seen_signature[source.address] = new_sigs.back().signature;
-                LOG_INFO("Firehose primed at " + new_sigs.back().signature.substr(0, 16) + "..., sampling begins");
+                for (const auto& s : new_sigs) mark_seen(s.signature);
+                LOG_INFO("Firehose primed with " + std::to_string(new_sigs.size()) + " signature(s), sampling begins");
                 continue;
             }
 
-            int scanned = 0, buys = 0, stale = 0, sampled = 0;
+            int scanned = 0, buys = 0, stale = 0, sampled = 0, deduped = 0;
+            std::vector<int64_t> stale_ages;
 
             for (const auto& sig_info : new_sigs) {
-                last_seen_signature[source.address] = sig_info.signature;
+                if (config.lag_firehose) {
+                    if (seen_set.count(sig_info.signature)) {
+                        ++deduped;
+                        continue;
+                    }
+                    mark_seen(sig_info.signature);
+                }
                 if (sig_info.has_error) continue;
                 ++scanned;
 
@@ -223,6 +259,7 @@ int main(int argc, char** argv) {
                 // not lag cost, so skip anything the poll caught too late.
                 if (config.lag_max_tx_age_ms > 0 && on_chain_age_ms > config.lag_max_tx_age_ms) {
                     ++stale;
+                    stale_ages.push_back(on_chain_age_ms);
                     continue;
                 }
 
@@ -313,8 +350,17 @@ int main(int argc, char** argv) {
             }
 
             if (config.lag_firehose && scanned > 0) {
-                LOG_INFO("cycle: scanned=" + std::to_string(scanned) + " fresh_buys=" + std::to_string(buys) +
-                         " stale_skipped=" + std::to_string(stale) + " samples_taken=" + std::to_string(sampled));
+                std::string age_info;
+                if (!stale_ages.empty()) {
+                    int64_t min_age = *std::min_element(stale_ages.begin(), stale_ages.end());
+                    int64_t max_age = *std::max_element(stale_ages.begin(), stale_ages.end());
+                    age_info = " stale_age_ms=[min=" + std::to_string(min_age) + " max=" + std::to_string(max_age) +
+                               " median=" + std::to_string(static_cast<int64_t>(median_of(
+                                                std::vector<double>(stale_ages.begin(), stale_ages.end())))) + "]";
+                }
+                LOG_INFO("cycle: scanned=" + std::to_string(scanned) + " deduped=" + std::to_string(deduped) +
+                         " fresh_buys=" + std::to_string(buys) + " stale_skipped=" + std::to_string(stale) +
+                         " samples_taken=" + std::to_string(sampled) + age_info);
             }
         }
 
