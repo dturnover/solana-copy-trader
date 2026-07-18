@@ -1,0 +1,17 @@
+{
+  "engine": "poll",
+  "rpc": {
+    "endpoint": "https://rpc.shyft.to?api_key=SHYFT_API_KEY_PLACEHOLDER"
+  },
+  "poll_interval_seconds": 2,
+  "lag_experiment": {
+    "hypothetical_sol_in": 0.5,
+    "lag_scenarios_ms": [500, 2000],
+    "firehose": true,
+    "max_tx_age_ms": 0,
+    "csv_path": "lag_samples_kol.csv"
+  },
+  "tracked_wallets": [
+    { "label": "Earl", "pubkey": "F2SuErm4MviWJ2HzKXk2nuzBC6xe883CFWUDCPz6cyWm" }
+  ]
+}

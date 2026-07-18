@@ -109,3 +109,33 @@ Interpretation rule of thumb: if the median price change at your realistic
 execution lag exceeds a couple percent (before fees and priority tips),
 naive copy-buying on these curves is structurally unprofitable no matter
 which wallet you follow.
+
+## Running the experiment on GitHub Actions (no PC required)
+
+`.github/workflows/lag-experiment.yml` runs `lag_experiment` on GitHub's
+hosted runners every 6 hours for up to 5 hours at a time, instead of needing
+a home machine left on. It's a bounded research job, not a deployed service.
+
+One-time setup:
+1. Repo must be public (unlimited free Actions minutes; private repos get a
+   2,000 min/month budget, which caps this to a handful of runs).
+2. Store your Shyft key as a secret so it's never committed:
+   `gh secret set SHYFT_API_KEY --body "your-key-here"`
+
+`config/config.ci.json` is the template the workflow uses (checked into git
+with a placeholder in place of the key -- the workflow substitutes the real
+secret into `config/config.json` at runtime, which stays gitignored as
+always). Edit that file to change tracked wallets, firehose mode, or lag
+scenarios for the scheduled runs.
+
+Trigger a run immediately instead of waiting for the schedule:
+```bash
+gh workflow run lag-experiment.yml
+```
+
+Each run uploads its CSV as a build artifact (`lag-samples-<run-id>`,
+90-day retention). List and download:
+```bash
+gh run list --workflow=lag-experiment.yml
+gh run download <run-id>
+```
