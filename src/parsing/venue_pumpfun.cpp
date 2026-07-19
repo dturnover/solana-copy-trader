@@ -80,4 +80,22 @@ std::optional<BondingCurveState> decode_bonding_curve(const std::vector<uint8_t>
     return state;
 }
 
+double simulate_buy_sol_cost(const BondingCurveState& state, double token_amount_out) {
+    double v_sol = static_cast<double>(state.virtual_sol_reserves);
+    double v_tok = static_cast<double>(state.virtual_token_reserves);
+    if (token_amount_out <= 0 || token_amount_out >= v_tok) return -1.0;
+    double new_tok = v_tok - token_amount_out;
+    double new_sol = (v_sol * v_tok) / new_tok;
+    return new_sol - v_sol;
+}
+
+double simulate_sell_sol_proceeds(const BondingCurveState& state, double token_amount_in) {
+    double v_sol = static_cast<double>(state.virtual_sol_reserves);
+    double v_tok = static_cast<double>(state.virtual_token_reserves);
+    if (token_amount_in <= 0) return -1.0;
+    double new_tok = v_tok + token_amount_in;
+    double new_sol = (v_sol * v_tok) / new_tok;
+    return v_sol - new_sol;
+}
+
 } // namespace parsing::pumpfun

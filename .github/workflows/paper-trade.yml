@@ -1,0 +1,56 @@
+name: Paper Trade
+
+# Runs the free paper_trade tool for a few hours at a time on GitHub's
+# hosted runners -- tracks tracked wallets' real buy/sell round trips and
+# computes both their real P&L and our simulated copy-trade P&L at an
+# assumed execution lag. Research instrument, not a production service, so
+# bounded scheduled runs (not a true daemon) are the right shape.
+on:
+  schedule:
+    - cron: "30 */6 * * *" # every 6 hours, offset 30m from lag-experiment.yml
+  workflow_dispatch: {}
+
+jobs:
+  run-experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build curl zip unzip tar pkg-config
+
+      - name: Cache vcpkg archives
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-archives-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-archives-${{ runner.os }}-
+
+      - name: Bootstrap vcpkg
+        run: |
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git "$HOME/vcpkg"
+          "$HOME/vcpkg/bootstrap-vcpkg.sh"
+          echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Build
+        run: cmake --build build -j"$(nproc)"
+
+      - name: Generate config.json from CI template (injects secret at runtime, never committed)
+        run: sed "s#SHYFT_API_KEY_PLACEHOLDER#${{ secrets.SHYFT_API_KEY }}#g" config/config.paper_trade.ci.json > config/config.json
+
+      - name: Run paper trade experiment
+        run: timeout 5h ./build/paper_trade config/config.json || true
+
+      - name: Upload collected trades
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-trades-${{ github.run_id }}
+          path: paper_trades.csv
+          if-no-files-found: warn

@@ -109,7 +109,7 @@ void append_csv_row(const std::string& path, const std::string& row) {
     }
     if (need_header) {
         f << "epoch_ms,label,signature,mint,on_chain_age_ms,target_lag_ms,actual_elapsed_ms,"
-             "baseline_price,later_price,pct_change\n";
+             "baseline_price,later_price,pct_change,fee_lamports,priority_fee_microlamports\n";
     }
     f << row << "\n";
 }
@@ -314,9 +314,17 @@ int main(int argc, char** argv) {
                     baseline_state->virtual_sol_reserves, baseline_state->virtual_token_reserves, sol_in);
                 if (baseline_price <= 0) continue;
 
+                // Fee data from the *source* transaction -- tells us what
+                // priority fee actually-landed pump.fun trades are paying
+                // right now, without needing to submit anything ourselves.
+                auto total_fee = parsing::extract_total_fee_lamports(*tx_result);
+                auto priority_fee = parsing::extract_priority_fee_micro_lamports(*tx_result);
+
                 LOG_INFO(wallet_label + " BUY mint=" + trade->mint.to_base58() +
                          " age_ms=" + std::to_string(on_chain_age_ms) +
-                         " baseline_price=" + std::to_string(baseline_price));
+                         " baseline_price=" + std::to_string(baseline_price) +
+                         " fee_lamports=" + std::to_string(total_fee.value_or(0)) +
+                         " priority_fee_microlamports=" + std::to_string(priority_fee.value_or(0)));
 
                 int64_t baseline_us = util::now_micros();
                 for (int target_lag_ms : lag_scenarios_ms) {
@@ -363,7 +371,9 @@ int main(int argc, char** argv) {
                                            std::to_string(on_chain_age_ms) + "," + std::to_string(target_lag_ms) +
                                            "," + std::to_string(actual_elapsed_ms) + "," +
                                            std::to_string(baseline_price) + "," + std::to_string(later_price) +
-                                           "," + std::to_string(pct_change));
+                                           "," + std::to_string(pct_change) + "," +
+                                           std::to_string(total_fee.value_or(0)) + "," +
+                                           std::to_string(priority_fee.value_or(0)));
                     }
                 }
             }

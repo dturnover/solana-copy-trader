@@ -110,6 +110,44 @@ execution lag exceeds a couple percent (before fees and priority tips),
 naive copy-buying on these curves is structurally unprofitable no matter
 which wallet you follow.
 
+Each sample also records the *source* transaction's total fee and, if
+present, its `SetComputeUnitPrice` priority-fee rate (micro-lamports per
+compute unit) -- real, currently-landing fee data with zero new spend,
+useful as a starting empirical floor for "how low can priority fees go"
+before ever needing to submit a real transaction to test it directly.
+
+**Findings so far (free `poll` engine, ~31k samples across several CI
+runs):** detection lag via Shyft's free-tier RPC is consistently ~17s
+median (13-49s range) -- a real, structural indexer-lag floor, not
+something pollable away. That's independent confirmation of what paid
+Geyser gRPC actually buys (sub-second detection, not "instant execution").
+Separately, pure execution-window decay is real even ignoring detection
+lag: at 2000ms, median absolute price change ~1.6%, p90 ~38%, p99 ~98%.
+
+## Paper trading / wallet profitability experiment
+
+```bash
+./build/paper_trade config/config.json
+```
+
+Tracks each tracked wallet's real buy/sell round trips per mint and reports
+two P&L numbers per closed trade: the wallet's own **real** P&L (ground
+truth, from actual balance deltas) and **our simulated P&L** if we'd copied
+the same buy and sell at `paper_trade.execution_lag_ms`. This directly
+answers "is this wallet even profitable" and "would copying it still be
+profitable after lag" with real on-chain data instead of assuming either.
+
+Known simplifications (v1): any sell fully closes the tracked position, even
+if the wallet only partially exited (so multiple independent round trips on
+the same mint aren't distinguished); positions open longer than
+`position_timeout_minutes` are abandoned (dropped, not counted as a loss)
+rather than tracked indefinitely. Same free-tier detection-lag caveat as the
+lag experiment applies underneath whatever `execution_lag_ms` is configured.
+
+`csv_path` appends one row per closed round trip for offline analysis.
+`.github/workflows/paper-trade.yml` runs this the same way as the lag
+experiment (every 6 hours, no PC required) using `config/config.paper_trade.ci.json`.
+
 ## Running the experiment on GitHub Actions (no PC required)
 
 `.github/workflows/lag-experiment.yml` runs `lag_experiment` on GitHub's

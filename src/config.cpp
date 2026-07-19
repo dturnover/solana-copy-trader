@@ -71,6 +71,19 @@ AppConfig load_config(const std::string& path) {
         }
     }
 
+    if (j.contains("paper_trade")) {
+        const auto& pt = j["paper_trade"];
+        if (pt.contains("execution_lag_ms")) {
+            config.paper_trade_execution_lag_ms = pt["execution_lag_ms"].get<int64_t>();
+        }
+        if (pt.contains("csv_path")) {
+            config.paper_trade_csv_path = pt["csv_path"].get<std::string>();
+        }
+        if (pt.contains("position_timeout_minutes")) {
+            config.paper_trade_position_timeout_minutes = pt["position_timeout_minutes"].get<int>();
+        }
+    }
+
     if (!j.contains("tracked_wallets") || !j["tracked_wallets"].is_array() ||
         j["tracked_wallets"].empty()) {
         throw std::runtime_error("config.json must contain a non-empty tracked_wallets array");

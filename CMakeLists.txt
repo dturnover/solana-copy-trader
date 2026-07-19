@@ -89,3 +89,10 @@ target_link_libraries(copytrader PRIVATE core)
 # before paying for the geyser engine or risking capital on live execution.
 add_executable(lag_experiment src/main_lag_experiment.cpp)
 target_link_libraries(lag_experiment PRIVATE core)
+
+# Standalone research tool: tracks tracked wallets' real buy/sell round trips
+# and computes both their real P&L and our simulated copy-trade P&L at an
+# assumed execution lag -- answers "is this wallet even profitable" and
+# "would copying it still be profitable after lag" with real on-chain data.
+add_executable(paper_trade src/main_paper_trade.cpp)
+target_link_libraries(paper_trade PRIVATE core)

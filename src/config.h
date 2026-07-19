@@ -44,6 +44,15 @@ struct AppConfig {
     // Append one row per sample here for offline analysis. Empty disables.
     std::string lag_csv_path;
 
+    // paper_trade tool only: always uses tracked_wallets (not firehose) --
+    // "is this wallet profitable, and would copying it at our assumed
+    // execution lag still be profitable" is inherently a per-wallet
+    // question. execution_lag_ms is the single assumed lag applied to both
+    // the entry and exit simulation.
+    int64_t paper_trade_execution_lag_ms = 1500;
+    std::string paper_trade_csv_path;
+    int paper_trade_position_timeout_minutes = 180;
+
     std::vector<TrackedWalletConfig> tracked_wallets;
 };
 

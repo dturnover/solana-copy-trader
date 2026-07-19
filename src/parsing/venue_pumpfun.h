@@ -61,4 +61,17 @@ struct BondingCurveState {
 // caught rather than silently reading garbage.
 std::optional<BondingCurveState> decode_bonding_curve(const std::vector<uint8_t>& account_data);
 
+// Constant-product (x*y=k) pricing helpers against virtual reserves,
+// ignoring the protocol fee -- fine for comparative/simulation purposes
+// (paper trading, lag-cost estimation), not precise enough for building a
+// real execution instruction later.
+
+// SOL cost to acquire exactly `token_amount_out` tokens via a buy. Returns
+// a negative value if the request would drain more tokens than the curve
+// currently holds (invalid).
+double simulate_buy_sol_cost(const BondingCurveState& state, double token_amount_out);
+
+// SOL proceeds from selling exactly `token_amount_in` tokens via a sell.
+double simulate_sell_sol_proceeds(const BondingCurveState& state, double token_amount_in);
+
 } // namespace parsing::pumpfun
