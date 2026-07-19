@@ -287,7 +287,19 @@ int main(int argc, char** argv) {
                 ++buys;
 
                 std::string bonding_curve_b58 = trade->bonding_curve.to_base58();
-                auto baseline_bytes = client.get_account_info(bonding_curve_b58);
+
+                // Throttle before every getAccountInfo call, not just
+                // getTransaction -- a burst of buys in one poll cycle can
+                // otherwise fire several of these back-to-back and trip the
+                // free tier's rate limit.
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                std::optional<std::vector<uint8_t>> baseline_bytes;
+                try {
+                    baseline_bytes = client.get_account_info(bonding_curve_b58);
+                } catch (const std::exception& e) {
+                    LOG_WARN("getAccountInfo failed for bonding curve " + bonding_curve_b58 + ": " + e.what());
+                    continue;
+                }
                 if (!baseline_bytes) continue;
                 auto baseline_state = parsing::pumpfun::decode_bonding_curve(*baseline_bytes);
                 if (!baseline_state) {
@@ -314,7 +326,14 @@ int main(int argc, char** argv) {
                         std::this_thread::sleep_for(std::chrono::microseconds(target_us - now_us));
                     }
 
-                    auto later_bytes = client.get_account_info(bonding_curve_b58);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    std::optional<std::vector<uint8_t>> later_bytes;
+                    try {
+                        later_bytes = client.get_account_info(bonding_curve_b58);
+                    } catch (const std::exception& e) {
+                        LOG_WARN("getAccountInfo failed for bonding curve " + bonding_curve_b58 + ": " + e.what());
+                        continue;
+                    }
                     if (!later_bytes) continue;
                     auto later_state = parsing::pumpfun::decode_bonding_curve(*later_bytes);
                     if (!later_state || later_state->complete) continue;
