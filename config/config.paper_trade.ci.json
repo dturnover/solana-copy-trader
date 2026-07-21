@@ -12,6 +12,14 @@
   "tracked_wallets": [
     { "label": "Earl", "pubkey": "F2SuErm4MviWJ2HzKXk2nuzBC6xe883CFWUDCPz6cyWm" },
     { "label": "theo", "pubkey": "Bi4rd5FH5bYEN8scZ7wevxNZyNmKHdaBcvewdPFxYdLt" },
-    { "label": "Trey", "pubkey": "831yhv67QpKqLBJjbmw2xoDUeeFHGUx8RnuRj9imeoEs" }
+    { "label": "Trey", "pubkey": "831yhv67QpKqLBJjbmw2xoDUeeFHGUx8RnuRj9imeoEs" },
+    { "label": "Doji", "pubkey": "5ZuV8eqkvzYFVEKbLvGBdexL2tFv7E5BCd2HZpjqbdg" },
+    { "label": "Sheep", "pubkey": "78N177fzNJpp8pG49xDv1efYcTMSzo9tPTKEA9mAVkh2" },
+    { "label": "Letterbomb", "pubkey": "BtMBMPkoNbnLF9Xn552guQq528KKXcsNBNNBre3oaQtr" },
+    { "label": "Zuki", "pubkey": "922VvmmYDHV9KMTJJ71Y5Yd3Vn7cfJuFasLNSsZPygrG" },
+    { "label": "Felix", "pubkey": "3uz65G8e463MA5FxcSu1rTUyWRtrRLRZYskKtEHHj7qn" },
+    { "label": "Bi8gjp", "pubkey": "Bi8gjp6g7hYmLJ2gsHbtdMwHyin4js1efTzDdJSQ6m4T" },
+    { "label": "Pavel", "pubkey": "3jckt69SiN3aCMbBWJoDS1s4xxGpqNxFFKnwhpRAQmuL" },
+    { "label": "Pikalosi", "pubkey": "9cdZg6xR4c9kZiqKSzqjn4QHCXNQuC9HEWBzzMJ3mzqw" }
   ]
 }
