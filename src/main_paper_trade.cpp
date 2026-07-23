@@ -212,6 +212,21 @@ int main(int argc, char** argv) {
                         *state, static_cast<double>(trade->token_amount));
                     if (our_cost <= 0) continue;
 
+                    // Ground truth, not a heuristic: trade->sol_amount is the
+                    // wallet's own on-chain max_sol_cost bound for this exact
+                    // buy. If our lag-delayed price would exceed it, a real
+                    // copy transaction using the same bound would simply
+                    // revert -- it does NOT execute at some worse price, the
+                    // constant-product formula blowing up here is a
+                    // simulation artifact, not a real outcome. Skip rather
+                    // than record a nonsensical cost.
+                    if (our_cost > static_cast<double>(trade->sol_amount)) {
+                        LOG_INFO(wallet.label + " BUY mint=" + trade->mint.to_base58() +
+                                 " would have FAILED on-chain (price moved past their max_sol_cost bound) -- "
+                                 "not counted as executed");
+                        continue;
+                    }
+
                     auto& pos = open_positions[position_key];
                     if (pos.buy_count == 0) pos.opened_at_ms = now_wall_ms();
                     pos.buy_count += 1;
@@ -248,6 +263,21 @@ int main(int argc, char** argv) {
                     double our_proceeds = parsing::pumpfun::simulate_sell_sol_proceeds(
                         *state, static_cast<double>(trade->token_amount));
                     if (our_proceeds <= 0) continue;
+
+                    // Ground truth, not a heuristic: trade->sol_amount is the
+                    // wallet's own on-chain min_sol_output bound for this
+                    // exact sell. If our lag-delayed proceeds would fall
+                    // short of it, a real copy transaction using the same
+                    // bound would revert -- we'd still be holding the
+                    // position, not exiting at a terrible price. Leave the
+                    // position open (don't close it) rather than record a
+                    // nonsensical proceeds figure.
+                    if (our_proceeds < static_cast<double>(trade->sol_amount)) {
+                        LOG_INFO(wallet.label + " SELL mint=" + trade->mint.to_base58() +
+                                 " would have FAILED on-chain (price moved past their min_sol_output bound) -- "
+                                 "position stays open");
+                        continue;
+                    }
 
                     OpenPosition pos = it->second; // treats any sell as fully closing -- see file header caveat
                     open_positions.erase(it);
