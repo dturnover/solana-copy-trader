@@ -16,3 +16,7 @@ wallet/
 
 # Experiment output data
 lag_samples.csv
+
+# Generated report workbook -- rerun reports/generate_performance_report.py
+# to regenerate; committing the binary would just be repeated diff noise.
+reports/*.xlsx
