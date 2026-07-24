@@ -134,11 +134,48 @@ def summarize(name, pnl_series, n_total):
     print(f"  {name}: copied {n}/{n_total} trades, win_rate={win_rate:.1f}%, total_pnl={total:.3f} SOL")
 
 
+def risk_stats(pnl_chronological):
+    """pnl_chronological must already be in the order trades actually
+    happened -- preds is built by walk_forward_all() in increasing i order,
+    and boolean-mask filtering preserves row order, so callers just pass the
+    filtered column straight through."""
+    pnl = pnl_chronological.to_numpy()
+    n = len(pnl)
+    if n == 0:
+        return None
+    mean = pnl.mean()
+    std = pnl.std(ddof=1) if n > 1 else 0.0
+    sharpe_like = mean / std if std > 0 else float("nan")
+
+    cumulative = np.cumsum(pnl)
+    running_max = np.maximum.accumulate(cumulative)
+    max_drawdown = (running_max - cumulative).max()
+
+    losses = pnl[pnl < 0]
+    return {
+        "n": n,
+        "std_pnl": std,
+        "sharpe_like": sharpe_like,
+        "max_drawdown": max_drawdown,
+        "worst_single_loss": losses.min() if len(losses) else 0.0,
+        "avg_loss": losses.mean() if len(losses) else 0.0,
+    }
+
+
+def print_risk(name, stats):
+    if stats is None:
+        return
+    print(f"    risk: std_per_trade={stats['std_pnl']:.3f} SOL, sharpe-like={stats['sharpe_like']:.3f}, "
+          f"max_drawdown={stats['max_drawdown']:.3f} SOL, worst_single_loss={stats['worst_single_loss']:.3f} SOL, "
+          f"avg_loss={stats['avg_loss']:.3f} SOL")
+
+
 def report_model(preds, col, n_eval):
     print(f"\n=== {col} ===")
     for thresh in [0.5, 0.6]:
         copied = preds[preds[col] > thresh]
         summarize(f"{col}@p>{thresh}", copied["our_pnl_sol"], n_eval)
+        print_risk(f"{col}@p>{thresh}", risk_stats(copied["our_pnl_sol"]))
 
     pred_label = (preds[col] > COPY_THRESHOLD).astype(int)
     acc = accuracy_score(preds["actual_label"], pred_label)
@@ -158,11 +195,15 @@ def main():
     print(f"Features ({len(feature_cols)}): {feature_cols}\n")
 
     print("=== Baseline: copy everything ===")
-    summarize("copy-everything", df.iloc[BURN_IN:]["our_pnl_sol"], n_eval)
+    everything = df.iloc[BURN_IN:]["our_pnl_sol"]
+    summarize("copy-everything", everything, n_eval)
+    print_risk("copy-everything", risk_stats(everything))
 
     print("\n=== Baseline: trailing per-wallet win-rate filter (no ML) ===")
     wallet_baseline = trailing_wallet_win_rate_baseline(df)
-    summarize("wallet-filter", wallet_baseline[wallet_baseline["copy"]]["our_pnl_sol"], n_eval)
+    filtered = wallet_baseline[wallet_baseline["copy"]]["our_pnl_sol"]
+    summarize("wallet-filter", filtered, n_eval)
+    print_risk("wallet-filter", risk_stats(filtered))
 
     preds = walk_forward_all(df, feature_cols)
     for col in MODEL_NAMES + ["ensemble"]:

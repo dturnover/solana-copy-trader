@@ -82,6 +82,42 @@ Two things that determine *how much* it surpasses LogReg, not just *whether*:
 Keeping the ensemble running is a reasonable hedge in the meantime -- it
 doesn't require knowing in advance when the crossover happens.
 
+## Same total P&L, different risk taken to get there
+
+Total P&L alone hides how a strategy got to that number. `risk_stats()` adds
+per-trade std dev, a Sharpe-like ratio (mean P&L / std dev), max drawdown
+(largest peak-to-trough dip in cumulative P&L over the copied trades in
+chronological order), and worst-single-loss/avg-loss.
+
+LogReg and LightGBM @ p>0.5 net almost the same total (19.8 vs 19.9 SOL) --
+but not the same way:
+
+| | Trades | Win rate | Mean P&L/trade | Sharpe-like | Max drawdown |
+|---|---|---|---|---|---|
+| Logistic Regression | 22 | 63.6% | 0.90 SOL | **0.622** | 2.14 SOL |
+| LightGBM | 31 (+41%) | 54.8% | 0.64 SOL | 0.498 | 1.82 SOL |
+
+**LightGBM's edge per trade is thinner** -- lower win rate, lower mean P&L
+per trade, lower risk-adjusted return. It reaches a similar total only by
+taking 41% more trades, i.e. spreading across more, lower-conviction bets
+rather than picking fewer, better ones. Max drawdown in this particular
+historical sequence happened to come out slightly *lower* for LightGBM, so
+it's not "worse on literally every axis" -- but Sharpe-like ratio and win
+rate both say the same thing: more exposure to variance for a similar
+payoff.
+
+One shared blind spot: **LogReg, LightGBM, and the Ensemble all hit the
+exact same worst single loss (-1.821 SOL) at p>0.5** -- all three flagged
+that one trade as "copy," so it isn't model-specific risk, it's a trade
+none of the three current features caught.
+
+**Random Forest is the standout low-risk option**, not called out enough
+above: at p>0.6 it posts a Sharpe-like ratio of 1.01 (best of any
+model/threshold combo here), essentially zero max drawdown, and a worst
+loss of just -0.09 SOL -- at the cost of a lower ceiling (16.1 SOL total vs
+~19-20 for the others, on only 11 copied trades). Genuine risk/return
+trade-off: fewer, much safer picks vs chasing the top total.
+
 ### Logistic regression coefficients (full interpretability, no SHAP needed)
 
 ```
