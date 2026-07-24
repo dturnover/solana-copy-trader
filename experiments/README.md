@@ -34,18 +34,53 @@ staying interpretable?
 |---|---|---|---|---|---|
 | Copy everything | 175 | 21.1% | -95.9 SOL | - | - |
 | Wallet-filter (no ML) | 18 | 61.1% | +13.4 SOL | - | - |
-| **Logistic Regression @ p>0.5** | 22 | **63.6%** | **+19.8 SOL** | **0.745** | **0.636** |
+| **Logistic Regression @ p>0.5** | 22 | 63.6% | +19.8 SOL | 0.745 | **0.636** |
 | Random Forest @ p>0.5 | 17 | 58.8% | +16.4 SOL | 0.724 | 0.588 |
 | LightGBM @ p>0.5 | 31 | 54.8% | +19.9 SOL | 0.738 | 0.548 |
+| Ensemble (mean of all 3) @ p>0.5 | 27 | 55.6% | **+19.9 SOL** | 0.742 | 0.556 |
+| Ensemble @ p>0.6 | 16 | **75.0%** | +19.0 SOL | - | - |
 
-**Logistic Regression wins or ties on every metric that matters**, despite
-being the simplest model here. It matches LightGBM's total P&L while copying
-30% fewer trades (22 vs 31) at meaningfully higher precision (64% vs 55%) --
-i.e. it's pickier and each pick is more trustworthy, not just riding more
-volume to the same total. It also has the best AUC. With ~215 rows, that's
-not surprising: gradient boosting has more capacity to overfit noise than a
-regularized linear model does, and there isn't enough data yet for that
-extra capacity to pay for itself.
+Logistic Regression wins or ties on every individual-model metric despite
+being the simplest model here. With ~215 rows, that's not surprising:
+gradient boosting has more capacity to overfit noise than a regularized
+linear model does, and there isn't enough data yet for that extra capacity
+to pay for itself.
+
+**The ensemble (simple mean of all three predicted probabilities) roughly
+matches the best individual model's total P&L, but is noticeably more
+*stable* across thresholds** -- moving from p>0.5 to p>0.6, LightGBM's total
+P&L drops from 19.9 to 12.9 SOL (its probability estimates are less
+well-calibrated at this sample size), while the ensemble only drops from
+19.9 to 19.0 and its win rate actually *improves* to 75%. Averaging away
+each model's individual noise is a real, useful property even when it
+doesn't produce a dramatically higher peak number.
+
+### Will LightGBM overtake Logistic Regression as more data comes in?
+
+Probably yes, eventually, and enough data plus richer features could get it
+there. This isn't just optimism -- it's the standard bias-variance pattern:
+a linear model has a hard structural ceiling (it can only combine features
+additively), while gradient boosting can represent interactions and
+non-linear effects a linear model can't, at the cost of needing more data to
+tell real structure apart from noise. Right now the extra capacity is
+mostly capturing noise; more data should let it start capturing structure
+instead.
+
+Two things that determine *how much* it surpasses LogReg, not just *whether*:
+- **How much real non-linear structure actually exists.** The logistic
+  regression coefficients below look clean, monotonic, and additive --
+  if the true relationship is close to linear, LightGBM may only match
+  LogReg even with lots more data, not dramatically beat it.
+- **Feature richness.** Our current features are thin (no bonding-curve
+  state, price impact, priority fee, token age). Interaction effects like
+  "size matters a lot if the token is very new AND liquidity is thin, but
+  not otherwise" are exactly what tree-based models are good at and linear
+  models structurally can't express without someone manually engineering
+  that interaction term. Richer features are likely to widen LightGBM's
+  eventual advantage more than raw row count alone.
+
+Keeping the ensemble running is a reasonable hedge in the meantime -- it
+doesn't require knowing in advance when the crossover happens.
 
 ### Logistic regression coefficients (full interpretability, no SHAP needed)
 
