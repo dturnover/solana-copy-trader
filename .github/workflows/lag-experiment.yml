@@ -17,6 +17,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # A prior run hit "No space left on device" at the final link step --
+      # the default runner's free disk is smaller than it looks once vcpkg's
+      # build artifacts (grpc/protobuf/openssl, several hundred MB each
+      # across 3 statically-linked executables) pile up. Free the large
+      # preinstalled SDKs we never use before touching any of that.
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
+          sudo docker image prune -af || true
+          df -h /
+
       - name: Install build tools
         run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build curl zip unzip tar pkg-config
 
@@ -43,11 +54,18 @@ jobs:
       - name: Build
         run: cmake --build build -j"$(nproc)"
 
+      - name: Clean up build intermediates
+        run: rm -rf "$VCPKG_ROOT/buildtrees" "$VCPKG_ROOT/downloads" && df -h /
+
       - name: Generate config.json from CI template (injects secret at runtime, never committed)
         run: sed "s#SHYFT_API_KEY_PLACEHOLDER#${{ secrets.SHYFT_API_KEY }}#g" config/config.ci.json > config/config.json
 
+      # -k 30s: guarantees SIGKILL 30s after SIGTERM if the process doesn't
+      # exit on its own, instead of potentially running until the job-level
+      # timeout-minutes cap kills the whole job (seen in at least two prior
+      # runs -- cancelled at 5h50m instead of exiting cleanly at 5h).
       - name: Run lag experiment
-        run: timeout 5h ./build/lag_experiment config/config.json || true
+        run: timeout -k 30s 5h ./build/lag_experiment config/config.json || true
 
       - name: Upload collected samples
         if: always()
