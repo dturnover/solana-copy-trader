@@ -84,7 +84,7 @@ void append_csv_row(const std::string& path, const std::string& row) {
         return;
     }
     if (need_header) {
-        f << "epoch_ms,wallet_label,mint,buy_count,hold_duration_ms,wallet_token_amount,"
+        f << "epoch_ms,wallet_label,mint,sell_signature,buy_count,hold_duration_ms,wallet_token_amount,"
              "wallet_lamports_spent,wallet_lamports_received,wallet_pnl_sol,"
              "our_lamports_spent,our_lamports_received,our_pnl_sol\n";
     }
@@ -306,11 +306,16 @@ int main(int argc, char** argv) {
                     report_stats("OVERALL", overall_stats);
 
                     if (!config.paper_trade_csv_path.empty()) {
+                        // sig_info.signature (the closing sell's signature) is
+                        // globally unique on-chain -- lets offline analysis
+                        // dedupe rows even though separate CI runs start with
+                        // no persisted cursor and can re-detect the same
+                        // historical close more than once.
                         append_csv_row(
                             config.paper_trade_csv_path,
                             std::to_string(now_wall_ms()) + "," + wallet.label + "," + trade->mint.to_base58() +
-                                "," + std::to_string(pos.buy_count) + "," + std::to_string(hold_ms) + "," +
-                                std::to_string(pos.wallet_token_amount) + "," +
+                                "," + sig_info.signature + "," + std::to_string(pos.buy_count) + "," +
+                                std::to_string(hold_ms) + "," + std::to_string(pos.wallet_token_amount) + "," +
                                 std::to_string(pos.wallet_lamports_spent) + "," + std::to_string(*wallet_delta) +
                                 "," + std::to_string(wallet_pnl_sol) + "," + std::to_string(pos.our_lamports_spent) +
                                 "," + std::to_string(static_cast<int64_t>(our_proceeds)) + "," +
