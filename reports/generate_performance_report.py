@@ -42,6 +42,9 @@ BODY_FONT = Font(name=FONT_NAME)
 SOL_FMT = '#,##0.000;(#,##0.000);"-"'
 PCT_FMT = "0.0%"
 DATE_FMT = "yyyy-mm-dd"
+DATETIME_FMT = "yyyy-mm-dd hh:mm"
+
+STALE_HOURS = 12  # flag if the newest trade is older than this -- likely means the CI pipeline stopped
 
 
 def style_header_row(ws, row, n_cols):
@@ -67,6 +70,13 @@ def main():
     df = pd.read_csv(CSV_PATH)
     df = df.sort_values("epoch_ms").reset_index(drop=True)
     n = len(df)
+
+    newest_epoch_ms = int(df["epoch_ms"].max())
+    age_hours = (datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000 - newest_epoch_ms) / 3600000
+    if age_hours > STALE_HOURS:
+        print(f"WARNING: newest trade is {age_hours:.1f}h old (> {STALE_HOURS}h) -- "
+              f"the data-collection pipeline may have stopped. Check `gh run list` / the "
+              f"ci-broken issues before trusting this as current.", file=sys.stderr)
 
     day_serials = sorted(df["epoch_ms"].apply(epoch_ms_to_day_serial).unique())
     day_dates = [datetime.date(1899, 12, 30) + datetime.timedelta(days=int(d)) for d in day_serials]
@@ -215,23 +225,6 @@ def main():
     summary["A2"] = f"Generated from {n} closed trades across {len(wallets)} tracked wallets."
     summary["A2"].font = Font(name=FONT_NAME, italic=True, size=9)
 
-    rows = [
-        ("Date range", f"='Daily Performance'!A2", f"='Daily Performance'!A{last_daily_row}"),
-        ("Total trades closed", f"=SUM('Daily Performance'!B2:B{last_daily_row})", None),
-        ("Days with activity", f"=COUNTA('Daily Performance'!A2:A{last_daily_row})", None),
-        ("Avg trades / active day", f"=B7/B6", None),
-        ("", "", None),
-        ("", "Wallet (real)", "Our simulated copy"),
-        ("Overall win rate",
-         f"=SUM('Daily Performance'!C2:C{last_daily_row})/B5",
-         f"=SUM('Daily Performance'!F2:F{last_daily_row})/B5"),
-        ("Total P&L (SOL)",
-         f"=SUM('Daily Performance'!E2:E{last_daily_row})",
-         f"=SUM('Daily Performance'!H2:H{last_daily_row})"),
-        ("Avg P&L / trade (SOL)", f"=C10/B5", f"=D10/B5"),
-        ("Avg P&L / active day (SOL)", f"=C10/B6", f"=D10/B6"),
-    ]
-
     summary["A4"] = "Date range"
     summary["A4"].font = LABEL_FONT
     summary["B4"] = f"='Daily Performance'!A2"
@@ -283,14 +276,39 @@ def main():
             if cell.value is not None and cell.font.name != FONT_NAME:
                 cell.font = BODY_FONT
 
-    summary["A15"] = ("Note: 'Our simulated copy' assumes copying every closed trade at the configured "
+    # Live freshness check: unlike everything above, this is meant to
+    # recompute every time the file is *opened*, not just every time it's
+    # regenerated -- NOW() is volatile by design here, since the whole point
+    # is "does this look current right now," not "was it current when
+    # generated." Directly answers the failure mode where the CI pipeline
+    # silently stops and nobody notices until someone opens this file.
+    summary["A15"] = "Data freshness"
+    summary["A15"].font = LABEL_FONT
+
+    summary["A16"] = "Newest trade timestamp"
+    summary["B16"] = f"=MAX('Raw Trades'!A2:A{last_raw_row})/86400000+{EXCEL_EPOCH_OFFSET}"
+    summary["B16"].number_format = DATETIME_FMT
+
+    summary["A17"] = "Hours since newest trade"
+    summary["B17"] = "=(NOW()-B16)*24"
+    summary["B17"].number_format = "0.0"
+
+    summary["A18"] = "Status"
+    summary["B18"] = (f'=IF(B17>{STALE_HOURS},"STALE -- check `gh run list` / ci-broken issues","OK")')
+
+    for r in (15, 16, 17, 18):
+        summary.cell(row=r, column=1).font = LABEL_FONT
+        if summary.cell(row=r, column=2).value is not None:
+            summary.cell(row=r, column=2).font = BODY_FONT
+
+    summary["A20"] = ("Note: 'Our simulated copy' assumes copying every closed trade at the configured "
                        "execution_lag_ms, on top of the free poll engine's own ~17s median detection lag "
                        "(see lag_experiment results) -- not a filtered/model-selected subset. See the "
                        "experiment/lgbm-trade-classifier branch for what a filtered strategy's numbers look like.")
-    summary["A15"].font = Font(name=FONT_NAME, italic=True, size=9)
-    summary["A15"].alignment = Alignment(wrap_text=True)
-    summary.merge_cells("A15:H15")
-    summary.row_dimensions[15].height = 45
+    summary["A20"].font = Font(name=FONT_NAME, italic=True, size=9)
+    summary["A20"].alignment = Alignment(wrap_text=True)
+    summary.merge_cells("A20:H20")
+    summary.row_dimensions[20].height = 45
 
     autosize(summary, [26, 18, 20])
 
