@@ -32,31 +32,54 @@ jobs:
       - name: Install build tools
         run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build curl zip unzip tar pkg-config
 
+      # Pinned to the same commit as vcpkg.json's builtin-baseline (see the
+      # comment there for why: an unpinned `git clone` of vcpkg's default
+      # branch floats forward on every run, and when upstream bumps a port
+      # recipe -- e.g. grpc/protobuf -- our binary cache silently stops
+      # matching ("Restored 0 package(s)...") and every run pays a ~1h+
+      # from-source rebuild forever, since the cache is keyed only on
+      # vcpkg.json's *contents*, which never changes. That's what caused the
+      # "No space left on device" failures and 5h50m job-timeout
+      # cancellations starting 2026-07-23: a from-scratch grpc/protobuf
+      # rebuild ate the runner's disk before the link step, or ate enough of
+      # the 350min job budget that the 5h in-process timeout below never got
+      # a chance to exit cleanly. Bump VCPKG_COMMIT (and vcpkg.json's
+      # builtin-baseline to match) deliberately when you want newer ports --
+      # never let it drift on its own.
+      - name: Set vcpkg pin
+        run: echo "VCPKG_COMMIT=40f3c709db80acf154ac4b17a1f83c564ebd022e" >> "$GITHUB_ENV"
+
       - name: Cache vcpkg archives
         uses: actions/cache@v4
         with:
           path: ~/.cache/vcpkg/archives
-          key: vcpkg-archives-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          key: vcpkg-archives-${{ runner.os }}-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg.json') }}
           restore-keys: |
-            vcpkg-archives-${{ runner.os }}-
+            vcpkg-archives-${{ runner.os }}-${{ env.VCPKG_COMMIT }}-
 
       - name: Bootstrap vcpkg
         run: |
-          git clone --depth 1 https://github.com/microsoft/vcpkg.git "$HOME/vcpkg"
+          git init "$HOME/vcpkg"
+          git -C "$HOME/vcpkg" fetch --depth 1 https://github.com/microsoft/vcpkg.git "$VCPKG_COMMIT"
+          git -C "$HOME/vcpkg" checkout FETCH_HEAD
           "$HOME/vcpkg/bootstrap-vcpkg.sh"
           echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
 
       - name: Configure
         run: cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
 
-      - name: Build
-        run: cmake --build build -j"$(nproc)"
-
-      # Reclaim space before the long-running experiment step -- buildtrees
-      # (intermediate object files/source unpacks) aren't needed once the
-      # packages are installed, and can be gigabytes.
+      # Reclaim space before the link step -- buildtrees (intermediate
+      # object files/source unpacks) aren't needed once packages are
+      # installed, and on a cache-miss run (rebuilding grpc/protobuf/openssl
+      # from source) can be gigabytes, large enough to starve the static
+      # link step for 3 executables that immediately follows. Cleaning here,
+      # right after Configure/before Build, protects against that even if
+      # the pin above is ever bumped and pays a one-time rebuild cost again.
       - name: Clean up build intermediates
         run: rm -rf "$VCPKG_ROOT/buildtrees" "$VCPKG_ROOT/downloads" && df -h /
+
+      - name: Build
+        run: cmake --build build -j"$(nproc)"
 
       - name: Generate config.json from CI template (injects secret at runtime, never committed)
         run: sed "s#SHYFT_API_KEY_PLACEHOLDER#${{ secrets.SHYFT_API_KEY }}#g" config/config.paper_trade.ci.json > config/config.json
