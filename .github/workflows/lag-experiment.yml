@@ -17,6 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Wall-clock anchor for the dynamic budget computed just before "Run
+      # lag experiment" below -- see that step for why a fixed `5h` isn't
+      # safe here.
+      - name: Record job start time
+        run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+
       # A prior run hit "No space left on device" at the final link step --
       # the default runner's free disk is smaller than it looks once vcpkg's
       # build artifacts (grpc/protobuf/openssl, several hundred MB each
@@ -87,12 +93,39 @@ jobs:
       - name: Generate config.json from CI template (injects secret at runtime, never committed)
         run: sed "s#SHYFT_API_KEY_PLACEHOLDER#${{ secrets.SHYFT_API_KEY }}#g" config/config.ci.json > config/config.json
 
+      # A flat `timeout 5h` here was the second half of the vcpkg-cache-
+      # staleness incident, not just a symptom of it: on a cache-miss run,
+      # Configure alone can take 70-90min, so 5h *more* for the experiment
+      # pushes total job time past timeout-minutes (350) and GitHub
+      # force-cancels the whole job -- which means actions/cache's own
+      # post-job save step never runs either, so the freshly-rebuilt cache
+      # is silently lost and the NEXT run pays the same 70-90min rebuild
+      # again, forever. No fixed number here is both safe on a cold-cache
+      # run and near-optimal on a warm one, so compute the experiment's
+      # budget from whatever's actually left: total job ceiling minus
+      # elapsed setup time minus a safety margin reserved for upload/cache-
+      # save/cleanup after the experiment stops. This guarantees the job
+      # itself always finishes on its own (cache gets to save, breaking the
+      # loop) while still using the full ~5h in the normal warm-cache case.
+      - name: Compute experiment time budget
+        run: |
+          TOTAL_BUDGET_SECONDS=$((335 * 60))   # stay safely under the 350min job timeout
+          SAFETY_MARGIN_SECONDS=$((15 * 60))   # reserved for upload + cache save + cleanup after
+          MIN_RUN_SECONDS=$((10 * 60))         # always attempt at least a short run
+          ELAPSED=$(( $(date +%s) - JOB_START_EPOCH ))
+          REMAINING=$(( TOTAL_BUDGET_SECONDS - ELAPSED - SAFETY_MARGIN_SECONDS ))
+          if [ "$REMAINING" -lt "$MIN_RUN_SECONDS" ]; then
+            echo "Only ${REMAINING}s left after setup (elapsed=${ELAPSED}s) -- setup ate most of the budget (cold vcpkg cache?). Falling back to a ${MIN_RUN_SECONDS}s minimum run."
+            REMAINING=$MIN_RUN_SECONDS
+          fi
+          echo "EXPERIMENT_BUDGET_SECONDS=$REMAINING" >> "$GITHUB_ENV"
+          echo "Setup took ${ELAPSED}s; running the experiment for ${REMAINING}s (~$((REMAINING / 60))min)"
+
       # -k 30s: guarantees SIGKILL 30s after SIGTERM if the process doesn't
-      # exit on its own, instead of potentially running until the job-level
-      # timeout-minutes cap kills the whole job (seen in at least two prior
-      # runs -- cancelled at 5h50m instead of exiting cleanly at 5h).
+      # exit on its own, rather than relying on the job-level timeout-minutes
+      # cap (which cancels the whole job, cache save included -- see above).
       - name: Run lag experiment
-        run: timeout -k 30s 5h ./build/lag_experiment config/config.json || true
+        run: timeout -k 30s "${EXPERIMENT_BUDGET_SECONDS}s" ./build/lag_experiment config/config.json || true
 
       - name: Upload collected samples
         if: always()

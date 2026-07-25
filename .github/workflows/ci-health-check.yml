@@ -1,0 +1,31 @@
+name: CI Health Check
+
+# Watches paper-trade.yml and lag-experiment.yml from the outside: those are
+# long (350min budget), unattended jobs that can silently produce nothing on
+# failure -- see the vcpkg-cache-staleness incident, 2026-07-23 to
+# 2026-07-25, where 8 consecutive runs across both workflows failed or got
+# job-timeout-cancelled with nobody aware until someone happened to run
+# `gh run list` by hand. This runs independently of those jobs so a hard
+# job-timeout kill in either one can't also prevent this check from firing.
+on:
+  schedule:
+    - cron: "45 */6 * * *" # offset from lag-experiment.yml (:00) and paper-trade.yml (:30)
+  workflow_dispatch: {}
+
+permissions:
+  issues: write
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Ensure tracking label exists
+        run: gh label create ci-broken --color d73a4a --description "Filed by ci-health-check.yml" --force --repo "${{ github.repository }}"
+
+      - uses: actions/checkout@v4
+
+      - name: Check pipeline health
+        run: python3 .github/scripts/ci_health_check.py "${{ github.repository }}"
