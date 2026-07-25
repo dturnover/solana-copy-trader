@@ -46,6 +46,7 @@ CSV_PATH = sys.argv[1] if len(sys.argv) > 1 else "data/paper_trades_final.csv"
 BURN_IN = 40
 COPY_THRESHOLD = 0.5
 MODEL_NAMES = ["logreg", "random_forest", "lightgbm"]
+MIN_TRADES_FOR_SELECTION = 15  # a Sharpe-like ratio on fewer trades is itself too noisy to deploy on
 
 
 def load_data(path):
@@ -188,6 +189,59 @@ def report_model(preds, col, n_eval):
         print("AUC=undefined")
 
 
+def select_deployment_model(preds):
+    """Ranks every (model, threshold) candidate by walk-forward Sharpe-like
+    ratio and recommends one to deploy. This is meant to be rerun every time
+    there's more data -- the recommendation should drift as evidence grows,
+    not be decided once and left alone.
+
+    Candidates with fewer than MIN_TRADES_FOR_SELECTION copied trades are
+    excluded from ranking: a Sharpe-like ratio computed on a handful of
+    trades is itself high-variance, so trusting it to pick a deployment
+    target would be the same mistake as trusting a small-sample backtest --
+    exactly the failure mode risk-adjusted metrics are supposed to guard
+    against. (Random Forest's 1.01 Sharpe on 11 trades in the README is the
+    textbook example: encouraging, not yet trustworthy.)
+    """
+    candidates = []
+    for col in MODEL_NAMES + ["ensemble"]:
+        for thresh in [0.5, 0.6]:
+            copied = preds[preds[col] > thresh]
+            stats = risk_stats(copied["our_pnl_sol"])
+            if stats is None:
+                continue
+            candidates.append({
+                "model": col,
+                "threshold": thresh,
+                "n": stats["n"],
+                "sharpe_like": stats["sharpe_like"],
+                "total_pnl": copied["our_pnl_sol"].sum(),
+                "win_rate": (copied["our_pnl_sol"] > 0).mean() * 100,
+                "eligible": stats["n"] >= MIN_TRADES_FOR_SELECTION and not np.isnan(stats["sharpe_like"]),
+            })
+
+    print(f"\n=== Deployment selection (ranked by walk-forward Sharpe-like ratio, min {MIN_TRADES_FOR_SELECTION} trades) ===")
+    eligible = sorted([c for c in candidates if c["eligible"]], key=lambda c: -c["sharpe_like"])
+    ineligible = [c for c in candidates if not c["eligible"]]
+
+    if not eligible:
+        print(f"  No candidate has {MIN_TRADES_FOR_SELECTION}+ copied trades yet -- not enough evidence to pick "
+              f"a deployment target on Sharpe alone. Keep collecting data. Candidates so far:")
+        for c in sorted(candidates, key=lambda c: -c["n"]):
+            sharpe_str = f"{c['sharpe_like']:.3f}" if not np.isnan(c["sharpe_like"]) else "n/a"
+            print(f"    {c['model']}@p>{c['threshold']}: n={c['n']}, sharpe={sharpe_str}, "
+                  f"total_pnl={c['total_pnl']:.3f} SOL")
+        return
+
+    for i, c in enumerate(eligible):
+        marker = "  <-- recommended" if i == 0 else ""
+        print(f"  {c['model']}@p>{c['threshold']}: n={c['n']}, sharpe={c['sharpe_like']:.3f}, "
+              f"win_rate={c['win_rate']:.1f}%, total_pnl={c['total_pnl']:.3f} SOL{marker}")
+    if ineligible:
+        excluded_str = ", ".join(f"{c['model']}@p>{c['threshold']} (n={c['n']})" for c in ineligible)
+        print(f"  (excluded, n<{MIN_TRADES_FOR_SELECTION}: {excluded_str})")
+
+
 def main():
     df, feature_cols = load_data(CSV_PATH)
     n_eval = len(df) - BURN_IN
@@ -208,6 +262,8 @@ def main():
     preds = walk_forward_all(df, feature_cols)
     for col in MODEL_NAMES + ["ensemble"]:
         report_model(preds, col, n_eval)
+
+    select_deployment_model(preds)
 
     print("\n=== Logistic Regression coefficients (trained on ALL data, for interpretability) ===")
     scaler = StandardScaler()

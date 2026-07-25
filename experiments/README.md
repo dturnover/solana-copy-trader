@@ -143,6 +143,33 @@ seriously rather than dismiss it as one model's quirk -- but it's still
 n=215, so "real, generalizable pattern" and "artifact of this particular
 window of data" remain both plausible.
 
+## Automated deployment selection
+
+`model_comparison.py` now ends with `select_deployment_model()`, which ranks
+every (model, threshold) combination by walk-forward Sharpe-like ratio and
+recommends one -- turning "which model should we actually run" from a
+one-time manual call into something that gets recomputed automatically
+every time the script runs on more data. This directly operationalizes the
+risk-adjusted-return discussion above: total P&L was never the right single
+number to optimize, and now nothing downstream has to remember that by hand.
+
+Sharpe alone is misleading on a tiny sample, though -- a std-dev of a
+handful of numbers is itself noisy, and picking a deployment target off a
+noisy Sharpe estimate would just relocate the small-sample problem rather
+than solve it. So candidates need `n >= MIN_TRADES_FOR_SELECTION` (15,
+adjustable) copied trades before they're eligible to be ranked at all.
+Concretely, this excludes Random Forest @ p>0.6 -- the Sharpe=1.01 standout
+called out above -- from winning on the strength of only 11 trades, even
+though it's the single highest Sharpe in the raw numbers. Current run picks
+**ensemble @ p>0.6** (n=16, Sharpe=0.749, 75% win rate, +19.0 SOL) over
+Logistic Regression @ p>0.5 (n=22, Sharpe=0.622, +19.8 SOL) -- similar
+total return, meaningfully better risk-adjusted return, and enough trades
+behind it to trust the comparison.
+
+Rerun `model_comparison.py` after every data refresh; expect the
+recommendation to move around while n is still small, and to stabilize as
+more trades accumulate and more candidates clear the eligibility bar.
+
 ## Recommendation
 
 **Switch the default to Logistic Regression at the current data volume.**
@@ -154,6 +181,12 @@ trades) where its extra capacity has room to find real non-linear patterns
 instead of noise. Random Forest sits in between and isn't clearly better
 than either at this size -- no strong reason to use it over the other two
 right now.
+
+Superseded in practice by the Sharpe-ranked pick above where the two
+disagree -- LogReg is still the right *fallback* when nothing has enough
+trades yet to clear `MIN_TRADES_FOR_SELECTION`, but once a candidate does
+clear it, prefer the walk-forward-Sharpe recommendation over this static
+rule of thumb.
 
 Still true regardless of model choice: n=215 (and only ~18-31 trades ever
 actually "copied" by any of these strategies) is a small sample to trust as
