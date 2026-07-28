@@ -285,7 +285,7 @@ def main():
     summary["A15"] = "Data freshness"
     summary["A15"].font = LABEL_FONT
 
-    summary["A16"] = "Newest trade timestamp"
+    summary["A16"] = "Newest trade timestamp (UTC)"
     summary["B16"] = f"=MAX('Raw Trades'!A2:A{last_raw_row})/86400000+{EXCEL_EPOCH_OFFSET}"
     summary["B16"].number_format = DATETIME_FMT
 
@@ -300,6 +300,18 @@ def main():
         summary.cell(row=r, column=1).font = LABEL_FONT
         if summary.cell(row=r, column=2).value is not None:
             summary.cell(row=r, column=2).font = BODY_FONT
+
+    # NOW() is the viewer's *local* clock; there's no portable formula-only
+    # way to get true UTC in Excel/LibreOffice without macros. In a
+    # negative-UTC-offset timezone (e.g. US), "Hours since" reads lower than
+    # actual (even negative) -- so it can under-report staleness by up to
+    # your UTC offset, never over-report it. Still catches anything stale by
+    # more than STALE_HOURS + your offset; flagged here rather than silently
+    # wrong.
+    summary["A19"] = ("Note: 'Hours since newest trade' assumes the viewer's system clock is UTC. In an earlier "
+                       "(negative) timezone it under-counts elapsed time by roughly your UTC offset -- it will "
+                       "never falsely flag STALE, but may take longer than 12h to catch a real outage.")
+    summary["A19"].font = Font(name=FONT_NAME, italic=True, size=8)
 
     summary["A20"] = ("Note: 'Our simulated copy' assumes copying every closed trade at the configured "
                        "execution_lag_ms, on top of the free poll engine's own ~17s median detection lag "
