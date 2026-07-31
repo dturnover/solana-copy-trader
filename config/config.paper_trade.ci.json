@@ -28,6 +28,16 @@
     { "label": "Cope", "pubkey": "23wQ7bodYreW3qhnh2YrW8dMkTYSkHHJqGcsiYEJS3Pr" },
     { "label": "Flames", "pubkey": "6aXFYXbFob1ZKAEDCcqZnX2vooA3TgEqDoy5dAQbeWoV" },
     { "label": "Boomer", "pubkey": "4JyenL2p8eQZAQuRS8QAASy7TzEcqAeKGha6bhiJXudh" },
-    { "label": "Dani", "pubkey": "AuPp4YTMTyqxYXQnHc5KUc6pUuCSsHQpBJhgnD45yqrf" }
+    { "label": "Dani", "pubkey": "AuPp4YTMTyqxYXQnHc5KUc6pUuCSsHQpBJhgnD45yqrf" },
+    { "label": "Cented", "pubkey": "CyaE1VxvBrahnPWkqm5VsdCvyS2QmNht2UFrKJHga54o" },
+    { "label": "Monki", "pubkey": "53BnNc49Ajgstciq3CRoyxuBpkkW1r8pgPyvr7JGYnsh" },
+    { "label": "KOREAN", "pubkey": "6KR7SorsUQtNH6CB6JpAnWCAKeTysa95iyXeWihdNeGT" },
+    { "label": "decu", "pubkey": "4vw54BmAogeRV3vPKWyFet5yf8DTLcREzdSzx4rw9Ud9" },
+    { "label": "West", "pubkey": "JDd3hy3gQn2V982mi1zqhNqUw1GfV2UL6g76STojCJPN" },
+    { "label": "Megga", "pubkey": "H31vEBxSJk1nQdUN11qZgZyhScyShhscKhvhZZU3dQoU" },
+    { "label": "Sebastian", "pubkey": "3BLjRcxWGtR7WRshJ3hL25U3RjWr5Ud98wMcczQqk4Ei" },
+    { "label": "Tom", "pubkey": "CEUA7zVoDRqRYoeHTP58UHU6TR8yvtVbeLrX1dppqoXJ" },
+    { "label": "Insyder", "pubkey": "G3g1CKqKWSVEVURZDNMazDBv7YAhMNTjhJBVRTiKZygk" },
+    { "label": "Kadenox", "pubkey": "B32QbbdDAyhvUQzjcaM5j6ZVKwjCxAwGH5Xgvb9SJqnC" }
   ]
 }
