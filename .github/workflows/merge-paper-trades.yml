@@ -16,6 +16,12 @@ on:
     workflows: ["Paper Trade"]
     types: [completed]
   workflow_dispatch: {}
+  # TEMPORARY (removed before merge): workflow_dispatch only becomes
+  # available once a workflow reaches the default branch, so this is the
+  # only way to re-run the merge on this branch -- needed here to rebuild
+  # the dataset from artifacts now that blow-up fills are retained.
+  push:
+    branches: [claude/auto-merge-paper-trades]
 
 permissions:
   contents: write   # commits the refreshed dataset
