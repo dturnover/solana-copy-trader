@@ -2,6 +2,11 @@ import sys
 
 import pandas as pd
 
+# Fill-cost divergence bounds. our_lamports_spent / wallet_lamports_spent far
+# above 1 means the price ran away between the wallet's buy and our simulated
+# fill -- we bought the top. Far below 1 means it dipped and we got in cheaper.
+BLOWUP_LO, BLOWUP_HI = 0.33, 3.0
+
 path_in = sys.argv[1]
 path_out = sys.argv[2]
 
@@ -22,9 +27,33 @@ else:
     df = df.drop_duplicates(subset=["wallet_label", "mint", "wallet_lamports_spent", "wallet_lamports_received"])
 n1 = len(df)
 
+# These rows used to be DROPPED here. That silently deleted the worst tail of
+# the distribution: P&L degrades monotonically as this ratio rises (measured
+# 2026-08-02 over 916 surviving trades -- 0.5-0.8x averaged +0.33 SOL,
+# 1.25-2x averaged -1.26, 2-3x averaged -4.76), so cutting everything past 3x
+# removed exactly the fills a live system suffers most from, biasing every
+# headline number upward by an unknown amount. Unknown because the evidence
+# was discarded before it was ever committed -- nothing downstream could size
+# the hole.
+#
+# Flag instead of drop. Consumers decide what to do:
+# generate_performance_report.py still excludes these from its headline
+# figures (keeping them comparable to earlier reports) but now also reports
+# the excluded cohort's size and P&L alongside.
 ratio = df["our_lamports_spent"] / df["wallet_lamports_spent"].replace(0, float("nan"))
-df = df[(ratio >= 0.33) & (ratio <= 3)]
-n2 = len(df)
+df["fill_ratio"] = ratio
+# NaN (wallet spent 0, so the ratio is unverifiable) sorts to True: these were
+# dropped before as well, since NaN fails both comparisons. Keep excluding
+# them from headline figures -- but visibly now, not silently.
+df["blowup"] = ~ratio.between(BLOWUP_LO, BLOWUP_HI)
 
-print(f"Rows: {n0} -> deduped {n1} -> blowup-filtered {n2}")
+n_blow = int(df["blowup"].sum())
+print(f"Rows: {n0} -> deduped {n1} -> flagged {n_blow} blow-up fill(s), kept all {len(df)}")
+if n_blow:
+    blow = df[df["blowup"]]
+    clean = df[~df["blowup"]]
+    print(f"  blow-up cohort: our P&L {blow['our_pnl_sol'].sum():+.2f} SOL "
+          f"(mean {blow['our_pnl_sol'].mean():+.3f}), wallet P&L {blow['wallet_pnl_sol'].sum():+.2f} SOL")
+    print(f"  clean cohort  : our P&L {clean['our_pnl_sol'].sum():+.2f} SOL over {len(clean)} trades")
+
 df.to_csv(path_out, index=False)

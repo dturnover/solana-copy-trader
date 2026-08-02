@@ -46,6 +46,10 @@ DATETIME_FMT = "yyyy-mm-dd hh:mm"
 
 STALE_HOURS = 12  # flag if the newest trade is older than this -- likely means the CI pipeline stopped
 
+# Mirrors dedupe_and_clean.py; only used to recompute the flag when reading a
+# CSV written before that script started emitting it.
+BLOWUP_LO, BLOWUP_HI = 0.33, 3.0
+
 
 def style_header_row(ws, row, n_cols):
     from openpyxl.styles import PatternFill
@@ -69,7 +73,25 @@ def epoch_ms_to_day_serial(epoch_ms):
 def main():
     df = pd.read_csv(CSV_PATH)
     df = df.sort_values("epoch_ms").reset_index(drop=True)
+
+    # dedupe_and_clean.py used to drop blow-up fills outright; it now flags
+    # them instead (see the comment there for why). Recompute the flag when
+    # reading a CSV written before that change, so this script gives the same
+    # answer on any vintage of the file.
+    if "blowup" not in df.columns:
+        ratio = df["our_lamports_spent"] / df["wallet_lamports_spent"].replace(0, float("nan"))
+        df["fill_ratio"] = ratio
+        df["blowup"] = ~ratio.between(BLOWUP_LO, BLOWUP_HI)
+    df["blowup"] = df["blowup"].astype(bool)
+
+    # Raw Trades carries every row; each aggregate below filters to the clean
+    # cohort, so the headline figures stay comparable with reports generated
+    # back when blow-ups were deleted. The excluded cohort is sized explicitly
+    # in its own Summary block rather than left invisible.
+    clean = df[~df["blowup"]]
     n = len(df)
+    n_clean = len(clean)
+    n_blow = n - n_clean
 
     newest_epoch_ms = int(df["epoch_ms"].max())
     age_hours = (datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000 - newest_epoch_ms) / 3600000
@@ -78,9 +100,11 @@ def main():
               f"the data-collection pipeline may have stopped. Check `gh run list` / the "
               f"ci-broken issues before trusting this as current.", file=sys.stderr)
 
-    day_serials = sorted(df["epoch_ms"].apply(epoch_ms_to_day_serial).unique())
+    # Row labels come from the clean cohort: a day or wallet whose only trades
+    # were blow-ups would otherwise get a row of zeros in every aggregate.
+    day_serials = sorted(clean["epoch_ms"].apply(epoch_ms_to_day_serial).unique())
     day_dates = [datetime.date(1899, 12, 30) + datetime.timedelta(days=int(d)) for d in day_serials]
-    wallets = sorted(df["wallet_label"].unique())
+    wallets = sorted(clean["wallet_label"].unique())
 
     wb = Workbook()
 
@@ -89,7 +113,8 @@ def main():
     raw.title = "Raw Trades"
     raw_headers = ["epoch_ms", "Date", "Wallet", "Mint", "Sell Signature", "Buy Count", "Hold (ms)",
                    "Wallet Token Amt", "Wallet Lamports Spent", "Wallet Lamports Received", "Wallet PnL (SOL)",
-                   "Our Lamports Spent", "Our Lamports Received", "Our PnL (SOL)", "Wallet Win", "Our Win"]
+                   "Our Lamports Spent", "Our Lamports Received", "Our PnL (SOL)", "Wallet Win", "Our Win",
+                   "Fill Ratio", "Blow-up"]
     raw.append(raw_headers)
     style_header_row(raw, 1, len(raw_headers))
 
@@ -112,11 +137,17 @@ def main():
         raw.cell(row=r, column=14, value=float(row["our_pnl_sol"])).number_format = SOL_FMT
         raw.cell(row=r, column=15, value=f"=IF(K{r}>0,1,0)")
         raw.cell(row=r, column=16, value=f"=IF(N{r}>0,1,0)")
-        for c in range(1, 17):
+        # Ratio as a formula so it follows any hand-edit of the lamports
+        # columns; the flag is a literal, since it's the filter every
+        # aggregate keys on and must match what dedupe_and_clean.py decided
+        # (including its NaN handling, which a plain formula wouldn't repeat).
+        raw.cell(row=r, column=17, value=f"=IFERROR(L{r}/I{r},\"\")").number_format = "0.000"
+        raw.cell(row=r, column=18, value=1 if bool(row["blowup"]) else 0)
+        for c in range(1, 19):
             raw.cell(row=r, column=c).font = BODY_FONT
 
     last_raw_row = n + 1
-    autosize(raw, [14, 12, 12, 14, 20, 9, 10, 16, 18, 20, 13, 16, 18, 13, 10, 8])
+    autosize(raw, [14, 12, 12, 14, 20, 9, 10, 16, 18, 20, 13, 16, 18, 13, 10, 8, 11, 9])
     raw.freeze_panes = "A2"
 
     # ---------------------------------------------------------- Daily Performance
@@ -132,17 +163,22 @@ def main():
     raw_owin_col = f"'Raw Trades'!$P$2:$P${last_raw_row}"
     raw_wpnl_col = f"'Raw Trades'!$K$2:$K${last_raw_row}"
     raw_opnl_col = f"'Raw Trades'!$N$2:$N${last_raw_row}"
+    # Appended to every COUNTIFS/SUMIFS below so headline figures cover the
+    # clean cohort only, matching how this report read before blow-up fills
+    # were retained in the dataset rather than deleted.
+    raw_blowup_col = f"'Raw Trades'!$R$2:$R${last_raw_row}"
+    not_blowup = f"{raw_blowup_col},0"
 
     for i, d in enumerate(day_dates):
         r = i + 2
         daily.cell(row=r, column=1, value=d).number_format = DATE_FMT
-        daily.cell(row=r, column=2, value=f"=COUNTIFS({raw_date_col},A{r})")
-        daily.cell(row=r, column=3, value=f"=SUMIFS({raw_wwin_col},{raw_date_col},A{r})")
+        daily.cell(row=r, column=2, value=f"=COUNTIFS({raw_date_col},A{r},{not_blowup})")
+        daily.cell(row=r, column=3, value=f"=SUMIFS({raw_wwin_col},{raw_date_col},A{r},{not_blowup})")
         daily.cell(row=r, column=4, value=f"=IFERROR(C{r}/B{r},0)").number_format = PCT_FMT
-        daily.cell(row=r, column=5, value=f"=SUMIFS({raw_wpnl_col},{raw_date_col},A{r})").number_format = SOL_FMT
-        daily.cell(row=r, column=6, value=f"=SUMIFS({raw_owin_col},{raw_date_col},A{r})")
+        daily.cell(row=r, column=5, value=f"=SUMIFS({raw_wpnl_col},{raw_date_col},A{r},{not_blowup})").number_format = SOL_FMT
+        daily.cell(row=r, column=6, value=f"=SUMIFS({raw_owin_col},{raw_date_col},A{r},{not_blowup})")
         daily.cell(row=r, column=7, value=f"=IFERROR(F{r}/B{r},0)").number_format = PCT_FMT
-        daily.cell(row=r, column=8, value=f"=SUMIFS({raw_opnl_col},{raw_date_col},A{r})").number_format = SOL_FMT
+        daily.cell(row=r, column=8, value=f"=SUMIFS({raw_opnl_col},{raw_date_col},A{r},{not_blowup})").number_format = SOL_FMT
         daily.cell(row=r, column=9, value=f"=SUM($E$2:E{r})").number_format = SOL_FMT
         daily.cell(row=r, column=10, value=f"=SUM($H$2:H{r})").number_format = SOL_FMT
         for c in range(1, 11):
@@ -190,12 +226,12 @@ def main():
     for i, wname in enumerate(wallets):
         r = i + 2
         bywallet.cell(row=r, column=1, value=wname)
-        bywallet.cell(row=r, column=2, value=f"=COUNTIFS({raw_wallet_col},A{r})")
-        bywallet.cell(row=r, column=3, value=f"=IFERROR(SUMIFS({raw_wwin_col},{raw_wallet_col},A{r})/B{r},0)").number_format = PCT_FMT
-        bywallet.cell(row=r, column=4, value=f"=SUMIFS({raw_wpnl_col},{raw_wallet_col},A{r})").number_format = SOL_FMT
+        bywallet.cell(row=r, column=2, value=f"=COUNTIFS({raw_wallet_col},A{r},{not_blowup})")
+        bywallet.cell(row=r, column=3, value=f"=IFERROR(SUMIFS({raw_wwin_col},{raw_wallet_col},A{r},{not_blowup})/B{r},0)").number_format = PCT_FMT
+        bywallet.cell(row=r, column=4, value=f"=SUMIFS({raw_wpnl_col},{raw_wallet_col},A{r},{not_blowup})").number_format = SOL_FMT
         bywallet.cell(row=r, column=5, value=f"=IFERROR(D{r}/B{r},0)").number_format = SOL_FMT
-        bywallet.cell(row=r, column=6, value=f"=IFERROR(SUMIFS({raw_owin_col},{raw_wallet_col},A{r})/B{r},0)").number_format = PCT_FMT
-        bywallet.cell(row=r, column=7, value=f"=SUMIFS({raw_opnl_col},{raw_wallet_col},A{r})").number_format = SOL_FMT
+        bywallet.cell(row=r, column=6, value=f"=IFERROR(SUMIFS({raw_owin_col},{raw_wallet_col},A{r},{not_blowup})/B{r},0)").number_format = PCT_FMT
+        bywallet.cell(row=r, column=7, value=f"=SUMIFS({raw_opnl_col},{raw_wallet_col},A{r},{not_blowup})").number_format = SOL_FMT
         bywallet.cell(row=r, column=8, value=f"=IFERROR(G{r}/B{r},0)").number_format = SOL_FMT
         for c in range(1, 9):
             bywallet.cell(row=r, column=c).font = BODY_FONT
@@ -222,7 +258,8 @@ def main():
     summary = wb.create_sheet("Summary", 0)
     summary["A1"] = "Paper Trading Performance Summary"
     summary["A1"].font = TITLE_FONT
-    summary["A2"] = f"Generated from {n} closed trades across {len(wallets)} tracked wallets."
+    summary["A2"] = (f"Generated from {n_clean} clean closed trades across {len(wallets)} tracked wallets"
+                     f" ({n_blow} blow-up fill(s) held back -- see below).")
     summary["A2"].font = Font(name=FONT_NAME, italic=True, size=9)
 
     summary["A4"] = "Date range"
@@ -312,6 +349,38 @@ def main():
                        "(negative) timezone it under-counts elapsed time by roughly your UTC offset -- it will "
                        "never falsely flag STALE, but may take longer than 12h to catch a real outage.")
     summary["A19"].font = Font(name=FONT_NAME, italic=True, size=8)
+
+    # The figures above deliberately exclude blow-up fills, so state the size
+    # of what's excluded right next to them. Before 2026-08, these rows were
+    # deleted in dedupe_and_clean.py and this block could not have existed --
+    # which is exactly why the exclusion went unexamined for so long.
+    summary["A22"] = "Blow-up fills (excluded from every figure above)"
+    summary["A22"].font = LABEL_FONT
+    summary["A23"] = (f"Fills where our simulated cost was outside {BLOWUP_LO}-{BLOWUP_HI}x the wallet's for the "
+                      "same tokens -- i.e. the price moved hard during our execution lag.")
+    summary["A23"].font = Font(name=FONT_NAME, italic=True, size=9)
+
+    summary["A24"] = "Trades excluded"
+    summary["B24"] = f"=COUNTIFS({raw_blowup_col},1)"
+    summary["A25"] = "Their P&L, wallet (SOL)"
+    summary["B25"] = f"=SUMIFS({raw_wpnl_col},{raw_blowup_col},1)"
+    summary["B25"].number_format = SOL_FMT
+    summary["A26"] = "Their P&L, our copy (SOL)"
+    summary["B26"] = f"=SUMIFS({raw_opnl_col},{raw_blowup_col},1)"
+    summary["B26"].number_format = SOL_FMT
+    summary["A27"] = "Our total P&L INCLUDING them (SOL)"
+    summary["B27"] = "=C11+B26"
+    summary["B27"].number_format = SOL_FMT
+    summary["A27"].font = LABEL_FONT
+
+    for r in (24, 25, 26, 27):
+        summary.cell(row=r, column=1).font = LABEL_FONT if r == 27 else BODY_FONT
+        summary.cell(row=r, column=2).font = BODY_FONT
+
+    summary["A28"] = ("These are kept out of the headline figures because a real fill that far from the wallet's "
+                      "is not the same trade -- but they are real outcomes, and P&L degrades monotonically as "
+                      "the fill ratio rises, so treat B27 as the pessimistic bound and C11 as the optimistic one.")
+    summary["A28"].font = Font(name=FONT_NAME, italic=True, size=8)
 
     summary["A20"] = ("Note: 'Our simulated copy' assumes copying every closed trade at the configured "
                        "execution_lag_ms, on top of the free poll engine's own ~17s median detection lag "
