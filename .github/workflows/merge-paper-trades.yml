@@ -1,0 +1,107 @@
+name: Merge Paper Trades
+
+# Folds paper-trade.yml's uploaded artifacts into the committed dataset at
+# reports/paper_trades_final.csv.
+#
+# paper-trade.yml only uploads its CSV as a build artifact, which expires
+# after 90 days and can't be queried as data. Until 2026-08 the dataset was
+# refreshed by hand (download artifacts locally, dedupe, commit), so it
+# silently drifted days behind the pipeline whenever nobody got around to
+# it -- the committed file sat at 2026-07-31 with five completed runs
+# unmerged. This closes that loop automatically.
+on:
+  # Fires when a Paper Trade run finishes, so the dataset tracks the
+  # pipeline without anyone remembering to merge.
+  workflow_run:
+    workflows: ["Paper Trade"]
+    types: [completed]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # commits the refreshed dataset
+  actions: read     # lists/downloads artifacts from other runs
+
+# A merge is a read-all/write-one operation on a single tracked file, so two
+# at once would race on the same push. Queue them instead of cancelling:
+# cancel-in-progress would drop a merge whose artifacts nothing else re-reads
+# until the next run.
+concurrency:
+  group: merge-paper-trades
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Python deps
+        run: pip install --quiet pandas
+
+      # Deliberately downloads *every* unexpired paper-trades-* artifact, not
+      # just those newer than the dataset's last row. Artifact retention is
+      # the real bound (90d, ~4 runs/day, tens of KB each), and dedupe is
+      # exact on the on-chain sell_signature, so re-reading old artifacts
+      # costs a little bandwidth and buys self-healing: any run that was
+      # missed, or merged while a previous job was failing, gets backfilled
+      # on the next merge instead of being lost for good. Filtering by date
+      # would reintroduce exactly the silent-gap failure this workflow exists
+      # to prevent.
+      - name: Download paper-trade artifacts
+        run: |
+          mkdir -p artifacts
+          gh api --paginate "repos/$REPO/actions/artifacts" \
+            --jq '.artifacts[] | select(.name | startswith("paper-trades-")) | select(.expired == false) | .id' \
+            > artifact_ids.txt
+          echo "Found $(wc -l < artifact_ids.txt) unexpired paper-trades-* artifact(s)"
+          while read -r id; do
+            [ -z "$id" ] && continue
+            # A single artifact failing to download (transient 5xx, or one
+            # that expired between the listing above and now) must not sink
+            # the whole merge -- the rest still carry recoverable data.
+            if gh api "repos/$REPO/actions/artifacts/$id/zip" > "artifacts/$id.zip" 2>/dev/null; then
+              unzip -o -q "artifacts/$id.zip" -d "artifacts/$id" && rm -f "artifacts/$id.zip"
+            else
+              echo "  WARN: artifact $id could not be downloaded, skipping"
+              rm -f "artifacts/$id.zip"
+            fi
+          done < artifact_ids.txt
+
+      - name: Merge artifacts into dataset
+        run: |
+          python3 reports/merge_artifacts.py \
+            reports/paper_trades_final.csv artifacts /tmp/combined_raw.csv
+          python3 reports/dedupe_and_clean.py \
+            /tmp/combined_raw.csv reports/paper_trades_final.csv
+
+      # Every run re-reads every artifact, so most merges legitimately
+      # produce no change (nothing new closed since last time). Committing
+      # unconditionally would push an empty commit 4x/day.
+      - name: Commit refreshed dataset
+        run: |
+          if git diff --quiet -- reports/paper_trades_final.csv; then
+            echo "No new closed trades since the last merge -- nothing to commit."
+            exit 0
+          fi
+          ROWS=$(($(wc -l < reports/paper_trades_final.csv) - 1))
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/paper_trades_final.csv
+          git commit -m "Refresh paper-trade dataset: ${ROWS} clean closed trades [skip ci]"
+          # The scheduled paper-trade.yml pushes nothing, but a concurrent
+          # manual commit to this branch would make a bare push fail; rebase
+          # onto whatever landed rather than dropping this merge.
+          for attempt in 1 2 3; do
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              exit 0
+            fi
+            echo "Push failed (attempt ${attempt}), rebasing on latest and retrying..."
+            git pull --rebase origin "${GITHUB_REF_NAME}" || exit 1
+          done
+          echo "ERROR: could not push refreshed dataset after 3 attempts"
+          exit 1
