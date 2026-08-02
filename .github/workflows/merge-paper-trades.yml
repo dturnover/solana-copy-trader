@@ -16,12 +16,6 @@ on:
     workflows: ["Paper Trade"]
     types: [completed]
   workflow_dispatch: {}
-  # TEMPORARY (removed before merge): workflow_dispatch is only available
-  # once a workflow lands on the default branch, so this is the only way to
-  # exercise the merge -- and catch the dataset up -- while still on a
-  # branch for review.
-  push:
-    branches: [claude/auto-merge-paper-trades]
 
 permissions:
   contents: write   # commits the refreshed dataset
