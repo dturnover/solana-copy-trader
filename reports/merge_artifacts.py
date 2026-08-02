@@ -66,13 +66,22 @@ for path in artifact_csvs:
         print(f"  {path}: empty, skipped")
         continue
 
+    # Artifacts predating the sell_signature column (added mid-collection)
+    # are still good data: dedupe_and_clean.py has an explicit branch that
+    # dedupes signature-less rows on wallet_label/mint/lamports instead. Fill
+    # the column so they align, and let that branch handle them.
+    if "sell_signature" not in df.columns:
+        print(f"  {path}: {len(df)} rows (pre-sell_signature schema)")
+        df["sell_signature"] = ""
+    else:
+        print(f"  {path}: {len(df)} rows")
+
+    # Any *other* missing column is a real schema break -- fail loudly rather
+    # than merge partial rows that dedupe_and_clean.py would later drop on a
+    # NaN key.
     missing = set(FINAL_COLUMNS) - set(df.columns)
     if missing:
-        # Better to fail loudly than to silently merge a partial schema and
-        # have dedupe_and_clean.py drop the rows on a NaN key later.
         sys.exit(f"ERROR: {path} is missing expected columns: {sorted(missing)}")
-
-    print(f"  {path}: {len(df)} rows")
     frames.append(df)
 
 if not frames:
