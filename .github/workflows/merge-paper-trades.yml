@@ -16,12 +16,6 @@ on:
     workflows: ["Paper Trade"]
     types: [completed]
   workflow_dispatch: {}
-  # TEMPORARY (removed before merge): workflow_dispatch only becomes
-  # available once a workflow reaches the default branch, so this is the
-  # only way to re-run the merge on this branch -- needed here to rebuild
-  # the dataset from artifacts now that blow-up fills are retained.
-  push:
-    branches: [claude/auto-merge-paper-trades]
 
 permissions:
   contents: write   # commits the refreshed dataset
@@ -94,11 +88,18 @@ jobs:
             echo "No new closed trades since the last merge -- nothing to commit."
             exit 0
           fi
-          ROWS=$(($(wc -l < reports/paper_trades_final.csv) - 1))
+          # "clean" is no longer the same as "all rows": blow-up fills are
+          # retained and flagged rather than dropped, so report both numbers
+          # instead of labelling the total as clean.
+          read -r TOTAL CLEAN BLOW < <(python3 -c "
+          import pandas as pd
+          d = pd.read_csv('reports/paper_trades_final.csv')
+          b = int(d['blowup'].sum()) if 'blowup' in d.columns else 0
+          print(len(d), len(d) - b, b)")
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add reports/paper_trades_final.csv
-          git commit -m "Refresh paper-trade dataset: ${ROWS} clean closed trades [skip ci]"
+          git commit -m "Refresh paper-trade dataset: ${TOTAL} closed trades (${CLEAN} clean, ${BLOW} blow-up) [skip ci]"
           # The scheduled paper-trade.yml pushes nothing, but a concurrent
           # manual commit to this branch would make a bare push fail; rebase
           # onto whatever landed rather than dropping this merge.
