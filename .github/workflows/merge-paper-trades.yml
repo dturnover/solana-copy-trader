@@ -16,6 +16,11 @@ on:
     workflows: ["Paper Trade"]
     types: [completed]
   workflow_dispatch: {}
+  # TEMPORARY (removed once this run lands): workflow_dispatch is unavailable
+  # until the workflow reaches the default branch, so this is the only way to
+  # refresh the branch's dataset while PR #3 is still open.
+  push:
+    branches: [claude/auto-merge-paper-trades]
 
 permissions:
   contents: write   # commits the refreshed dataset
