@@ -1,0 +1,76 @@
+name: Build Check
+
+# Compiles the tree on pull requests touching C++/CMake.
+#
+# Nothing else does. paper-trade.yml and lag-experiment.yml build as a side
+# effect of their scheduled runs, but only from the default branch and only
+# hours later -- so a compile error in a merged change stops data collection
+# outright and surfaces as a *scheduled job* failure, several hours after the
+# fact, rather than as a red check on the PR that caused it. That is how the
+# vcpkg-cache-staleness incident (2026-07-23..25) ran for eight consecutive
+# failed runs before anyone noticed.
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "CMakeLists.txt"
+      - "vcpkg.json"
+      - ".github/workflows/build-check.yml"
+  workflow_dispatch: {}
+
+# A PR that gets several pushes in a row only needs its newest commit built.
+concurrency:
+  group: build-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Same reclaim paper-trade.yml does: vcpkg's grpc/protobuf/openssl
+      # buildtrees outgrow the runner's free space on a cache miss.
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
+          sudo docker image prune -af || true
+          df -h /
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build curl zip unzip tar pkg-config
+
+      # Must match paper-trade.yml's pin and vcpkg.json's builtin-baseline, or
+      # this job builds against different ports than the one that actually
+      # collects data -- and would warm a different binary cache too.
+      - name: Set vcpkg pin
+        run: echo "VCPKG_COMMIT=40f3c709db80acf154ac4b17a1f83c564ebd022e" >> "$GITHUB_ENV"
+
+      # Same key as paper-trade.yml so this shares that cache rather than
+      # maintaining a second copy of several hundred MB of ports.
+      - name: Cache vcpkg archives
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-archives-${{ runner.os }}-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-archives-${{ runner.os }}-${{ env.VCPKG_COMMIT }}-
+
+      - name: Bootstrap vcpkg
+        run: |
+          git init "$HOME/vcpkg"
+          git -C "$HOME/vcpkg" fetch --depth 1 https://github.com/microsoft/vcpkg.git "$VCPKG_COMMIT"
+          git -C "$HOME/vcpkg" checkout FETCH_HEAD
+          "$HOME/vcpkg/bootstrap-vcpkg.sh"
+          echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Clean up build intermediates
+        run: rm -rf "$VCPKG_ROOT/buildtrees" "$VCPKG_ROOT/downloads" && df -h /
+
+      - name: Build
+        run: cmake --build build -j"$(nproc)"
