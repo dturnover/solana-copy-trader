@@ -40,7 +40,23 @@ FINAL_COLUMNS = [
     "our_lamports_received",
     "our_pnl_sol",
     "sell_signature",
+    "would_have_reverted",
+    "collector_version",
 ]
+
+# Columns added to the writer after collection had already started, with the
+# value to assume for rows written before they existed. Backfilling here (on
+# name, never position) is what lets one dataset span every schema vintage.
+#   sell_signature      -- absent means "no signature captured"; dedupe has a
+#                          separate branch keyed on wallet/mint/lamports.
+#   would_have_reverted -- v1 dropped reverting buys outright, so every row it
+#                          did write executed within the wallet's bound: 0.
+#   collector_version   -- absent IS the v1 marker (v1 never wrote the column).
+OPTIONAL_COLUMNS = {
+    "sell_signature": "",
+    "would_have_reverted": 0,
+    "collector_version": 1,
+}
 
 existing_path = sys.argv[1]
 artifacts_dir = sys.argv[2]
@@ -48,10 +64,19 @@ out_path = sys.argv[3]
 
 frames = []
 
+def backfill_optional(df, label):
+    """Add any post-hoc columns this file predates, at their v1 defaults."""
+    filled = [c for c in OPTIONAL_COLUMNS if c not in df.columns]
+    for c in filled:
+        df[c] = OPTIONAL_COLUMNS[c]
+    suffix = f" (backfilled: {', '.join(filled)})" if filled else ""
+    print(f"  {label}: {len(df)} rows{suffix}")
+    return df
+
+
 if os.path.exists(existing_path) and os.path.getsize(existing_path) > 0:
     existing = pd.read_csv(existing_path)
-    print(f"Existing dataset: {len(existing)} rows")
-    frames.append(existing)
+    frames.append(backfill_optional(existing, "existing dataset"))
 else:
     print("No existing dataset -- starting from artifacts alone")
 
@@ -66,15 +91,7 @@ for path in artifact_csvs:
         print(f"  {path}: empty, skipped")
         continue
 
-    # Artifacts predating the sell_signature column (added mid-collection)
-    # are still good data: dedupe_and_clean.py has an explicit branch that
-    # dedupes signature-less rows on wallet_label/mint/lamports instead. Fill
-    # the column so they align, and let that branch handle them.
-    if "sell_signature" not in df.columns:
-        print(f"  {path}: {len(df)} rows (pre-sell_signature schema)")
-        df["sell_signature"] = ""
-    else:
-        print(f"  {path}: {len(df)} rows")
+    df = backfill_optional(df, path)
 
     # Any *other* missing column is a real schema break -- fail loudly rather
     # than merge partial rows that dedupe_and_clean.py would later drop on a

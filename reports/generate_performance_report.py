@@ -84,14 +84,29 @@ def main():
         df["blowup"] = ~ratio.between(BLOWUP_LO, BLOWUP_HI)
     df["blowup"] = df["blowup"].astype(bool)
 
+    # Collector v1 silently dropped buys whose lag-delayed cost exceeded the
+    # wallet's max_sol_cost bound; v2 records and flags them. Rows from v1
+    # therefore carry no reverting fills at all -- treat their flag as 0, which
+    # is what they in fact were, and keep the version around so the two
+    # populations are never pooled unknowingly.
+    if "collector_version" not in df.columns:
+        df["collector_version"] = 1
+    if "would_have_reverted" not in df.columns:
+        df["would_have_reverted"] = 0
+    df["would_have_reverted"] = df["would_have_reverted"].fillna(0).astype(int)
+
     # Raw Trades carries every row; each aggregate below filters to the clean
     # cohort, so the headline figures stay comparable with reports generated
-    # back when blow-ups were deleted. The excluded cohort is sized explicitly
-    # in its own Summary block rather than left invisible.
-    clean = df[~df["blowup"]]
+    # back when blow-ups were deleted. Reverting fills are excluded on the same
+    # basis -- they are what a wider-slippage bot would have eaten, not what
+    # the measured strategy did. Both excluded cohorts are sized explicitly in
+    # their own Summary block rather than left invisible.
+    clean = df[~df["blowup"] & (df["would_have_reverted"] == 0)]
     n = len(df)
     n_clean = len(clean)
-    n_blow = n - n_clean
+    n_blow = int(df["blowup"].sum())
+    n_rev = int((df["would_have_reverted"] == 1).sum())
+    n_v2 = int((df["collector_version"] >= 2).sum())
 
     newest_epoch_ms = int(df["epoch_ms"].max())
     age_hours = (datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000 - newest_epoch_ms) / 3600000
@@ -114,7 +129,7 @@ def main():
     raw_headers = ["epoch_ms", "Date", "Wallet", "Mint", "Sell Signature", "Buy Count", "Hold (ms)",
                    "Wallet Token Amt", "Wallet Lamports Spent", "Wallet Lamports Received", "Wallet PnL (SOL)",
                    "Our Lamports Spent", "Our Lamports Received", "Our PnL (SOL)", "Wallet Win", "Our Win",
-                   "Fill Ratio", "Blow-up"]
+                   "Fill Ratio", "Blow-up", "Would Revert", "Collector Ver"]
     raw.append(raw_headers)
     style_header_row(raw, 1, len(raw_headers))
 
@@ -143,11 +158,13 @@ def main():
         # (including its NaN handling, which a plain formula wouldn't repeat).
         raw.cell(row=r, column=17, value=f"=IFERROR(L{r}/I{r},\"\")").number_format = "0.000"
         raw.cell(row=r, column=18, value=1 if bool(row["blowup"]) else 0)
-        for c in range(1, 19):
+        raw.cell(row=r, column=19, value=int(row["would_have_reverted"]))
+        raw.cell(row=r, column=20, value=int(row["collector_version"]))
+        for c in range(1, 21):
             raw.cell(row=r, column=c).font = BODY_FONT
 
     last_raw_row = n + 1
-    autosize(raw, [14, 12, 12, 14, 20, 9, 10, 16, 18, 20, 13, 16, 18, 13, 10, 8, 11, 9])
+    autosize(raw, [14, 12, 12, 14, 20, 9, 10, 16, 18, 20, 13, 16, 18, 13, 10, 8, 11, 9, 13, 13])
     raw.freeze_panes = "A2"
 
     # ---------------------------------------------------------- Daily Performance
@@ -167,7 +184,10 @@ def main():
     # clean cohort only, matching how this report read before blow-up fills
     # were retained in the dataset rather than deleted.
     raw_blowup_col = f"'Raw Trades'!$R$2:$R${last_raw_row}"
-    not_blowup = f"{raw_blowup_col},0"
+    raw_revert_col = f"'Raw Trades'!$S$2:$S${last_raw_row}"
+    # Both exclusions travel together on every aggregate: blow-up fills, and
+    # fills that would have reverted at the wallet's own slippage bound.
+    not_blowup = f"{raw_blowup_col},0,{raw_revert_col},0"
 
     for i, d in enumerate(day_dates):
         r = i + 2
@@ -354,37 +374,57 @@ def main():
     # of what's excluded right next to them. Before 2026-08, these rows were
     # deleted in dedupe_and_clean.py and this block could not have existed --
     # which is exactly why the exclusion went unexamined for so long.
-    summary["A22"] = "Blow-up fills (excluded from every figure above)"
+    summary["A22"] = "Excluded cohorts (held out of every figure above)"
     summary["A22"].font = LABEL_FONT
-    summary["A23"] = (f"Fills where our simulated cost was outside {BLOWUP_LO}-{BLOWUP_HI}x the wallet's for the "
-                      "same tokens -- i.e. the price moved hard during our execution lag.")
-    summary["A23"].font = Font(name=FONT_NAME, italic=True, size=9)
 
-    summary["A24"] = "Trades excluded"
-    summary["B24"] = f"=COUNTIFS({raw_blowup_col},1)"
-    summary["A25"] = "Their P&L, wallet (SOL)"
-    summary["B25"] = f"=SUMIFS({raw_wpnl_col},{raw_blowup_col},1)"
+    summary["A23"] = f"Blow-up fills: cost outside {BLOWUP_LO}-{BLOWUP_HI}x the wallet's for the same tokens"
+    summary["B23"] = f"=COUNTIFS({raw_blowup_col},1)"
+    summary["C23"] = f"=SUMIFS({raw_opnl_col},{raw_blowup_col},1)"
+    summary["C23"].number_format = SOL_FMT
+
+    summary["A24"] = "Reverting fills: price passed the wallet's own max_sol_cost bound during our lag"
+    summary["B24"] = f"=COUNTIFS({raw_revert_col},1)"
+    summary["C24"] = f"=SUMIFS({raw_opnl_col},{raw_revert_col},1)"
+    summary["C24"].number_format = SOL_FMT
+
+    summary["A25"] = "Our total P&L INCLUDING both (SOL)"
+    # Summed straight off Raw Trades rather than C11+C23+C24: a row can be
+    # both a blow-up and a reverting fill, and adding the two cohorts would
+    # count it twice.
+    summary["B25"] = f"=SUM({raw_opnl_col})"
     summary["B25"].number_format = SOL_FMT
-    summary["A26"] = "Their P&L, our copy (SOL)"
-    summary["B26"] = f"=SUMIFS({raw_opnl_col},{raw_blowup_col},1)"
-    summary["B26"].number_format = SOL_FMT
-    summary["A27"] = "Our total P&L INCLUDING them (SOL)"
-    summary["B27"] = "=C11+B26"
-    summary["B27"].number_format = SOL_FMT
+    summary["A25"].font = LABEL_FONT
+
+    for r in (23, 24, 25):
+        summary.cell(row=r, column=1).font = LABEL_FONT if r == 25 else BODY_FONT
+        for c in (2, 3):
+            summary.cell(row=r, column=c).font = BODY_FONT
+
+    # The distinction that makes or breaks every figure in this workbook.
+    summary["A26"] = (
+        "Collector v1 DROPPED reverting fills instead of recording them, so v1 rows are a favourable-fills-only "
+        "sample: 86% of them filled cheaper than the wallet did, which is impossible for a bot buying seconds "
+        "after someone else pushed the price up a bonding curve. Only v2 rows (column T of Raw Trades) contain "
+        "the full population. Do not read the headline figures as a tradeable P&L until v2 rows dominate.")
+    summary["A26"].font = Font(name=FONT_NAME, italic=True, size=8)
+
+    summary["A27"] = f"Rows from collector v2 (complete population)"
+    summary["B27"] = f"=COUNTIFS('Raw Trades'!$T$2:$T${last_raw_row},\">=2\")"
     summary["A27"].font = LABEL_FONT
+    summary["B27"].font = BODY_FONT
+    summary["A28"] = "Rows from collector v1 (censored -- reverting fills missing entirely)"
+    summary["B28"] = f"=COUNTIFS('Raw Trades'!$T$2:$T${last_raw_row},1)"
+    summary["A28"].font = BODY_FONT
+    summary["B28"].font = BODY_FONT
 
-    for r in (24, 25, 26, 27):
-        summary.cell(row=r, column=1).font = LABEL_FONT if r == 27 else BODY_FONT
-        summary.cell(row=r, column=2).font = BODY_FONT
-
-    summary["A28"] = ("These are kept out of the headline figures because a real fill that far from the wallet's "
-                      "is not the same trade -- but they are real outcomes, and P&L degrades monotonically as "
-                      "the fill ratio rises, so treat B27 as the pessimistic bound and C11 as the optimistic one.")
-    summary["A28"].font = Font(name=FONT_NAME, italic=True, size=8)
-
-    summary["A20"] = ("Note: 'Our simulated copy' assumes copying every closed trade at the configured "
+    # This note used to claim the figures were "not a filtered/model-selected
+    # subset". That was false for collector v1: it silently dropped every buy
+    # the price ran past, which is a filter -- and a flattering one.
+    summary["A20"] = ("Note: 'Our simulated copy' assumes copying closed trades at the configured "
                        "execution_lag_ms, on top of the free poll engine's own ~17s median detection lag "
-                       "(see lag_experiment results) -- not a filtered/model-selected subset. See the "
+                       "(see lag_experiment results). It is NOT an unfiltered population: reverting and "
+                       "blow-up fills are held out (sized below), and RPC rate-limiting on the free tier "
+                       "drops an unmeasured share of the wallets' trades before they are ever seen. See the "
                        "experiment/lgbm-trade-classifier branch for what a filtered strategy's numbers look like.")
     summary["A20"].font = Font(name=FONT_NAME, italic=True, size=9)
     summary["A20"].alignment = Alignment(wrap_text=True)

@@ -52,6 +52,11 @@ struct OpenPosition {
     int64_t wallet_lamports_spent = 0; // ground truth, cumulative
     double our_lamports_spent = 0.0;   // simulated at execution_lag_ms, cumulative
     solana::Pubkey bonding_curve;
+    // True if ANY buy making up this position would have reverted on-chain
+    // for a copy tx reusing the wallet's own max_sol_cost bound -- the price
+    // had already moved past that bound by the time our lag elapsed. Recorded
+    // rather than skipped; see the buy path for why.
+    bool would_have_reverted = false;
 };
 
 struct WalletStats {
@@ -73,6 +78,15 @@ void report_stats(const std::string& label, const WalletStats& s) {
              "SOL abandoned=" + std::to_string(s.abandoned));
 }
 
+// Stamped on every row so censored and complete data can never be pooled by
+// accident. v1 (implicit -- the column does not exist in those files) silently
+// dropped any buy whose lag-delayed cost exceeded the wallet's max_sol_cost
+// bound, so v1 rows are a favourable-fills-only sample. v2 records those buys
+// and flags them via would_have_reverted, so v2 is the complete population.
+// Bump this whenever a change alters WHICH round trips get written, not merely
+// what is computed for them.
+constexpr int kCollectorVersion = 2;
+
 void append_csv_row(const std::string& path, const std::string& row) {
     std::error_code ec;
     auto size = std::filesystem::file_size(path, ec);
@@ -86,7 +100,8 @@ void append_csv_row(const std::string& path, const std::string& row) {
     if (need_header) {
         f << "epoch_ms,wallet_label,mint,sell_signature,buy_count,hold_duration_ms,wallet_token_amount,"
              "wallet_lamports_spent,wallet_lamports_received,wallet_pnl_sol,"
-             "our_lamports_spent,our_lamports_received,our_pnl_sol\n";
+             "our_lamports_spent,our_lamports_received,our_pnl_sol,"
+             "would_have_reverted,collector_version\n";
     }
     f << row << "\n";
 }
@@ -212,19 +227,31 @@ int main(int argc, char** argv) {
                         *state, static_cast<double>(trade->token_amount));
                     if (our_cost <= 0) continue;
 
-                    // Ground truth, not a heuristic: trade->sol_amount is the
-                    // wallet's own on-chain max_sol_cost bound for this exact
-                    // buy. If our lag-delayed price would exceed it, a real
-                    // copy transaction using the same bound would simply
-                    // revert -- it does NOT execute at some worse price, the
-                    // constant-product formula blowing up here is a
-                    // simulation artifact, not a real outcome. Skip rather
-                    // than record a nonsensical cost.
-                    if (our_cost > static_cast<double>(trade->sol_amount)) {
+                    // trade->sol_amount is the wallet's own on-chain
+                    // max_sol_cost bound for this exact buy. If our
+                    // lag-delayed price exceeds it, a copy transaction reusing
+                    // that same bound would revert rather than fill worse.
+                    //
+                    // This used to `continue` here, dropping the buy entirely.
+                    // That silently censored the dataset in one direction:
+                    // adverse fills (price ran away during our lag) vanished
+                    // while favourable ones were kept, so 86% of recorded
+                    // fills came in CHEAPER than the wallet's -- impossible
+                    // for a bot buying ~18s after someone else pushed the
+                    // price up a bonding curve, and enough to make our
+                    // simulated copy "outperform" the wallets it copies.
+                    //
+                    // Record it and flag it instead. A row flagged here is the
+                    // counterfactual for a bot with a wider slippage bound
+                    // than the wallet's; filtering them back out reproduces
+                    // the old, bound-respecting strategy. Both are now
+                    // answerable from the data, and the skip RATE is finally
+                    // measurable at all.
+                    bool buy_would_revert = our_cost > static_cast<double>(trade->sol_amount);
+                    if (buy_would_revert) {
                         LOG_INFO(wallet.label + " BUY mint=" + trade->mint.to_base58() +
-                                 " would have FAILED on-chain (price moved past their max_sol_cost bound) -- "
-                                 "not counted as executed");
-                        continue;
+                                 " would have REVERTED on-chain at the wallet's own max_sol_cost bound "
+                                 "(price moved past it during our lag) -- recorded and flagged, not skipped");
                     }
 
                     auto& pos = open_positions[position_key];
@@ -234,6 +261,7 @@ int main(int argc, char** argv) {
                     pos.wallet_lamports_spent += spent;
                     pos.our_lamports_spent += our_cost;
                     pos.bonding_curve = trade->bonding_curve;
+                    pos.would_have_reverted = pos.would_have_reverted || buy_would_revert;
 
                     LOG_INFO(wallet.label + " BUY mint=" + trade->mint.to_base58() +
                              " (position buy #" + std::to_string(pos.buy_count) + ")");
@@ -319,7 +347,8 @@ int main(int argc, char** argv) {
                                 std::to_string(pos.wallet_lamports_spent) + "," + std::to_string(*wallet_delta) +
                                 "," + std::to_string(wallet_pnl_sol) + "," + std::to_string(pos.our_lamports_spent) +
                                 "," + std::to_string(static_cast<int64_t>(our_proceeds)) + "," +
-                                std::to_string(our_pnl_sol));
+                                std::to_string(our_pnl_sol) + "," + (pos.would_have_reverted ? "1" : "0") + "," +
+                                std::to_string(kCollectorVersion));
                     }
                 }
             }

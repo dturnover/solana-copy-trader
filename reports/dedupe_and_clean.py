@@ -56,4 +56,16 @@ if n_blow:
           f"(mean {blow['our_pnl_sol'].mean():+.3f}), wallet P&L {blow['wallet_pnl_sol'].sum():+.2f} SOL")
     print(f"  clean cohort  : our P&L {clean['our_pnl_sol'].sum():+.2f} SOL over {len(clean)} trades")
 
+# Collector v1 dropped any buy whose lag-delayed cost exceeded the wallet's
+# max_sol_cost bound, so v1 rows are a favourable-fills-only sample and must
+# not be pooled with v2 without saying so. Surface the split every merge.
+if "collector_version" in df.columns:
+    v1 = int((df["collector_version"] == 1).sum())
+    v2 = int((df["collector_version"] == 2).sum())
+    print(f"Collector versions: v1 (censored, favourable fills only) {v1}, v2 (complete) {v2}")
+    if v2:
+        rev = df[(df["collector_version"] == 2) & (df["would_have_reverted"] == 1)]
+        print(f"  v2 rows that would have reverted at the wallet's bound: {len(rev)}/{v2} "
+              f"({100.0 * len(rev) / v2:.1f}%), our P&L {rev['our_pnl_sol'].sum():+.2f} SOL")
+
 df.to_csv(path_out, index=False)
