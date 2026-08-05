@@ -52,6 +52,10 @@ FINAL_COLUMNS = [
     "incomplete_position",
     "entry_on_chain_age_ms",
     "sell_on_chain_age_ms",
+    "entry_signature",
+    "entry_block_time_ms",
+    "sell_block_time_ms",
+    "bonding_curve",
     "collector_version",
 ]
 
@@ -92,6 +96,13 @@ OPTIONAL_COLUMNS = {
     # is unknown -- not zero, and not 1.5s.
     "entry_on_chain_age_ms": float("nan"),
     "sell_on_chain_age_ms": float("nan"),
+    # Replay inputs. Historical rows lack the buy's signature entirely, so
+    # they can never be re-priced at a different lag -- only rows collected
+    # from here on are replayable.
+    "entry_signature": "",
+    "entry_block_time_ms": float("nan"),
+    "sell_block_time_ms": float("nan"),
+    "bonding_curve": "",
     "collector_version": 1,
 }
 
