@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Python deps
-        run: pip install --quiet pandas
+        run: pip install --quiet pandas numpy
 
       # Deliberately downloads *every* unexpired paper-trades-* artifact, not
       # just those newer than the dataset's last row. Artifact retention is
@@ -89,13 +89,18 @@ jobs:
           echo "== lag samples =="
           python3 reports/merge_lag_samples.py \
             reports/lag_samples_final.csv artifacts/lag reports/lag_samples_final.csv
+          echo
+          echo "== wallet scorecard =="
+          python3 reports/wallet_scorecard.py \
+            reports/paper_trades_final.csv reports/wallet_scorecard.csv
 
       # Every run re-reads every artifact, so most merges legitimately
       # produce no change (nothing new closed since last time). Committing
       # unconditionally would push an empty commit 4x/day.
       - name: Commit refreshed dataset
         run: |
-          if git diff --quiet -- reports/paper_trades_final.csv reports/lag_samples_final.csv; then
+          if git diff --quiet -- reports/paper_trades_final.csv reports/lag_samples_final.csv \
+                                 reports/wallet_scorecard.csv; then
             echo "No new closed trades since the last merge -- nothing to commit."
             exit 0
           fi
@@ -109,7 +114,7 @@ jobs:
           print(len(d), len(d) - b, b)")
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for f in reports/paper_trades_final.csv reports/lag_samples_final.csv; do
+          for f in reports/paper_trades_final.csv reports/lag_samples_final.csv reports/wallet_scorecard.csv; do
             [ -f "$f" ] && git add "$f"
           done
           LAG=0
