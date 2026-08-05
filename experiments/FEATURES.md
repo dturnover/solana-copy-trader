@@ -77,20 +77,30 @@ migration constants.
 
 ## Tier 1 — one extra RPC call per detected buy
 
-**This is not free on the current setup.** The collector already logs
-near-continuous `RateLimitExceeded` on the free Shyft tier; polls are failing
-across most wallets for hours at a time. Every added call per buy raises
-detection lag and loses more trades outright. Measure the hit before
-enabling — this is a direct trade against the ~17s detection lag that
-already dominates results.
+This section previously said these were too expensive to run, because the
+collector logs near-continuous `RateLimitExceeded` and every added call
+would worsen detection lag. **That reasoning was wrong by three orders of
+magnitude.** The numbers:
 
-| Feature | Source | Notes |
+| | calls/day |
+|---|---|
+| polling loop (22 wallets, every 2s) | ~950,400 |
+| detected buys | ~142 |
+| **one extra call per buy** | **+0.015%** |
+
+The rate-limit pressure comes from the polling loop, not from per-buy work.
+A risk check on the first buy of a position is effectively free. The genuine
+cost is latency, not quota: the poll loop is sequential, so an inline call
+delays the rest of that cycle — which argues for doing this work once per
+position, not per buy, and that is how it is implemented.
+
+| Feature | Source | Status |
 |---|---|---|
-| `holder_count` | `getTokenLargestAccounts` | Returns top 20 only; a true count needs `getProgramAccounts` (Tier 2). |
-| `top10_concentration` | `getTokenLargestAccounts` | Share of supply in the top 10. The core rug proxy for pump.fun. |
-| `dev_holding_pct` | Creator account balance | Dev still holding a large share = classic dump risk. |
-| `token_age_seconds` | Curve account creation slot | Very young tokens are a different regime entirely. |
-| `is_migrated` | `complete` flag | Gates every Raydium-only indicator in the table above. |
+| `entry_top10_holder_pct` | `getTokenLargestAccounts` | **Implemented.** Share of supply in the top 10 — the core rug proxy for a bonding-curve token. `-1` means the call failed, kept distinct from a genuinely unconcentrated token. |
+| `holder_count` | `getTokenLargestAccounts` | Capped at 20 by the RPC, so only a floor. A true count needs `getProgramAccounts` (Tier 2). |
+| `dev_holding_pct` | Creator account balance | Needs the creator pubkey, which the bonding-curve account does not carry — one more lookup to resolve it. |
+| `token_age_seconds` | Curve account creation slot | Needs the oldest signature for the curve, which is a paginated scan, not a single call. |
+| `is_migrated` | `complete` flag | Free — already decoded, just not yet logged. Gates every Raydium-only indicator above. |
 
 ## Tier 2 — expensive, defer
 
