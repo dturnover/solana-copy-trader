@@ -49,6 +49,13 @@ FINAL_COLUMNS = [
     "entry_token_total_supply",
     "entry_our_cost_lamports",
     "entry_top10_holder_pct",
+    "incomplete_position",
+    "entry_on_chain_age_ms",
+    "sell_on_chain_age_ms",
+    "entry_signature",
+    "entry_block_time_ms",
+    "sell_block_time_ms",
+    "bonding_curve",
     "collector_version",
 ]
 
@@ -80,6 +87,22 @@ OPTIONAL_COLUMNS = {
     "entry_token_total_supply": float("nan"),
     "entry_our_cost_lamports": float("nan"),
     "entry_top10_holder_pct": float("nan"),
+    # NaN, not 0: older rows were not immune to partial-position P&L, they
+    # were simply never checked for it. Claiming 0 would assert they are
+    # clean. dedupe_and_clean.py applies a proceeds-ratio heuristic to flag
+    # the historical ones approximately.
+    "incomplete_position": float("nan"),
+    # Never recorded before, so the true simulated lag of every historical row
+    # is unknown -- not zero, and not 1.5s.
+    "entry_on_chain_age_ms": float("nan"),
+    "sell_on_chain_age_ms": float("nan"),
+    # Replay inputs. Historical rows lack the buy's signature entirely, so
+    # they can never be re-priced at a different lag -- only rows collected
+    # from here on are replayable.
+    "entry_signature": "",
+    "entry_block_time_ms": float("nan"),
+    "sell_block_time_ms": float("nan"),
+    "bonding_curve": "",
     "collector_version": 1,
 }
 

@@ -47,6 +47,22 @@ df["fill_ratio"] = ratio
 # them from headline figures -- but visibly now, not silently.
 df["blowup"] = ~ratio.between(BLOWUP_LO, BLOWUP_HI)
 
+# Partial-position P&L. paper_trade treats any sell as fully closing the
+# position, so when rate-limited polls cause us to miss buys, the whole sale
+# proceeds are divided by only the fraction of the position we recorded --
+# manufacturing profits that never existed. The collector flags this directly
+# from token amounts (incomplete_position); rows predating that flag get this
+# proceeds-ratio proxy instead. A genuine memecoin round trip clearing 10x is
+# rare -- 0.3% of trades with a fully-tracked entry -- so a row above it is far
+# more likely to be a partial record than a 10-bagger.
+PARTIAL_PROCEEDS_RATIO = 10.0
+proceeds_ratio = df["wallet_lamports_received"] / df["wallet_lamports_spent"].replace(0, float("nan"))
+if "incomplete_position" not in df.columns:
+    df["incomplete_position"] = float("nan")
+inferred = (df["incomplete_position"].isna()) & (proceeds_ratio > PARTIAL_PROCEEDS_RATIO)
+df.loc[inferred, "incomplete_position"] = 1
+df["incomplete_position"] = df["incomplete_position"].fillna(0).astype(int)
+
 n_blow = int(df["blowup"].sum())
 print(f"Rows: {n0} -> deduped {n1} -> flagged {n_blow} blow-up fill(s), kept all {len(df)}")
 if n_blow:
@@ -74,5 +90,13 @@ if "collector_version" in df.columns:
             sell_rev = sub[sub["sell_would_have_reverted"] == 1]
             print(f"        {len(sell_rev)}/{len(sub)} ({100.0 * len(sell_rev) / len(sub):.1f}%) reverting SELLS, "
                   f"our P&L {sell_rev['our_pnl_sol'].sum():+.2f} SOL")
+
+n_partial = int(df["incomplete_position"].sum())
+if n_partial:
+    part = df[df["incomplete_position"] == 1]
+    print(f"Partial-position rows (missed buys -> P&L computed against a fraction of the "
+          f"position): {n_partial}/{len(df)} ({100.0 * n_partial / len(df):.1f}%)")
+    print(f"  they contribute wallet P&L {part['wallet_pnl_sol'].sum():+.2f} SOL against a "
+          f"dataset total of {df['wallet_pnl_sol'].sum():+.2f}")
 
 df.to_csv(path_out, index=False)

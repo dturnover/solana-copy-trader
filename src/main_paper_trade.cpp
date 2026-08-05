@@ -80,6 +80,20 @@ struct OpenPosition {
     // -1 means "not measured": the RPC call failed, and a failed risk check
     // must be distinguishable from a genuinely unconcentrated token.
     double entry_top10_holder_pct = -1.0;
+
+    // Staleness of the wallet's buy when we caught it. Added to
+    // execution_lag_ms, this is the real latency the fill was simulated at.
+    // -1 if blockTime was unavailable.
+    int64_t entry_on_chain_age_ms = -1;
+
+    // Identity and on-chain time of the FIRST buy. With the sell's, this is
+    // everything an offline replay needs to re-price the round trip at ANY
+    // target lag from transaction history -- which is how the sub-second
+    // question gets answered without owning sub-second infrastructure. The
+    // live-account fill simulated in this file is stuck at whatever latency
+    // the poller happened to have; a replay is not.
+    std::string entry_signature;
+    int64_t entry_block_time_ms = -1;
 };
 
 struct WalletStats {
@@ -132,7 +146,9 @@ void append_csv_row(const std::string& path, const std::string& row) {
              "would_have_reverted,sell_would_have_reverted,"
              "entry_virtual_sol_reserves,entry_virtual_token_reserves,entry_real_sol_reserves,"
              "entry_real_token_reserves,entry_token_total_supply,entry_our_cost_lamports,"
-             "entry_top10_holder_pct,collector_version\n";
+             "entry_top10_holder_pct,incomplete_position,entry_on_chain_age_ms,"
+             "sell_on_chain_age_ms,entry_signature,entry_block_time_ms,sell_block_time_ms,"
+             "bonding_curve,collector_version\n";
     }
     f << row << "\n";
 }
@@ -222,6 +238,19 @@ int main(int argc, char** argv) {
                 }
                 if (!tx_result) continue;
 
+                // How stale the trade already was when we caught it. This is
+                // the number that decides what execution lag a row actually
+                // represents, and paper_trade was not recording it while
+                // lag_experiment was -- which is why every row here has been
+                // read as "1.5s lag" when the true figure is
+                // on_chain_age_ms + execution_lag_ms.
+                int64_t block_time_ms = -1;
+                int64_t on_chain_age_ms = -1;
+                if (tx_result->contains("blockTime") && (*tx_result)["blockTime"].is_number()) {
+                    block_time_ms = (*tx_result)["blockTime"].get<int64_t>() * 1000;
+                    on_chain_age_ms = now_wall_ms() - block_time_ms;
+                }
+
                 auto trade = parsing::parse_json_transaction(*tx_result, wallet.pubkey, wallet.label,
                                                               sig_info.signature, detected_at);
                 if (!trade) continue;
@@ -302,6 +331,9 @@ int main(int argc, char** argv) {
                         pos.entry_real_token_reserves = state->real_token_reserves;
                         pos.entry_token_total_supply = state->token_total_supply;
                         pos.entry_our_cost_lamports = our_cost;
+                        pos.entry_on_chain_age_ms = on_chain_age_ms;
+                        pos.entry_signature = sig_info.signature;
+                        pos.entry_block_time_ms = block_time_ms;
 
                         // One extra RPC call, on the first buy of a position
                         // only. Costs ~0.015% on top of the polling loop's
@@ -371,6 +403,27 @@ int main(int argc, char** argv) {
                     }
 
                     OpenPosition pos = it->second; // treats any sell as fully closing -- see file header caveat
+
+                    // If they are selling materially MORE tokens than we saw
+                    // them buy, we missed buys -- routine, since rate-limited
+                    // polls drop signatures constantly. The damage is not a
+                    // missing row, it is a WRONG one: the full sale proceeds
+                    // get divided by only the fraction of the position we
+                    // recorded, manufacturing enormous phantom profits. On
+                    // data to 2026-08-05 this inflated 188 of 2422 rows by
+                    // +394 SOL against a true total of -92, i.e. every
+                    // positive headline in the dataset was this artifact.
+                    // Flagged, not dropped, per the rule the rest of this
+                    // file follows.
+                    bool incomplete_position =
+                        pos.wallet_token_amount > 0 &&
+                        trade->token_amount > pos.wallet_token_amount + pos.wallet_token_amount / 20;
+                    if (incomplete_position) {
+                        LOG_INFO(wallet.label + " SELL mint=" + trade->mint.to_base58() + " sold " +
+                                 std::to_string(trade->token_amount) + " tokens but we only tracked buys for " +
+                                 std::to_string(pos.wallet_token_amount) + " -- missed buys, P&L for this row is "
+                                 "computed against a partial position and is not trustworthy");
+                    }
                     open_positions.erase(it);
 
                     int64_t hold_ms = now_wall_ms() - pos.opened_at_ms;
@@ -419,7 +472,11 @@ int main(int argc, char** argv) {
                                 std::to_string(pos.entry_token_total_supply) + "," +
                                 std::to_string(pos.entry_our_cost_lamports) + "," +
                                 std::to_string(pos.entry_top10_holder_pct) + "," +
-                                std::to_string(kCollectorVersion));
+                                (incomplete_position ? "1" : "0") + "," +
+                                std::to_string(pos.entry_on_chain_age_ms) + "," +
+                                std::to_string(on_chain_age_ms) + "," + pos.entry_signature + "," +
+                                std::to_string(pos.entry_block_time_ms) + "," + std::to_string(block_time_ms) + "," +
+                                pos.bonding_curve.to_base58() + "," + std::to_string(kCollectorVersion));
                     }
                 }
             }
