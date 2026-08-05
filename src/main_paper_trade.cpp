@@ -72,6 +72,14 @@ struct OpenPosition {
     uint64_t entry_real_token_reserves = 0;
     uint64_t entry_token_total_supply = 0;
     double entry_our_cost_lamports = 0.0;  // first buy only; our_lamports_spent is cumulative
+
+    // Holder concentration at entry -- the rug indicator that actually
+    // applies to a bonding-curve token, unlike LP-burn or mint-authority
+    // checks (no LP token exists pre-migration, and pump.fun renounces mint
+    // and freeze authority at creation, so those are constants).
+    // -1 means "not measured": the RPC call failed, and a failed risk check
+    // must be distinguishable from a genuinely unconcentrated token.
+    double entry_top10_holder_pct = -1.0;
 };
 
 struct WalletStats {
@@ -124,7 +132,7 @@ void append_csv_row(const std::string& path, const std::string& row) {
              "would_have_reverted,sell_would_have_reverted,"
              "entry_virtual_sol_reserves,entry_virtual_token_reserves,entry_real_sol_reserves,"
              "entry_real_token_reserves,entry_token_total_supply,entry_our_cost_lamports,"
-             "collector_version\n";
+             "entry_top10_holder_pct,collector_version\n";
     }
     f << row << "\n";
 }
@@ -294,6 +302,19 @@ int main(int argc, char** argv) {
                         pos.entry_real_token_reserves = state->real_token_reserves;
                         pos.entry_token_total_supply = state->token_total_supply;
                         pos.entry_our_cost_lamports = our_cost;
+
+                        // One extra RPC call, on the first buy of a position
+                        // only. Costs ~0.015% on top of the polling loop's
+                        // ~950k calls/day, so the rate-limit pressure this
+                        // job suffers comes from polling 22 wallets every 2s,
+                        // not from here.
+                        auto largest = client.get_token_largest_accounts(trade->mint.to_base58());
+                        if (!largest.empty() && state->token_total_supply > 0) {
+                            uint64_t top10 = 0;
+                            for (size_t k = 0; k < largest.size() && k < 10; ++k) top10 += largest[k];
+                            pos.entry_top10_holder_pct =
+                                100.0 * static_cast<double>(top10) / static_cast<double>(state->token_total_supply);
+                        }
                     }
 
                     LOG_INFO(wallet.label + " BUY mint=" + trade->mint.to_base58() +
@@ -397,6 +418,7 @@ int main(int argc, char** argv) {
                                 std::to_string(pos.entry_real_token_reserves) + "," +
                                 std::to_string(pos.entry_token_total_supply) + "," +
                                 std::to_string(pos.entry_our_cost_lamports) + "," +
+                                std::to_string(pos.entry_top10_holder_pct) + "," +
                                 std::to_string(kCollectorVersion));
                     }
                 }

@@ -42,6 +42,14 @@ public:
     // the account doesn't exist.
     std::optional<std::vector<uint8_t>> get_account_info(const std::string& pubkey_base58);
 
+    // Largest token accounts for a mint, as raw amounts, descending. The RPC
+    // caps this at 20 regardless of what is asked for, so it supports
+    // top-N-concentration but NOT a true holder count -- that needs
+    // getProgramAccounts, which is heavy and often disabled on free tiers.
+    // Empty vector on any error: a risk check that cannot be computed must
+    // not take the trade down with it.
+    std::vector<uint64_t> get_token_largest_accounts(const std::string& mint_base58);
+
 private:
     nlohmann::json call(const std::string& method, const nlohmann::json& params);
 

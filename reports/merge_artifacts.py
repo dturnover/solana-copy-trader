@@ -48,6 +48,7 @@ FINAL_COLUMNS = [
     "entry_real_token_reserves",
     "entry_token_total_supply",
     "entry_our_cost_lamports",
+    "entry_top10_holder_pct",
     "collector_version",
 ]
 
@@ -78,6 +79,7 @@ OPTIONAL_COLUMNS = {
     "entry_real_token_reserves": float("nan"),
     "entry_token_total_supply": float("nan"),
     "entry_our_cost_lamports": float("nan"),
+    "entry_top10_holder_pct": float("nan"),
     "collector_version": 1,
 }
 

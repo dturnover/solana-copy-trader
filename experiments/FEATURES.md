@@ -140,3 +140,60 @@ day of training data that cannot be reconstructed. Build the pipe now, train
 when there is something worth training on — and train only on
 `collector_version >= 3`, since earlier rows are a censored sample whose
 drop rate varies by wallet.
+
+## Hold duration — measured, and it is a wallet feature, not a trade feature
+
+Requested on the hunch that longer holds are more solid. The data supports
+it at trade level, strongly:
+
+| wallet's hold time | n | their P&L | mean | win rate |
+|---|---|---|---|---|
+| < 10s | 844 | −205.45 | −0.243 | 25.0% |
+| 10–30s | 758 | −37.15 | −0.049 | 30.6% |
+| 30–60s | 295 | **+39.52** | +0.134 | 42.7% |
+| 1–5m | 382 | **+106.62** | +0.279 | 48.2% |
+| 5–30m | 112 | +1.94 | +0.017 | 42.9% |
+| > 30m | 31 | +2.66 | +0.086 | 32.3% |
+
+Split at 30 seconds: trades held under it lose 242.59 SOL, trades held over
+it make 150.73. Every loss in this dataset lives in the fast flips.
+
+**But hold time cannot be a feature of the copy/skip model.** It is not
+known until the position closes — using it is precisely the leakage this
+document warns about. It is only usable in two legitimate forms:
+
+1. **The wallet's historical median hold**, known before any given buy.
+2. As an explanation of *why* certain wallets are uncopyable, below.
+
+### The mechanism: we arrive after they have already left
+
+Effective execution lag on the free tier is ~18.5s (≈17s detection + 1.5s
+configured). A wallet whose median hold is *shorter than that* has already
+exited before our buy would land. We are not copying them; we are their exit
+liquidity.
+
+Splitting wallets on that threshold separates the book almost perfectly:
+
+| wallets | median hold | trades | their P&L |
+|---|---|---|---|
+| Felix, Insyder, KOREAN, Kadenox, Monki, Sheep, Tom | < 20s | 1420 | **−403.09** |
+| Cope, Dedmeow5, Doji, Zuki, theo | ≥ 20s | 920 | **+301.15** |
+
+`wallet_median_hold_seconds` is therefore a first-class decision-time
+feature, computed from the wallet's own prior closed trades. Its natural
+companion is `wallet_median_hold / execution_lag` — a ratio below ~1 means
+the trade is mechanically uncopyable at current latency.
+
+Note this is a *trade-level* effect, not a claim that slow wallets are good
+traders: across wallets the rank correlation between median hold and mean
+P&L is only 0.14, and Dedmeow5 holds longest of all while losing money.
+
+### A caveat this dataset cannot answer
+
+`position_timeout_minutes: 180` abandons any position open longer than three
+hours, and abandoned positions are never written. So the dataset is censored
+on exactly the dimension being asked about, and cannot show whether holds
+beyond three hours are better still. No position currently comes near the
+cutoff (longest observed: 2.7h, and only 31 trades exceed 30 minutes), so it
+is not biting yet — but raise the timeout before concluding anything about
+long holds.

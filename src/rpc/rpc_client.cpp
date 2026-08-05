@@ -1,5 +1,7 @@
 #include "rpc/rpc_client.h"
 
+#include "util/logging.h"
+
 #include <algorithm>
 #include <stdexcept>
 
@@ -126,6 +128,34 @@ std::optional<std::vector<uint8_t>> RpcClient::get_account_info(const std::strin
     if (!value["data"][0].is_string()) return std::nullopt;
 
     return solana::base64_decode(value["data"][0].get<std::string>());
+}
+
+std::vector<uint64_t> RpcClient::get_token_largest_accounts(const std::string& mint_base58) {
+    std::vector<uint64_t> amounts;
+    nlohmann::json params = nlohmann::json::array({mint_base58, {{"commitment", "processed"}}});
+
+    nlohmann::json response;
+    try {
+        response = call("getTokenLargestAccounts", params);
+    } catch (const std::exception& e) {
+        // Rate limits are routine on the free tier. A missing risk figure is
+        // recoverable; losing the observation is not.
+        LOG_WARN(std::string("getTokenLargestAccounts failed for ") + mint_base58 + ": " + e.what());
+        return amounts;
+    }
+    if (!response.contains("result") || response["result"].is_null()) return amounts;
+    const auto& result = response["result"];
+    if (!result.contains("value") || !result["value"].is_array()) return amounts;
+
+    for (const auto& entry : result["value"]) {
+        if (!entry.contains("amount") || !entry["amount"].is_string()) continue;
+        try {
+            amounts.push_back(std::stoull(entry["amount"].get<std::string>()));
+        } catch (const std::exception&) {
+            continue; // malformed entry, skip it rather than abandoning the rest
+        }
+    }
+    return amounts;
 }
 
 } // namespace rpc
