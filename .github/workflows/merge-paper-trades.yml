@@ -1,7 +1,8 @@
 name: Merge Paper Trades
 
-# Folds paper-trade.yml's uploaded artifacts into the committed dataset at
-# reports/paper_trades_final.csv.
+# Folds paper-trade.yml's and lag-experiment.yml's uploaded artifacts into the
+# committed datasets at reports/paper_trades_final.csv and
+# reports/lag_samples_final.csv.
 #
 # paper-trade.yml only uploads its CSV as a build artifact, which expires
 # after 90 days and can't be queried as data. Until 2026-08 the dataset was
@@ -13,7 +14,7 @@ on:
   # Fires when a Paper Trade run finishes, so the dataset tracks the
   # pipeline without anyone remembering to merge.
   workflow_run:
-    workflows: ["Paper Trade"]
+    workflows: ["Paper Trade", "Lag Experiment"]
     types: [completed]
   workflow_dispatch: {}
 
@@ -52,39 +53,49 @@ jobs:
       # on the next merge instead of being lost for good. Filtering by date
       # would reintroduce exactly the silent-gap failure this workflow exists
       # to prevent.
-      - name: Download paper-trade artifacts
+      - name: Download artifacts
         run: |
-          mkdir -p artifacts
-          gh api --paginate "repos/$REPO/actions/artifacts" \
-            --jq '.artifacts[] | select(.name | startswith("paper-trades-")) | select(.expired == false) | .id' \
-            > artifact_ids.txt
-          echo "Found $(wc -l < artifact_ids.txt) unexpired paper-trades-* artifact(s)"
-          while read -r id; do
-            [ -z "$id" ] && continue
+          mkdir -p artifacts/paper artifacts/lag
+          download_set() {
+            prefix="$1"; dest="$2"
+            gh api --paginate "repos/$REPO/actions/artifacts" \
+              --jq ".artifacts[] | select(.name | startswith(\"$prefix\")) | select(.expired == false) | .id" \
+              > "ids_${dest}.txt"
+            echo "Found $(wc -l < "ids_${dest}.txt") unexpired ${prefix}* artifact(s)"
             # A single artifact failing to download (transient 5xx, or one
             # that expired between the listing above and now) must not sink
             # the whole merge -- the rest still carry recoverable data.
-            if gh api "repos/$REPO/actions/artifacts/$id/zip" > "artifacts/$id.zip" 2>/dev/null; then
-              unzip -o -q "artifacts/$id.zip" -d "artifacts/$id" && rm -f "artifacts/$id.zip"
-            else
-              echo "  WARN: artifact $id could not be downloaded, skipping"
-              rm -f "artifacts/$id.zip"
-            fi
-          done < artifact_ids.txt
+            while read -r id; do
+              [ -z "$id" ] && continue
+              if gh api "repos/$REPO/actions/artifacts/$id/zip" > "artifacts/$id.zip" 2>/dev/null; then
+                unzip -o -q "artifacts/$id.zip" -d "artifacts/$dest/$id" && rm -f "artifacts/$id.zip"
+              else
+                echo "  WARN: artifact $id could not be downloaded, skipping"
+                rm -f "artifacts/$id.zip"
+              fi
+            done < "ids_${dest}.txt"
+          }
+          download_set "paper-trades-" paper
+          download_set "lag-samples-" lag
 
-      - name: Merge artifacts into dataset
+      - name: Merge artifacts into datasets
         run: |
+          echo "== paper trades =="
           python3 reports/merge_artifacts.py \
-            reports/paper_trades_final.csv artifacts /tmp/combined_raw.csv
+            reports/paper_trades_final.csv artifacts/paper /tmp/combined_raw.csv
           python3 reports/dedupe_and_clean.py \
             /tmp/combined_raw.csv reports/paper_trades_final.csv
+          echo
+          echo "== lag samples =="
+          python3 reports/merge_lag_samples.py \
+            reports/lag_samples_final.csv artifacts/lag reports/lag_samples_final.csv
 
       # Every run re-reads every artifact, so most merges legitimately
       # produce no change (nothing new closed since last time). Committing
       # unconditionally would push an empty commit 4x/day.
       - name: Commit refreshed dataset
         run: |
-          if git diff --quiet -- reports/paper_trades_final.csv; then
+          if git diff --quiet -- reports/paper_trades_final.csv reports/lag_samples_final.csv; then
             echo "No new closed trades since the last merge -- nothing to commit."
             exit 0
           fi
@@ -98,8 +109,12 @@ jobs:
           print(len(d), len(d) - b, b)")
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports/paper_trades_final.csv
-          git commit -m "Refresh paper-trade dataset: ${TOTAL} closed trades (${CLEAN} clean, ${BLOW} blow-up) [skip ci]"
+          for f in reports/paper_trades_final.csv reports/lag_samples_final.csv; do
+            [ -f "$f" ] && git add "$f"
+          done
+          LAG=0
+          [ -f reports/lag_samples_final.csv ] && LAG=$(($(wc -l < reports/lag_samples_final.csv) - 1))
+          git commit -m "Refresh datasets: ${TOTAL} closed trades (${CLEAN} clean, ${BLOW} blow-up), ${LAG} lag samples [skip ci]"
           # The scheduled paper-trade.yml pushes nothing, but a concurrent
           # manual commit to this branch would make a bare push fail; rebase
           # onto whatever landed rather than dropping this merge.

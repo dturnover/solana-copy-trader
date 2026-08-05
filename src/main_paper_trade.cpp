@@ -82,10 +82,14 @@ void report_stats(const std::string& label, const WalletStats& s) {
 // accident. v1 (implicit -- the column does not exist in those files) silently
 // dropped any buy whose lag-delayed cost exceeded the wallet's max_sol_cost
 // bound, so v1 rows are a favourable-fills-only sample. v2 records those buys
-// and flags them via would_have_reverted, so v2 is the complete population.
+// and flags them via would_have_reverted -- but still dropped entire round
+// trips whose SELL fell through the wallet's min_sol_output bound, leaving the
+// position to age out as "abandoned". Those were the losing exits, so v2 is
+// still optimistic. v3 records them too, via sell_would_have_reverted, and is
+// the first genuinely complete population.
 // Bump this whenever a change alters WHICH round trips get written, not merely
 // what is computed for them.
-constexpr int kCollectorVersion = 2;
+constexpr int kCollectorVersion = 3;
 
 void append_csv_row(const std::string& path, const std::string& row) {
     std::error_code ec;
@@ -101,7 +105,7 @@ void append_csv_row(const std::string& path, const std::string& row) {
         f << "epoch_ms,wallet_label,mint,sell_signature,buy_count,hold_duration_ms,wallet_token_amount,"
              "wallet_lamports_spent,wallet_lamports_received,wallet_pnl_sol,"
              "our_lamports_spent,our_lamports_received,our_pnl_sol,"
-             "would_have_reverted,collector_version\n";
+             "would_have_reverted,sell_would_have_reverted,collector_version\n";
     }
     f << row << "\n";
 }
@@ -292,19 +296,28 @@ int main(int argc, char** argv) {
                         *state, static_cast<double>(trade->token_amount));
                     if (our_proceeds <= 0) continue;
 
-                    // Ground truth, not a heuristic: trade->sol_amount is the
-                    // wallet's own on-chain min_sol_output bound for this
-                    // exact sell. If our lag-delayed proceeds would fall
-                    // short of it, a real copy transaction using the same
-                    // bound would revert -- we'd still be holding the
-                    // position, not exiting at a terrible price. Leave the
-                    // position open (don't close it) rather than record a
-                    // nonsensical proceeds figure.
-                    if (our_proceeds < static_cast<double>(trade->sol_amount)) {
+                    // trade->sol_amount is the wallet's own on-chain
+                    // min_sol_output bound for this exact sell. If our
+                    // lag-delayed proceeds fall short of it, a copy tx reusing
+                    // that bound would revert and we would still be holding.
+                    //
+                    // This used to `continue`, leaving the position open --
+                    // which meant the round trip was NEVER written at all; it
+                    // just aged out as "abandoned". Same one-sided censoring
+                    // as the buy path, and strictly worse: a sell reverts
+                    // exactly when the price fell through the wallet's floor
+                    // during our lag, so the exits being dropped were the
+                    // losing exits. Every bad exit silently left the dataset.
+                    //
+                    // Record and flag it. Filtering these back out reproduces
+                    // the old bound-respecting behaviour; keeping them shows
+                    // what a bot that actually had to get out would have
+                    // eaten.
+                    bool sell_would_revert = our_proceeds < static_cast<double>(trade->sol_amount);
+                    if (sell_would_revert) {
                         LOG_INFO(wallet.label + " SELL mint=" + trade->mint.to_base58() +
-                                 " would have FAILED on-chain (price moved past their min_sol_output bound) -- "
-                                 "position stays open");
-                        continue;
+                                 " would have REVERTED on-chain at the wallet's own min_sol_output bound "
+                                 "(price fell past it during our lag) -- recorded and flagged, not skipped");
                     }
 
                     OpenPosition pos = it->second; // treats any sell as fully closing -- see file header caveat
@@ -348,7 +361,7 @@ int main(int argc, char** argv) {
                                 "," + std::to_string(wallet_pnl_sol) + "," + std::to_string(pos.our_lamports_spent) +
                                 "," + std::to_string(static_cast<int64_t>(our_proceeds)) + "," +
                                 std::to_string(our_pnl_sol) + "," + (pos.would_have_reverted ? "1" : "0") + "," +
-                                std::to_string(kCollectorVersion));
+                                (sell_would_revert ? "1" : "0") + "," + std::to_string(kCollectorVersion));
                     }
                 }
             }

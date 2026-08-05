@@ -41,6 +41,7 @@ FINAL_COLUMNS = [
     "our_pnl_sol",
     "sell_signature",
     "would_have_reverted",
+    "sell_would_have_reverted",
     "collector_version",
 ]
 
@@ -51,10 +52,15 @@ FINAL_COLUMNS = [
 #                          separate branch keyed on wallet/mint/lamports.
 #   would_have_reverted -- v1 dropped reverting buys outright, so every row it
 #                          did write executed within the wallet's bound: 0.
+#   sell_would_have_reverted -- v1 and v2 never closed a position whose sell
+#                          breached the bound, so every row they wrote had a
+#                          clean exit: 0. (The dropped ones aren't recoverable
+#                          -- they were never written at all.)
 #   collector_version   -- absent IS the v1 marker (v1 never wrote the column).
 OPTIONAL_COLUMNS = {
     "sell_signature": "",
     "would_have_reverted": 0,
+    "sell_would_have_reverted": 0,
     "collector_version": 1,
 }
 
