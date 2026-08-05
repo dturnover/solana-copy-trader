@@ -42,6 +42,12 @@ FINAL_COLUMNS = [
     "sell_signature",
     "would_have_reverted",
     "sell_would_have_reverted",
+    "entry_virtual_sol_reserves",
+    "entry_virtual_token_reserves",
+    "entry_real_sol_reserves",
+    "entry_real_token_reserves",
+    "entry_token_total_supply",
+    "entry_our_cost_lamports",
     "collector_version",
 ]
 
@@ -61,6 +67,17 @@ OPTIONAL_COLUMNS = {
     "sell_signature": "",
     "would_have_reverted": 0,
     "sell_would_have_reverted": 0,
+    # Decision-time curve snapshot for the classifier (see
+    # experiments/FEATURES.md). NaN, not 0, for rows collected before these
+    # existed: 0 would read as "a pool with no liquidity", which is a
+    # meaningful and wrong value. NaN is the honest "not recorded", and
+    # LightGBM handles it natively.
+    "entry_virtual_sol_reserves": float("nan"),
+    "entry_virtual_token_reserves": float("nan"),
+    "entry_real_sol_reserves": float("nan"),
+    "entry_real_token_reserves": float("nan"),
+    "entry_token_total_supply": float("nan"),
+    "entry_our_cost_lamports": float("nan"),
     "collector_version": 1,
 }
 

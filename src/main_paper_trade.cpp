@@ -57,6 +57,21 @@ struct OpenPosition {
     // had already moved past that bound by the time our lag elapsed. Recorded
     // rather than skipped; see the buy path for why.
     bool would_have_reverted = false;
+
+    // Decision-time snapshot: the bonding curve exactly as it stood when we
+    // would have entered, captured on the FIRST buy only. Everything a
+    // "should we copy this?" model is allowed to know is fixed at that
+    // instant -- anything sampled later (including at close) leaks the
+    // outcome. Raw reserves are logged rather than derived ratios so the
+    // feature layer can define liquidity / curve progress / impact without
+    // this file hardcoding pump.fun's migration constants.
+    bool entry_captured = false;
+    uint64_t entry_virtual_sol_reserves = 0;
+    uint64_t entry_virtual_token_reserves = 0;
+    uint64_t entry_real_sol_reserves = 0;
+    uint64_t entry_real_token_reserves = 0;
+    uint64_t entry_token_total_supply = 0;
+    double entry_our_cost_lamports = 0.0;  // first buy only; our_lamports_spent is cumulative
 };
 
 struct WalletStats {
@@ -88,7 +103,8 @@ void report_stats(const std::string& label, const WalletStats& s) {
 // still optimistic. v3 records them too, via sell_would_have_reverted, and is
 // the first genuinely complete population.
 // Bump this whenever a change alters WHICH round trips get written, not merely
-// what is computed for them.
+// what is computed for them -- so adding the entry_* feature columns below did
+// NOT bump it: the same rows are written, with more recorded about each.
 constexpr int kCollectorVersion = 3;
 
 void append_csv_row(const std::string& path, const std::string& row) {
@@ -105,7 +121,10 @@ void append_csv_row(const std::string& path, const std::string& row) {
         f << "epoch_ms,wallet_label,mint,sell_signature,buy_count,hold_duration_ms,wallet_token_amount,"
              "wallet_lamports_spent,wallet_lamports_received,wallet_pnl_sol,"
              "our_lamports_spent,our_lamports_received,our_pnl_sol,"
-             "would_have_reverted,sell_would_have_reverted,collector_version\n";
+             "would_have_reverted,sell_would_have_reverted,"
+             "entry_virtual_sol_reserves,entry_virtual_token_reserves,entry_real_sol_reserves,"
+             "entry_real_token_reserves,entry_token_total_supply,entry_our_cost_lamports,"
+             "collector_version\n";
     }
     f << row << "\n";
 }
@@ -267,6 +286,16 @@ int main(int argc, char** argv) {
                     pos.bonding_curve = trade->bonding_curve;
                     pos.would_have_reverted = pos.would_have_reverted || buy_would_revert;
 
+                    if (!pos.entry_captured) {
+                        pos.entry_captured = true;
+                        pos.entry_virtual_sol_reserves = state->virtual_sol_reserves;
+                        pos.entry_virtual_token_reserves = state->virtual_token_reserves;
+                        pos.entry_real_sol_reserves = state->real_sol_reserves;
+                        pos.entry_real_token_reserves = state->real_token_reserves;
+                        pos.entry_token_total_supply = state->token_total_supply;
+                        pos.entry_our_cost_lamports = our_cost;
+                    }
+
                     LOG_INFO(wallet.label + " BUY mint=" + trade->mint.to_base58() +
                              " (position buy #" + std::to_string(pos.buy_count) + ")");
 
@@ -361,7 +390,14 @@ int main(int argc, char** argv) {
                                 "," + std::to_string(wallet_pnl_sol) + "," + std::to_string(pos.our_lamports_spent) +
                                 "," + std::to_string(static_cast<int64_t>(our_proceeds)) + "," +
                                 std::to_string(our_pnl_sol) + "," + (pos.would_have_reverted ? "1" : "0") + "," +
-                                (sell_would_revert ? "1" : "0") + "," + std::to_string(kCollectorVersion));
+                                (sell_would_revert ? "1" : "0") + "," +
+                                std::to_string(pos.entry_virtual_sol_reserves) + "," +
+                                std::to_string(pos.entry_virtual_token_reserves) + "," +
+                                std::to_string(pos.entry_real_sol_reserves) + "," +
+                                std::to_string(pos.entry_real_token_reserves) + "," +
+                                std::to_string(pos.entry_token_total_supply) + "," +
+                                std::to_string(pos.entry_our_cost_lamports) + "," +
+                                std::to_string(kCollectorVersion));
                     }
                 }
             }
