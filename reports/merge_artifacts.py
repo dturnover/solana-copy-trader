@@ -49,6 +49,7 @@ FINAL_COLUMNS = [
     "entry_token_total_supply",
     "entry_our_cost_lamports",
     "entry_top10_holder_pct",
+    "incomplete_position",
     "collector_version",
 ]
 
@@ -80,6 +81,11 @@ OPTIONAL_COLUMNS = {
     "entry_token_total_supply": float("nan"),
     "entry_our_cost_lamports": float("nan"),
     "entry_top10_holder_pct": float("nan"),
+    # NaN, not 0: older rows were not immune to partial-position P&L, they
+    # were simply never checked for it. Claiming 0 would assert they are
+    # clean. dedupe_and_clean.py applies a proceeds-ratio heuristic to flag
+    # the historical ones approximately.
+    "incomplete_position": float("nan"),
     "collector_version": 1,
 }
 

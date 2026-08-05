@@ -132,7 +132,7 @@ void append_csv_row(const std::string& path, const std::string& row) {
              "would_have_reverted,sell_would_have_reverted,"
              "entry_virtual_sol_reserves,entry_virtual_token_reserves,entry_real_sol_reserves,"
              "entry_real_token_reserves,entry_token_total_supply,entry_our_cost_lamports,"
-             "entry_top10_holder_pct,collector_version\n";
+             "entry_top10_holder_pct,incomplete_position,collector_version\n";
     }
     f << row << "\n";
 }
@@ -371,6 +371,27 @@ int main(int argc, char** argv) {
                     }
 
                     OpenPosition pos = it->second; // treats any sell as fully closing -- see file header caveat
+
+                    // If they are selling materially MORE tokens than we saw
+                    // them buy, we missed buys -- routine, since rate-limited
+                    // polls drop signatures constantly. The damage is not a
+                    // missing row, it is a WRONG one: the full sale proceeds
+                    // get divided by only the fraction of the position we
+                    // recorded, manufacturing enormous phantom profits. On
+                    // data to 2026-08-05 this inflated 188 of 2422 rows by
+                    // +394 SOL against a true total of -92, i.e. every
+                    // positive headline in the dataset was this artifact.
+                    // Flagged, not dropped, per the rule the rest of this
+                    // file follows.
+                    bool incomplete_position =
+                        pos.wallet_token_amount > 0 &&
+                        trade->token_amount > pos.wallet_token_amount + pos.wallet_token_amount / 20;
+                    if (incomplete_position) {
+                        LOG_INFO(wallet.label + " SELL mint=" + trade->mint.to_base58() + " sold " +
+                                 std::to_string(trade->token_amount) + " tokens but we only tracked buys for " +
+                                 std::to_string(pos.wallet_token_amount) + " -- missed buys, P&L for this row is "
+                                 "computed against a partial position and is not trustworthy");
+                    }
                     open_positions.erase(it);
 
                     int64_t hold_ms = now_wall_ms() - pos.opened_at_ms;
@@ -419,7 +440,7 @@ int main(int argc, char** argv) {
                                 std::to_string(pos.entry_token_total_supply) + "," +
                                 std::to_string(pos.entry_our_cost_lamports) + "," +
                                 std::to_string(pos.entry_top10_holder_pct) + "," +
-                                std::to_string(kCollectorVersion));
+                                (incomplete_position ? "1" : "0") + "," + std::to_string(kCollectorVersion));
                     }
                 }
             }
