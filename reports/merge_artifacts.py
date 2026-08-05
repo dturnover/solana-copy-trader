@@ -50,6 +50,8 @@ FINAL_COLUMNS = [
     "entry_our_cost_lamports",
     "entry_top10_holder_pct",
     "incomplete_position",
+    "entry_on_chain_age_ms",
+    "sell_on_chain_age_ms",
     "collector_version",
 ]
 
@@ -86,6 +88,10 @@ OPTIONAL_COLUMNS = {
     # clean. dedupe_and_clean.py applies a proceeds-ratio heuristic to flag
     # the historical ones approximately.
     "incomplete_position": float("nan"),
+    # Never recorded before, so the true simulated lag of every historical row
+    # is unknown -- not zero, and not 1.5s.
+    "entry_on_chain_age_ms": float("nan"),
+    "sell_on_chain_age_ms": float("nan"),
     "collector_version": 1,
 }
 

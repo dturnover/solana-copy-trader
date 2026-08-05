@@ -80,6 +80,11 @@ struct OpenPosition {
     // -1 means "not measured": the RPC call failed, and a failed risk check
     // must be distinguishable from a genuinely unconcentrated token.
     double entry_top10_holder_pct = -1.0;
+
+    // Staleness of the wallet's buy when we caught it. Added to
+    // execution_lag_ms, this is the real latency the fill was simulated at.
+    // -1 if blockTime was unavailable.
+    int64_t entry_on_chain_age_ms = -1;
 };
 
 struct WalletStats {
@@ -132,7 +137,8 @@ void append_csv_row(const std::string& path, const std::string& row) {
              "would_have_reverted,sell_would_have_reverted,"
              "entry_virtual_sol_reserves,entry_virtual_token_reserves,entry_real_sol_reserves,"
              "entry_real_token_reserves,entry_token_total_supply,entry_our_cost_lamports,"
-             "entry_top10_holder_pct,incomplete_position,collector_version\n";
+             "entry_top10_holder_pct,incomplete_position,entry_on_chain_age_ms,"
+             "sell_on_chain_age_ms,collector_version\n";
     }
     f << row << "\n";
 }
@@ -222,6 +228,17 @@ int main(int argc, char** argv) {
                 }
                 if (!tx_result) continue;
 
+                // How stale the trade already was when we caught it. This is
+                // the number that decides what execution lag a row actually
+                // represents, and paper_trade was not recording it while
+                // lag_experiment was -- which is why every row here has been
+                // read as "1.5s lag" when the true figure is
+                // on_chain_age_ms + execution_lag_ms.
+                int64_t on_chain_age_ms = -1;
+                if (tx_result->contains("blockTime") && (*tx_result)["blockTime"].is_number()) {
+                    on_chain_age_ms = now_wall_ms() - (*tx_result)["blockTime"].get<int64_t>() * 1000;
+                }
+
                 auto trade = parsing::parse_json_transaction(*tx_result, wallet.pubkey, wallet.label,
                                                               sig_info.signature, detected_at);
                 if (!trade) continue;
@@ -302,6 +319,7 @@ int main(int argc, char** argv) {
                         pos.entry_real_token_reserves = state->real_token_reserves;
                         pos.entry_token_total_supply = state->token_total_supply;
                         pos.entry_our_cost_lamports = our_cost;
+                        pos.entry_on_chain_age_ms = on_chain_age_ms;
 
                         // One extra RPC call, on the first buy of a position
                         // only. Costs ~0.015% on top of the polling loop's
@@ -440,7 +458,9 @@ int main(int argc, char** argv) {
                                 std::to_string(pos.entry_token_total_supply) + "," +
                                 std::to_string(pos.entry_our_cost_lamports) + "," +
                                 std::to_string(pos.entry_top10_holder_pct) + "," +
-                                (incomplete_position ? "1" : "0") + "," + std::to_string(kCollectorVersion));
+                                (incomplete_position ? "1" : "0") + "," +
+                                std::to_string(pos.entry_on_chain_age_ms) + "," +
+                                std::to_string(on_chain_age_ms) + "," + std::to_string(kCollectorVersion));
                     }
                 }
             }
