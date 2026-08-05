@@ -60,12 +60,19 @@ if n_blow:
 # max_sol_cost bound, so v1 rows are a favourable-fills-only sample and must
 # not be pooled with v2 without saying so. Surface the split every merge.
 if "collector_version" in df.columns:
-    v1 = int((df["collector_version"] == 1).sum())
-    v2 = int((df["collector_version"] == 2).sum())
-    print(f"Collector versions: v1 (censored, favourable fills only) {v1}, v2 (complete) {v2}")
-    if v2:
-        rev = df[(df["collector_version"] == 2) & (df["would_have_reverted"] == 1)]
-        print(f"  v2 rows that would have reverted at the wallet's bound: {len(rev)}/{v2} "
-              f"({100.0 * len(rev) / v2:.1f}%), our P&L {rev['our_pnl_sol'].sum():+.2f} SOL")
+    counts = df["collector_version"].value_counts().sort_index()
+    print("Collector versions: " + ", ".join(f"v{int(k)}={int(v)}" for k, v in counts.items()))
+    for ver, complete in ((2, False), (3, True)):
+        sub = df[df["collector_version"] == ver]
+        if sub.empty:
+            continue
+        buy_rev = sub[sub["would_have_reverted"] == 1]
+        print(f"  v{ver} ({'complete' if complete else 'buy-side fixed, sell-side still censored'}): "
+              f"{len(buy_rev)}/{len(sub)} ({100.0 * len(buy_rev) / len(sub):.1f}%) reverting BUYS, "
+              f"our P&L {buy_rev['our_pnl_sol'].sum():+.2f} SOL")
+        if complete:
+            sell_rev = sub[sub["sell_would_have_reverted"] == 1]
+            print(f"        {len(sell_rev)}/{len(sub)} ({100.0 * len(sell_rev) / len(sub):.1f}%) reverting SELLS, "
+                  f"our P&L {sell_rev['our_pnl_sol'].sum():+.2f} SOL")
 
 df.to_csv(path_out, index=False)
