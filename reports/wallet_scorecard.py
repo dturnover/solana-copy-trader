@@ -68,15 +68,34 @@ def main():
                "--min-collector-version to score only complete data once enough exists.")
     ap.add_argument("csv", nargs="?", default="reports/paper_trades_final.csv")
     ap.add_argument("out", nargs="?", default="reports/wallet_scorecard.csv")
-    ap.add_argument("--min-collector-version", type=int, default=1)
+    ap.add_argument("--min-collector-version", type=int, default=None,
+                    help="default: the highest version present in the data")
     args = ap.parse_args()
 
     df = pd.read_csv(args.csv)
     if "collector_version" not in df.columns:
         df["collector_version"] = 1
-    df = df[df["collector_version"] >= args.min_collector_version]
+
+    # Default to the newest collector version present rather than everything.
+    # Earlier versions dropped whole round trips, and the drop rate tracks how
+    # volatile each wallet's tokens are -- so pooling versions does not merely
+    # add noise, it reorders the ranking this script exists to produce. Mixing
+    # them silently is how every headline number in this repo came out wrong.
+    available = sorted(int(v) for v in df["collector_version"].unique())
+    floor = args.min_collector_version if args.min_collector_version is not None else available[-1]
+    df = df[df["collector_version"] >= floor]
     if df.empty:
-        sys.exit(f"No rows at collector_version >= {args.min_collector_version}")
+        sys.exit(f"No rows at collector_version >= {floor}")
+
+    if floor < 3:
+        present = ", ".join("v%d" % v for v in available)
+        print(
+            f"!! Scoring collector v{floor}+ -- a CENSORED sample. v1 dropped reverting buys AND\n"
+            f"!! sells; v2 still dropped reverting sells. The drop rate varies by wallet, so these\n"
+            f"!! rankings are distorted, not merely noisy. Provisional until v3 data exists.\n"
+            f"!! (versions present: {present})\n",
+            file=sys.stderr,
+        )
 
     df["dt"] = pd.to_datetime(df["epoch_ms"], unit="ms")
     df["day"] = df["dt"].dt.date
@@ -144,8 +163,9 @@ def main():
     out.to_csv(args.out, index=False)
 
     order = ["CONSISTENT", "TAIL-DEPENDENT", "UNSTABLE", "UNPROVEN", "LOSING", "INSUFFICIENT"]
+    quality = "complete" if floor >= 3 else "CENSORED -- provisional"
     print(f"Scored {len(out)} wallets over {df['day'].nunique()} days "
-          f"(collector v{args.min_collector_version}+, {len(df)} trades)\n")
+          f"(collector v{floor}+, {len(df)} trades, {quality})\n")
     for v in order:
         grp = out[out["verdict"] == v]
         if grp.empty:
