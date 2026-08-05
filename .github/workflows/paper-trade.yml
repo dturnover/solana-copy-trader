@@ -10,10 +10,16 @@ on:
     - cron: "30 */6 * * *" # every 6 hours, offset 30m from lag-experiment.yml
   workflow_dispatch: {}
 
+permissions:
+  actions: read   # to fetch the previous run's carried-over position state
+
 jobs:
   run-experiment:
     runs-on: ubuntu-latest
     timeout-minutes: 350
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
 
     steps:
       - uses: actions/checkout@v4
@@ -87,6 +93,30 @@ jobs:
       - name: Build
         run: cmake --build build -j"$(nproc)"
 
+      # Positions open when the previous run was killed. Without this the
+      # process starts empty every time and can only ever observe round trips
+      # that open AND close inside one ~5h run -- which caps measurable hold
+      # time at the run length regardless of position_timeout_minutes.
+      - name: Restore carried-over position state
+        run: |
+          LATEST=$(gh api --paginate "repos/$REPO/actions/artifacts" \
+            --jq '[.artifacts[] | select(.name | startswith("paper-state-")) | select(.expired == false)]
+                  | sort_by(.created_at) | last | .id' 2>/dev/null || echo "")
+          if [ -z "$LATEST" ] || [ "$LATEST" = "null" ]; then
+            echo "No previous state artifact -- starting with no open positions."
+            exit 0
+          fi
+          if gh api "repos/$REPO/actions/artifacts/$LATEST/zip" > state.zip 2>/dev/null; then
+            unzip -o -q state.zip && rm -f state.zip
+            echo "Restored state from artifact $LATEST:"
+            python3 -c "import json;d=json.load(open('paper_trade_state.json'));print('  open positions:',len(d.get('open_positions',{})))" || true
+          else
+            # A failed restore must not sink the run; it only means this run
+            # starts empty, same as before this step existed.
+            echo "WARN: could not download artifact $LATEST -- starting empty."
+            rm -f state.zip
+          fi
+
       - name: Generate config.json from CI template (injects secret at runtime, never committed)
         run: sed "s#SHYFT_API_KEY_PLACEHOLDER#${{ secrets.SHYFT_API_KEY }}#g" config/config.paper_trade.ci.json > config/config.json
 
@@ -131,4 +161,15 @@ jobs:
         with:
           name: paper-trades-${{ github.run_id }}
           path: paper_trades.csv
+          if-no-files-found: warn
+
+      # Separate artifact from the trades: this one is state to be restored,
+      # not data to be merged, and merge-paper-trades.yml must never fold it
+      # into the dataset.
+      - name: Upload position state for the next run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-state-${{ github.run_id }}
+          path: paper_trade_state.json
           if-no-files-found: warn

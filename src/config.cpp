@@ -79,6 +79,9 @@ AppConfig load_config(const std::string& path) {
         if (pt.contains("csv_path")) {
             config.paper_trade_csv_path = pt["csv_path"].get<std::string>();
         }
+        if (pt.contains("state_path")) {
+            config.paper_trade_state_path = pt["state_path"].get<std::string>();
+        }
         if (pt.contains("position_timeout_minutes")) {
             config.paper_trade_position_timeout_minutes = pt["position_timeout_minutes"].get<int>();
         }
