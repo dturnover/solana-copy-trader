@@ -35,6 +35,8 @@
 #include "util/logging.h"
 #include "util/time.h"
 
+#include <nlohmann/json.hpp>
+
 namespace {
 
 constexpr double kLamportsPerSol = 1'000'000'000.0;
@@ -129,6 +131,102 @@ void report_stats(const std::string& label, const WalletStats& s) {
 // NOT bump it: the same rows are written, with more recorded about each.
 constexpr int kCollectorVersion = 3;
 
+// Open positions live only in memory, and this process is not a daemon: CI
+// runs it for ~5h20m and then kills it. Every position still open at that
+// moment used to be destroyed with the process, so a round trip could only
+// ever be recorded if the wallet happened to open AND close it inside one
+// run. That silently capped observable hold time at the run length --
+// independently of position_timeout_minutes -- and made multi-day holds
+// structurally impossible to see, no matter how the timeout was configured.
+//
+// Persisting across runs is what makes long holds observable at all.
+void save_state(const std::string& path,
+                const std::unordered_map<std::string, OpenPosition>& open_positions,
+                const std::unordered_map<solana::Pubkey, std::string, solana::PubkeyHash>& last_seen) {
+    if (path.empty()) return;
+    nlohmann::json j;
+    for (const auto& [key, p] : open_positions) {
+        j["open_positions"][key] = {
+            {"opened_at_ms", p.opened_at_ms},
+            {"buy_count", p.buy_count},
+            {"wallet_token_amount", p.wallet_token_amount},
+            {"wallet_lamports_spent", p.wallet_lamports_spent},
+            {"our_lamports_spent", p.our_lamports_spent},
+            {"bonding_curve", p.bonding_curve.to_base58()},
+            {"would_have_reverted", p.would_have_reverted},
+            {"entry_captured", p.entry_captured},
+            {"entry_virtual_sol_reserves", p.entry_virtual_sol_reserves},
+            {"entry_virtual_token_reserves", p.entry_virtual_token_reserves},
+            {"entry_real_sol_reserves", p.entry_real_sol_reserves},
+            {"entry_real_token_reserves", p.entry_real_token_reserves},
+            {"entry_token_total_supply", p.entry_token_total_supply},
+            {"entry_our_cost_lamports", p.entry_our_cost_lamports},
+            {"entry_top10_holder_pct", p.entry_top10_holder_pct},
+            {"entry_on_chain_age_ms", p.entry_on_chain_age_ms},
+            {"entry_signature", p.entry_signature},
+            {"entry_block_time_ms", p.entry_block_time_ms},
+        };
+    }
+    // Without this, a restart re-reads each wallet's most recent signatures
+    // and re-processes trades already handled.
+    for (const auto& [pk, sig] : last_seen) j["last_seen_signature"][pk.to_base58()] = sig;
+
+    // Write-then-rename: a kill partway through a direct write would leave
+    // truncated JSON, and the next run would start from nothing.
+    std::string tmp = path + ".tmp";
+    { std::ofstream f(tmp); if (!f.is_open()) { LOG_WARN("Could not write state to " + tmp); return; } f << j.dump(); }
+    std::error_code ec;
+    std::filesystem::rename(tmp, path, ec);
+    if (ec) LOG_WARN("Could not move state into place: " + ec.message());
+}
+
+void load_state(const std::string& path,
+                std::unordered_map<std::string, OpenPosition>& open_positions,
+                std::unordered_map<solana::Pubkey, std::string, solana::PubkeyHash>& last_seen) {
+    if (path.empty() || !std::filesystem::exists(path)) return;
+    nlohmann::json j;
+    try {
+        std::ifstream f(path);
+        f >> j;
+    } catch (const std::exception& e) {
+        LOG_WARN(std::string("Could not parse state file, starting fresh: ") + e.what());
+        return;
+    }
+
+    if (j.contains("open_positions")) {
+        for (const auto& [key, v] : j["open_positions"].items()) {
+            OpenPosition p;
+            p.opened_at_ms = v.value("opened_at_ms", int64_t{0});
+            p.buy_count = v.value("buy_count", 0);
+            p.wallet_token_amount = v.value("wallet_token_amount", uint64_t{0});
+            p.wallet_lamports_spent = v.value("wallet_lamports_spent", int64_t{0});
+            p.our_lamports_spent = v.value("our_lamports_spent", 0.0);
+            solana::Pubkey::from_base58(v.value("bonding_curve", std::string{}), p.bonding_curve);
+            p.would_have_reverted = v.value("would_have_reverted", false);
+            p.entry_captured = v.value("entry_captured", false);
+            p.entry_virtual_sol_reserves = v.value("entry_virtual_sol_reserves", uint64_t{0});
+            p.entry_virtual_token_reserves = v.value("entry_virtual_token_reserves", uint64_t{0});
+            p.entry_real_sol_reserves = v.value("entry_real_sol_reserves", uint64_t{0});
+            p.entry_real_token_reserves = v.value("entry_real_token_reserves", uint64_t{0});
+            p.entry_token_total_supply = v.value("entry_token_total_supply", uint64_t{0});
+            p.entry_our_cost_lamports = v.value("entry_our_cost_lamports", 0.0);
+            p.entry_top10_holder_pct = v.value("entry_top10_holder_pct", -1.0);
+            p.entry_on_chain_age_ms = v.value("entry_on_chain_age_ms", int64_t{-1});
+            p.entry_signature = v.value("entry_signature", std::string{});
+            p.entry_block_time_ms = v.value("entry_block_time_ms", int64_t{-1});
+            open_positions[key] = p;
+        }
+    }
+    if (j.contains("last_seen_signature")) {
+        for (const auto& [pk_b58, sig] : j["last_seen_signature"].items()) {
+            solana::Pubkey pk;
+            if (solana::Pubkey::from_base58(pk_b58, pk)) last_seen[pk] = sig.get<std::string>();
+        }
+    }
+    LOG_INFO("Restored " + std::to_string(open_positions.size()) + " open position(s) and " +
+             std::to_string(last_seen.size()) + " poll cursor(s) from " + path);
+}
+
 void append_csv_row(const std::string& path, const std::string& row) {
     std::error_code ec;
     auto size = std::filesystem::file_size(path, ec);
@@ -203,6 +301,10 @@ int main(int argc, char** argv) {
     std::unordered_map<std::string, OpenPosition> open_positions; // key: "<wallet_b58>|<mint_b58>"
     std::unordered_map<std::string, WalletStats> stats_by_wallet;
     WalletStats overall_stats;
+
+    // Restore whatever the previous run left open, so a position can span
+    // runs and a multi-day hold is observable.
+    load_state(config.paper_trade_state_path, open_positions, last_seen_signature);
 
     int64_t last_timeout_sweep_ms = now_wall_ms();
 
@@ -487,6 +589,10 @@ int main(int argc, char** argv) {
         int64_t now_ms = now_wall_ms();
         if (now_ms - last_timeout_sweep_ms > 60'000) {
             last_timeout_sweep_ms = now_ms;
+            // CI kills this process with SIGTERM then SIGKILL 30s later, so
+            // there is no reliable shutdown hook -- checkpoint on a timer
+            // instead and lose at most a minute.
+            save_state(config.paper_trade_state_path, open_positions, last_seen_signature);
             int64_t timeout_ms = static_cast<int64_t>(config.paper_trade_position_timeout_minutes) * 60'000;
             for (auto it = open_positions.begin(); it != open_positions.end();) {
                 if (now_ms - it->second.opened_at_ms > timeout_ms) {

@@ -51,7 +51,14 @@ struct AppConfig {
     // the entry and exit simulation.
     int64_t paper_trade_execution_lag_ms = 1500;
     std::string paper_trade_csv_path;
-    int paper_trade_position_timeout_minutes = 180;
+    // Was 180. A three-hour cap silently discarded every position held
+    // longer, which is exactly the long-hold behaviour worth studying --
+    // wallets that hold for days are the ones our execution lag stops
+    // mattering for. Now a week; anything genuinely abandoned still ages out.
+    int paper_trade_position_timeout_minutes = 10080;
+    // Where open positions and poll cursors survive between runs. Empty
+    // disables persistence.
+    std::string paper_trade_state_path;
 
     std::vector<TrackedWalletConfig> tracked_wallets;
 };

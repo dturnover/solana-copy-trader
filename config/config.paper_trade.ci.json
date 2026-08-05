@@ -7,7 +7,8 @@
   "paper_trade": {
     "execution_lag_ms": 1500,
     "csv_path": "paper_trades.csv",
-    "position_timeout_minutes": 180
+    "position_timeout_minutes": 10080,
+    "state_path": "paper_trade_state.json"
   },
   "tracked_wallets": [
     { "label": "Earl", "pubkey": "F2SuErm4MviWJ2HzKXk2nuzBC6xe883CFWUDCPz6cyWm" },
