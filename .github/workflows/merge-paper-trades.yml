@@ -78,15 +78,23 @@ jobs:
           download_set "paper-trades-" paper
           download_set "lag-samples-" lag
 
-      - name: Merge artifacts into datasets
+      # The paper-trade dataset is the primary artifact of this repo, so its
+      # merge gets its own step. Bundling it with the lag merge meant one
+      # strict schema check on the SECONDARY dataset aborted the shared step
+      # under `set -e`, skipping the commit and stranding three days of
+      # successfully-merged trade data (2026-08-05..08).
+      - name: Merge paper trades
         run: |
-          echo "== paper trades =="
           python3 reports/merge_artifacts.py \
             reports/paper_trades_final.csv artifacts/paper /tmp/combined_raw.csv
           python3 reports/dedupe_and_clean.py \
             /tmp/combined_raw.csv reports/paper_trades_final.csv
-          echo
-          echo "== lag samples =="
+
+      # continue-on-error: a lag-sample problem is worth seeing (the step goes
+      # red) but must never again block the trade dataset from being committed.
+      - name: Merge lag samples
+        continue-on-error: true
+        run: |
           python3 reports/merge_lag_samples.py \
             reports/lag_samples_final.csv artifacts/lag reports/lag_samples_final.csv
 

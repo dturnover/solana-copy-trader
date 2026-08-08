@@ -21,6 +21,16 @@ import sys
 
 import pandas as pd
 
+# Columns added to the lag writer after collection started. Same treatment as
+# merge_artifacts.py: backfill by name at a value that states what those files
+# actually contain, rather than rejecting the file. A strict all-columns check
+# here took the whole merge down for three days -- and with it the paper-trade
+# dataset, which had merged fine in the same step.
+OPTIONAL_COLUMNS = {
+    "fee_lamports": float("nan"),
+    "priority_fee_microlamports": float("nan"),
+}
+
 COLUMNS = [
     "epoch_ms",
     "label",
@@ -53,14 +63,23 @@ for path in sorted(glob.glob(os.path.join(artifacts_dir, "**", "*.csv"), recursi
     except pd.errors.EmptyDataError:
         print(f"  {path}: empty, skipped")
         continue
+    filled = [c for c in OPTIONAL_COLUMNS if c not in df.columns]
+    for c in filled:
+        df[c] = OPTIONAL_COLUMNS[c]
+
     missing = set(COLUMNS) - set(df.columns)
     if missing:
-        sys.exit(f"ERROR: {path} is missing expected columns: {sorted(missing)}")
-    print(f"  {path}: {len(df)} rows")
+        # Still loud, but skip the file rather than abort: one malformed
+        # artifact must not cost every other artifact in the batch.
+        print(f"  WARN {path}: missing {sorted(missing)} -- skipped")
+        continue
+    suffix = f" (backfilled: {', '.join(filled)})" if filled else ""
+    print(f"  {path}: {len(df)} rows{suffix}")
     frames.append(df)
 
 if not frames:
-    sys.exit("ERROR: nothing to merge -- no existing dataset and no artifact CSVs")
+    print("Nothing to merge -- no existing lag dataset and no usable artifact CSVs.")
+    sys.exit(0)
 
 combined = pd.concat(frames, ignore_index=True)[COLUMNS]
 n0 = len(combined)
