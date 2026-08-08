@@ -22,7 +22,11 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
-WORKFLOWS = ["paper-trade.yml", "lag-experiment.yml"]
+# merge-paper-trades.yml belongs here as much as the collectors do: it failed
+# on every run for three days in 2026-08 while both collectors stayed green,
+# so the data was being gathered and then silently never committed. A watcher
+# that only looks at producers misses a broken consumer entirely.
+WORKFLOWS = ["paper-trade.yml", "lag-experiment.yml", "merge-paper-trades.yml"]
 LOOKBACK_RUNS = 5
 MIN_SUCCESS_IN_LOOKBACK = 1
 STALE_HOURS = 18  # 3x the 6h schedule cadence -- one missed run is normal jitter, three isn't
