@@ -13,6 +13,7 @@ struct SignatureInfo {
     std::string signature;
     uint64_t slot = 0;
     bool has_error = false;
+    int64_t block_time = 0; // unix seconds; 0 if the node did not return one
 };
 
 // Thin JSON-RPC client over a plain Solana REST endpoint (e.g. Shyft's
@@ -49,6 +50,14 @@ public:
     // Empty vector on any error: a risk check that cannot be computed must
     // not take the trade down with it.
     std::vector<uint64_t> get_token_largest_accounts(const std::string& mint_base58);
+
+    // Walks a wallet's history BACKWARDS for screening, paging with `before`
+    // rather than `until`. Returned newest-first, i.e. in paging order --
+    // deliberately NOT reversed like get_signatures_for_address, whose
+    // oldest-first order suits live polling and would make backward paging
+    // read wrong.
+    std::vector<SignatureInfo> get_signatures_before(const std::string& address_base58,
+                                                       const std::string& before_signature, int limit = 100);
 
 private:
     nlohmann::json call(const std::string& method, const nlohmann::json& params);

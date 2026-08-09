@@ -87,6 +87,9 @@ std::vector<SignatureInfo> RpcClient::get_signatures_for_address(const std::stri
         info.signature = entry.value("signature", "");
         info.slot = entry.value("slot", 0ull);
         info.has_error = entry.contains("err") && !entry["err"].is_null();
+        if (entry.contains("blockTime") && entry["blockTime"].is_number()) {
+            info.block_time = entry["blockTime"].get<int64_t>();
+        }
         if (!info.signature.empty()) {
             out.push_back(std::move(info));
         }
@@ -128,6 +131,35 @@ std::optional<std::vector<uint8_t>> RpcClient::get_account_info(const std::strin
     if (!value["data"][0].is_string()) return std::nullopt;
 
     return solana::base64_decode(value["data"][0].get<std::string>());
+}
+
+std::vector<SignatureInfo> RpcClient::get_signatures_before(const std::string& address_base58,
+                                                             const std::string& before_signature, int limit) {
+    nlohmann::json options = {{"limit", limit}};
+    if (!before_signature.empty()) options["before"] = before_signature;
+    nlohmann::json params = nlohmann::json::array({address_base58, options});
+
+    std::vector<SignatureInfo> out;
+    nlohmann::json response;
+    try {
+        response = call("getSignaturesForAddress", params);
+    } catch (const std::exception& e) {
+        LOG_WARN(std::string("getSignaturesForAddress(before) failed for ") + address_base58 + ": " + e.what());
+        return out;
+    }
+    if (!response.contains("result") || !response["result"].is_array()) return out;
+
+    for (const auto& entry : response["result"]) {
+        SignatureInfo info;
+        info.signature = entry.value("signature", "");
+        info.slot = entry.value("slot", 0ull);
+        info.has_error = entry.contains("err") && !entry["err"].is_null();
+        if (entry.contains("blockTime") && entry["blockTime"].is_number()) {
+            info.block_time = entry["blockTime"].get<int64_t>();
+        }
+        if (!info.signature.empty()) out.push_back(std::move(info));
+    }
+    return out; // newest-first, as returned
 }
 
 std::vector<uint64_t> RpcClient::get_token_largest_accounts(const std::string& mint_base58) {
