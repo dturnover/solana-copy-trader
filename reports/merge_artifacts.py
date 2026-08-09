@@ -106,6 +106,23 @@ OPTIONAL_COLUMNS = {
     "collector_version": 1,
 }
 
+# Rows below this are quarantined out of the live dataset. Everything before
+# collector v3 came from a pipeline with four separate defects that all bent
+# the numbers optimistic: reverting buys dropped, reverting sells dropped,
+# partial positions recorded as whole ones, and hold time capped at the CI run
+# length. Those rows are not merely noisier -- their drop rates vary by wallet,
+# so they reorder any ranking built on them.
+#
+# The merge deliberately re-reads every unexpired artifact each run, which is
+# what makes it self-healing. That same property means archiving the CSV alone
+# would not quarantine anything: the next run would rebuild the old rows from
+# artifacts. This is the filter that actually holds.
+#
+# The archived copy lives in reports/archive/ -- kept, not deleted, because it
+# is the only record of those wallets' activity in that window and RPC history
+# retention will not reach back to recreate it.
+MIN_COLLECTOR_VERSION = 3
+
 existing_path = sys.argv[1]
 artifacts_dir = sys.argv[2]
 out_path = sys.argv[3]
@@ -154,6 +171,13 @@ if not frames:
 
 # Aligns on column names, so the artifact/dataset order mismatch is handled.
 combined = pd.concat(frames, ignore_index=True)[FINAL_COLUMNS]
+
+n_before = len(combined)
+combined = combined[combined["collector_version"].fillna(1) >= MIN_COLLECTOR_VERSION]
+dropped = n_before - len(combined)
+if dropped:
+    print(f"Quarantined {dropped} row(s) below collector v{MIN_COLLECTOR_VERSION} "
+          f"(see reports/archive/ for the pre-quarantine dataset)")
 
 print(f"Combined (pre-dedupe): {len(combined)} rows from {len(frames)} source(s)")
 combined.to_csv(out_path, index=False)
