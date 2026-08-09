@@ -92,4 +92,19 @@ if len(combined):
     for lag, row in curve.iterrows():
         print(f"  {int(lag):>7} ms  n={int(row['count']):>6}  mean {row['mean']:+.3f}%  median {row['median']:+.3f}%")
 
-combined.to_csv(out_path, index=False)
+# Commit the CURVE, not the samples. Firehose mode samples every pump.fun buy
+# at every target lag in the sweep, which reached 758,507 rows / 151.6 MB --
+# past GitHub's 100 MB file limit, so the push was rejected and took the
+# paper-trade dataset down with it for a second time. The raw samples stay in
+# the run artifacts (90d) for anyone who wants them; what this repo needs
+# tracked is the lag-vs-drift curve, which is what the gRPC decision reads and
+# which stays a few hundred bytes no matter how many samples accumulate.
+curve = (
+    combined.groupby("target_lag_ms")["pct_change"]
+    .agg(samples="count", mean_pct="mean", median_pct="median",
+         p25_pct=lambda s: s.quantile(0.25), p75_pct=lambda s: s.quantile(0.75))
+    .reset_index()
+    .sort_values("target_lag_ms")
+)
+curve.to_csv(out_path, index=False)
+print(f"Wrote {out_path}: {len(curve)} lag buckets from {len(combined)} samples")

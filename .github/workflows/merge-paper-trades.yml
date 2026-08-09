@@ -96,14 +96,14 @@ jobs:
         continue-on-error: true
         run: |
           python3 reports/merge_lag_samples.py \
-            reports/lag_samples_final.csv artifacts/lag reports/lag_samples_final.csv
+            /tmp/lag_samples_raw.csv artifacts/lag reports/lag_curve.csv
 
       # Every run re-reads every artifact, so most merges legitimately
       # produce no change (nothing new closed since last time). Committing
       # unconditionally would push an empty commit 4x/day.
       - name: Commit refreshed dataset
         run: |
-          if git diff --quiet -- reports/paper_trades_final.csv reports/lag_samples_final.csv; then
+          if git diff --quiet -- reports/paper_trades_final.csv reports/lag_curve.csv; then
             echo "No new closed trades since the last merge -- nothing to commit."
             exit 0
           fi
@@ -117,12 +117,21 @@ jobs:
           print(len(d), len(d) - b, b)")
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for f in reports/paper_trades_final.csv reports/lag_samples_final.csv; do
-            [ -f "$f" ] && git add "$f"
+          # Size guard. A single oversized file gets rejected by the remote
+          # and takes every other file in the commit with it -- which is how
+          # the lag samples blocked the trade dataset. Skip it loudly instead.
+          for f in reports/paper_trades_final.csv reports/lag_curve.csv; do
+            [ -f "$f" ] || continue
+            SIZE=$(stat -c%s "$f")
+            if [ "$SIZE" -gt 52428800 ]; then
+              echo "WARN: $f is $((SIZE / 1048576))MB -- too large to track, not staging it."
+              continue
+            fi
+            git add "$f"
           done
           LAG=0
-          [ -f reports/lag_samples_final.csv ] && LAG=$(($(wc -l < reports/lag_samples_final.csv) - 1))
-          git commit -m "Refresh datasets: ${TOTAL} closed trades (${CLEAN} clean, ${BLOW} blow-up), ${LAG} lag samples [skip ci]"
+          [ -f reports/lag_curve.csv ] && LAG=$(($(wc -l < reports/lag_curve.csv) - 1))
+          git commit -m "Refresh datasets: ${TOTAL} closed trades (${CLEAN} clean, ${BLOW} blow-up), ${LAG} lag buckets [skip ci]"
           # The scheduled paper-trade.yml pushes nothing, but a concurrent
           # manual commit to this branch would make a bare push fail; rebase
           # onto whatever landed rather than dropping this merge.
