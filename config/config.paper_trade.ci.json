@@ -11,34 +11,37 @@
     "state_path": "paper_trade_state.json"
   },
   "tracked_wallets": [
-    { "label": "Earl", "pubkey": "F2SuErm4MviWJ2HzKXk2nuzBC6xe883CFWUDCPz6cyWm" },
-    { "label": "theo", "pubkey": "Bi4rd5FH5bYEN8scZ7wevxNZyNmKHdaBcvewdPFxYdLt" },
-    { "label": "Trey", "pubkey": "831yhv67QpKqLBJjbmw2xoDUeeFHGUx8RnuRj9imeoEs" },
-    { "label": "Doji", "pubkey": "5ZuV8eqkvzYFVEKbLvGBdexL2tFv7E5BCd2HZpjqbdg" },
-    { "label": "Sheep", "pubkey": "78N177fzNJpp8pG49xDv1efYcTMSzo9tPTKEA9mAVkh2" },
-    { "label": "Letterbomb", "pubkey": "BtMBMPkoNbnLF9Xn552guQq528KKXcsNBNNBre3oaQtr" },
-    { "label": "Zuki", "pubkey": "922VvmmYDHV9KMTJJ71Y5Yd3Vn7cfJuFasLNSsZPygrG" },
-    { "label": "Felix", "pubkey": "3uz65G8e463MA5FxcSu1rTUyWRtrRLRZYskKtEHHj7qn" },
-    { "label": "Bi8gjp", "pubkey": "Bi8gjp6g7hYmLJ2gsHbtdMwHyin4js1efTzDdJSQ6m4T" },
-    { "label": "Pavel", "pubkey": "3jckt69SiN3aCMbBWJoDS1s4xxGpqNxFFKnwhpRAQmuL" },
-    { "label": "Pikalosi", "pubkey": "9cdZg6xR4c9kZiqKSzqjn4QHCXNQuC9HEWBzzMJ3mzqw" },
-    { "label": "dov7", "pubkey": "8nqtxpFpuXwfXG4pBLsDkkuMMPK9FjSkBMCn542HiM3v" },
-    { "label": "Nyhrox", "pubkey": "6S8GezkxYUfZy9JPtYnanbcZTMB87Wjt1qx3c6ELajKC" },
-    { "label": "Dedmeow5", "pubkey": "9THzoX5yGNSgPBAjCF4Lgqc1wLXoFkMQit4XWbhhRnqE" },
-    { "label": "Loopierr", "pubkey": "9yYya3F5EJoLnBNKW6z4bZvyQytMXzDcpU5D6yYr4jqL" },
-    { "label": "Cope", "pubkey": "23wQ7bodYreW3qhnh2YrW8dMkTYSkHHJqGcsiYEJS3Pr" },
-    { "label": "Flames", "pubkey": "6aXFYXbFob1ZKAEDCcqZnX2vooA3TgEqDoy5dAQbeWoV" },
-    { "label": "Boomer", "pubkey": "4JyenL2p8eQZAQuRS8QAASy7TzEcqAeKGha6bhiJXudh" },
-    { "label": "Dani", "pubkey": "AuPp4YTMTyqxYXQnHc5KUc6pUuCSsHQpBJhgnD45yqrf" },
-    { "label": "Cented", "pubkey": "CyaE1VxvBrahnPWkqm5VsdCvyS2QmNht2UFrKJHga54o" },
-    { "label": "Monki", "pubkey": "53BnNc49Ajgstciq3CRoyxuBpkkW1r8pgPyvr7JGYnsh" },
-    { "label": "KOREAN", "pubkey": "6KR7SorsUQtNH6CB6JpAnWCAKeTysa95iyXeWihdNeGT" },
-    { "label": "decu", "pubkey": "4vw54BmAogeRV3vPKWyFet5yf8DTLcREzdSzx4rw9Ud9" },
-    { "label": "West", "pubkey": "JDd3hy3gQn2V982mi1zqhNqUw1GfV2UL6g76STojCJPN" },
-    { "label": "Megga", "pubkey": "H31vEBxSJk1nQdUN11qZgZyhScyShhscKhvhZZU3dQoU" },
-    { "label": "Sebastian", "pubkey": "3BLjRcxWGtR7WRshJ3hL25U3RjWr5Ud98wMcczQqk4Ei" },
-    { "label": "Tom", "pubkey": "CEUA7zVoDRqRYoeHTP58UHU6TR8yvtVbeLrX1dppqoXJ" },
-    { "label": "Insyder", "pubkey": "G3g1CKqKWSVEVURZDNMazDBv7YAhMNTjhJBVRTiKZygk" },
-    { "label": "Kadenox", "pubkey": "B32QbbdDAyhvUQzjcaM5j6ZVKwjCxAwGH5Xgvb9SJqnC" }
+    {
+      "label": "theo",
+      "pubkey": "Bi4rd5FH5bYEN8scZ7wevxNZyNmKHdaBcvewdPFxYdLt"
+    },
+    {
+      "label": "Sheep",
+      "pubkey": "78N177fzNJpp8pG49xDv1efYcTMSzo9tPTKEA9mAVkh2"
+    },
+    {
+      "label": "Dedmeow5",
+      "pubkey": "9THzoX5yGNSgPBAjCF4Lgqc1wLXoFkMQit4XWbhhRnqE"
+    },
+    {
+      "label": "Loopierr",
+      "pubkey": "9yYya3F5EJoLnBNKW6z4bZvyQytMXzDcpU5D6yYr4jqL"
+    },
+    {
+      "label": "Boomer",
+      "pubkey": "4JyenL2p8eQZAQuRS8QAASy7TzEcqAeKGha6bhiJXudh"
+    },
+    {
+      "label": "Dani",
+      "pubkey": "AuPp4YTMTyqxYXQnHc5KUc6pUuCSsHQpBJhgnD45yqrf"
+    },
+    {
+      "label": "Tom",
+      "pubkey": "CEUA7zVoDRqRYoeHTP58UHU6TR8yvtVbeLrX1dppqoXJ"
+    },
+    {
+      "label": "Kadenox",
+      "pubkey": "B32QbbdDAyhvUQzjcaM5j6ZVKwjCxAwGH5Xgvb9SJqnC"
+    }
   ]
 }
