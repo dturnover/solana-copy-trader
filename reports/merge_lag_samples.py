@@ -88,7 +88,11 @@ combined = combined.drop_duplicates(subset=["signature", "target_lag_ms"])
 print(f"Lag samples: {n0} -> {len(combined)} after dedupe on (signature, target_lag_ms)")
 if len(combined):
     curve = combined.groupby("target_lag_ms")["pct_change"].agg(["count", "mean", "median"])
-    print("Price drift by target lag (negative = costs us):")
+    # pct_change = (later_price - baseline_price) / baseline_price, and these
+    # are BUYS: a higher later price means we pay more. Positive is the cost,
+    # not the benefit. The previous label said the opposite, which would have
+    # read the lag curve exactly backwards on the one decision it exists for.
+    print("Price drift by target lag (POSITIVE = we pay more, i.e. the cost of lag):")
     for lag, row in curve.iterrows():
         print(f"  {int(lag):>7} ms  n={int(row['count']):>6}  mean {row['mean']:+.3f}%  median {row['median']:+.3f}%")
 
