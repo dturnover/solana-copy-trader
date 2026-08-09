@@ -96,3 +96,9 @@ target_link_libraries(lag_experiment PRIVATE core)
 # "would copying it still be profitable after lag" with real on-chain data.
 add_executable(paper_trade src/main_paper_trade.cpp)
 target_link_libraries(paper_trade PRIVATE core)
+
+# Screens candidate wallets from on-chain history before one is given a
+# tracking slot. Wallet-side only -- reads no bonding curve, so unlike
+# paper_trade it has no latency assumptions baked into its output.
+add_executable(screen_wallets src/main_screen_wallets.cpp)
+target_link_libraries(screen_wallets PRIVATE core)

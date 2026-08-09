@@ -1,0 +1,101 @@
+name: Screen Wallets
+
+# Evaluates CANDIDATE wallets from their on-chain history without giving any
+# of them a tracking slot. Manual only: this is a decision-support run, not a
+# collector, and it costs RPC budget while it executes -- so it should not
+# compete with paper-trade.yml on a schedule.
+#
+# The first run screens all 29 wallets tracked before the 2026-08-09 prune,
+# which re-examines that decision over a longer window than the five days it
+# was made on.
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Days of history to screen"
+        required: false
+        default: "14"
+      config:
+        description: "Candidate config path"
+        required: false
+        default: "config/config.screen.ci.json"
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
+          sudo docker image prune -af || true
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build curl zip unzip tar pkg-config
+
+      # Must match paper-trade.yml's pin so this shares that binary cache
+      # rather than rebuilding several hundred MB of ports from scratch.
+      - name: Set vcpkg pin
+        run: echo "VCPKG_COMMIT=40f3c709db80acf154ac4b17a1f83c564ebd022e" >> "$GITHUB_ENV"
+
+      - name: Cache vcpkg archives
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-archives-${{ runner.os }}-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-archives-${{ runner.os }}-${{ env.VCPKG_COMMIT }}-
+
+      - name: Bootstrap vcpkg
+        run: |
+          git init "$HOME/vcpkg"
+          git -C "$HOME/vcpkg" fetch --depth 1 https://github.com/microsoft/vcpkg.git "$VCPKG_COMMIT"
+          git -C "$HOME/vcpkg" checkout FETCH_HEAD
+          "$HOME/vcpkg/bootstrap-vcpkg.sh"
+          echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Clean up build intermediates
+        run: rm -rf "$VCPKG_ROOT/buildtrees" "$VCPKG_ROOT/downloads"
+
+      - name: Build
+        run: cmake --build build -j"$(nproc)" --target screen_wallets
+
+      - name: Generate config from CI template (injects secret at runtime, never committed)
+        run: sed "s#SHYFT_API_KEY_PLACEHOLDER#${{ secrets.SHYFT_API_KEY }}#g" "${{ inputs.config }}" > config/config.json
+
+      - name: Screen candidates
+        run: ./build/screen_wallets config/config.json screened_wallets.csv "${{ inputs.days }}"
+
+      - name: Score them
+        run: |
+          pip install --quiet pandas numpy
+          python3 reports/wallet_scorecard.py screened_wallets.csv screened_scorecard.csv | tee scorecard.txt
+
+      # Put the verdicts in the run summary so the answer is readable without
+      # downloading anything.
+      - name: Publish scorecard to the run summary
+        if: always()
+        run: |
+          {
+            echo '## Wallet screening — ${{ inputs.days }} days of history'
+            echo
+            echo '```'
+            cat scorecard.txt 2>/dev/null || echo "(screening produced no scorecard)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screening-${{ github.run_id }}
+          path: |
+            screened_wallets.csv
+            screened_scorecard.csv
+          if-no-files-found: warn
