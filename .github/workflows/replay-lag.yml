@@ -1,0 +1,68 @@
+name: Replay Lag
+
+# Re-prices recorded round trips at a sweep of execution lags, from
+# transaction history. This is the run that decides whether paying for gRPC
+# buys anything: paper_trade can only ever measure the latency its own poller
+# had (~18.5s on the free tier), so it cannot answer the question it exists for.
+#
+# Manual dispatch only. It costs RPC budget while running and shares the free
+# tier with the collector, so it must not compete with it on a schedule.
+on:
+  workflow_dispatch:
+    inputs:
+      lags:
+        description: "Target lags in ms, comma-separated"
+        required: false
+        default: "200,500,1000,1500,3000,5000,10000,20000"
+      limit:
+        description: "Round trips to replay (RPC cost scales with this)"
+        required: false
+        default: "150"
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps
+        run: pip install --quiet pandas
+
+      # The offset check runs first and exits non-zero if virtual/real reserve
+      # offsets are not what the script assumes. Every reconstructed price
+      # depends on it, so it gates the run rather than being a warning.
+      - name: Validate reserve offsets
+        run: python3 reports/replay_lag.py reports/paper_trades_final.csv /tmp/unused.csv --validate-only
+
+      - name: Replay
+        env:
+          RPC_ENDPOINT: https://rpc.shyft.to?api_key=${{ secrets.SHYFT_API_KEY }}
+        run: |
+          python3 reports/replay_lag.py \
+            reports/paper_trades_final.csv reports/replay_lag_curve.csv \
+            --lags "${{ inputs.lags }}" --limit "${{ inputs.limit }}" | tee replay.txt
+
+      - name: Publish curve to the run summary
+        if: always()
+        run: |
+          {
+            echo '## Fill cost by simulated execution lag'
+            echo
+            echo 'Ratio > 1 means we pay more than the wallet did for the same tokens.'
+            echo
+            echo '```'
+            cat replay.txt 2>/dev/null || echo "(replay produced no output)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: replay-lag-${{ github.run_id }}
+          path: |
+            reports/replay_lag_curve.csv
+            replay.txt
+          if-no-files-found: warn
