@@ -106,7 +106,10 @@ def curve_deltas_between(endpoint, curve, t_from_ms, t_to_ms, cache):
     minimum -- which is not part of real_sol_reserves -- cancels out and never
     has to be guessed.
     """
-    key = (curve, t_from_ms // 1000, t_to_ms // 1000)
+    # Exact ms in the key. Second-truncation here would silently merge windows
+    # that differ only in sub-second lag -- which is the very thing being
+    # measured, and would manufacture the appearance of lag having no effect.
+    key = (curve, t_from_ms, t_to_ms)
     if key in cache:
         return cache[key]
 
@@ -148,7 +151,10 @@ def curve_deltas_between(endpoint, curve, t_from_ms, t_to_ms, cache):
             before_amt = int(pre_t[idx]["uiTokenAmount"]["amount"]) if idx in pre_t else 0
             d_tokens += after - before_amt
 
-    cache[key] = (d_lamports, d_tokens)
+    # n_tx is the diagnostic that separates "lag genuinely costs nothing here"
+    # from "the lookup silently found nothing". A flat lag curve means the
+    # first only if windows actually contained transactions.
+    cache[key] = (d_lamports, d_tokens, len(sigs))
     return cache[key]
 
 
@@ -212,7 +218,7 @@ def main():
             if target_ms >= snap_ms:
                 continue  # the snapshot is already at or before this lag
             try:
-                d_lam, d_tok = curve_deltas_between(args.endpoint, r["bonding_curve"], target_ms, snap_ms, cache)
+                d_lam, d_tok, n_tx = curve_deltas_between(args.endpoint, r["bonding_curve"], target_ms, snap_ms, cache)
             except Exception as e:
                 print(f"  skip {r['entry_signature'][:12]}… lag={lag}: {e}")
                 continue
@@ -227,6 +233,7 @@ def main():
                 "entry_signature": r["entry_signature"], "wallet_label": r["wallet_label"],
                 "target_lag_ms": lag, "our_cost_lamports": cost,
                 "wallet_cost_lamports": float(r["wallet_lamports_spent"]),
+                "curve_txs_in_window": n_tx,
                 "fill_ratio": cost / float(r["wallet_lamports_spent"]) if r["wallet_lamports_spent"] else float("nan"),
             })
 
@@ -239,6 +246,8 @@ def main():
         median_fill_ratio=("fill_ratio", "median"),
         mean_fill_ratio=("fill_ratio", "mean"),
         pct_worse_than_wallet=("fill_ratio", lambda s: 100.0 * (s > 1).mean()),
+        mean_txs_in_window=("curve_txs_in_window", "mean"),
+        pct_windows_empty=("curve_txs_in_window", lambda s: 100.0 * (s == 0).mean()),
     ).reset_index()
     curve.to_csv(args.out, index=False)
 
