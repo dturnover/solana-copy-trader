@@ -71,7 +71,15 @@ jobs:
           git init "$HOME/vcpkg"
           git -C "$HOME/vcpkg" fetch --depth 1 https://github.com/microsoft/vcpkg.git "$VCPKG_COMMIT"
           git -C "$HOME/vcpkg" checkout FETCH_HEAD
-          "$HOME/vcpkg/bootstrap-vcpkg.sh"
+          # bootstrap-vcpkg downloads a toolchain from a CDN, and a transient
+          # "curl: (56) Connection died" there killed a scheduled collection
+          # run on 2026-08-12. Retry rather than lose the window.
+          for attempt in 1 2 3; do
+            "$HOME/vcpkg/bootstrap-vcpkg.sh" && break
+            echo "bootstrap-vcpkg failed (attempt ${attempt}), retrying in $((attempt * 10))s"
+            sleep $((attempt * 10))
+          done
+          test -x "$HOME/vcpkg/vcpkg"
           echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
 
       - name: Configure

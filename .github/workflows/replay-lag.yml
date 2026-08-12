@@ -40,6 +40,7 @@ jobs:
         env:
           RPC_ENDPOINT: https://rpc.shyft.to?api_key=${{ secrets.SHYFT_API_KEY }}
         run: |
+          set -o pipefail
           python3 reports/replay_lag.py \
             reports/paper_trades_final.csv reports/replay_lag_curve.csv \
             --lags "${{ inputs.lags }}" --limit "${{ inputs.limit }}" | tee replay.txt

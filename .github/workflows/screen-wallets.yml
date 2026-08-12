@@ -14,6 +14,10 @@ on:
       days:
         description: "Days of history to screen"
         required: false
+        # 30 days over 29 wallets exhausted the free tier on 2026-08-09 and
+        # most candidates came back with 0 signatures scanned. Fewer days and
+        # smaller batches get real answers; a big sweep gets rate-limited into
+        # silence that looks like inactivity.
         default: "14"
       config:
         description: "Candidate config path"
@@ -54,7 +58,15 @@ jobs:
           git init "$HOME/vcpkg"
           git -C "$HOME/vcpkg" fetch --depth 1 https://github.com/microsoft/vcpkg.git "$VCPKG_COMMIT"
           git -C "$HOME/vcpkg" checkout FETCH_HEAD
-          "$HOME/vcpkg/bootstrap-vcpkg.sh"
+          # bootstrap-vcpkg downloads a toolchain from a CDN, and a transient
+          # "curl: (56) Connection died" there killed a scheduled collection
+          # run on 2026-08-12. Retry rather than lose the window.
+          for attempt in 1 2 3; do
+            "$HOME/vcpkg/bootstrap-vcpkg.sh" && break
+            echo "bootstrap-vcpkg failed (attempt ${attempt}), retrying in $((attempt * 10))s"
+            sleep $((attempt * 10))
+          done
+          test -x "$HOME/vcpkg/vcpkg"
           echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
 
       - name: Configure
@@ -74,6 +86,11 @@ jobs:
 
       - name: Score them
         run: |
+          # Without pipefail, `python3 ... | tee` reports tee's exit status, so
+          # a script that crashed -- or does not exist -- looks like success.
+          # That is how the 2026-08-09 screening run reported green while the
+          # scorecard never ran at all.
+          set -o pipefail
           pip install --quiet pandas numpy
           python3 reports/wallet_scorecard.py screened_wallets.csv screened_scorecard.csv | tee scorecard.txt
 
