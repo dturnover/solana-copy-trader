@@ -1,0 +1,41 @@
+{
+  "_comment": "Screening batch 1: the wallets currently being tracked. Small batches on purpose -- the 2026-08-09 run over 29 candidates at 30 days was rate-limited into silence, with 7 wallets returning 0 signatures scanned, which reads identically to inactivity.",
+  "engine": "poll",
+  "rpc": {
+    "endpoint": "https://rpc.shyft.to?api_key=SHYFT_API_KEY_PLACEHOLDER"
+  },
+  "tracked_wallets": [
+    {
+      "label": "theo",
+      "pubkey": "Bi4rd5FH5bYEN8scZ7wevxNZyNmKHdaBcvewdPFxYdLt"
+    },
+    {
+      "label": "Sheep",
+      "pubkey": "78N177fzNJpp8pG49xDv1efYcTMSzo9tPTKEA9mAVkh2"
+    },
+    {
+      "label": "Dedmeow5",
+      "pubkey": "9THzoX5yGNSgPBAjCF4Lgqc1wLXoFkMQit4XWbhhRnqE"
+    },
+    {
+      "label": "Loopierr",
+      "pubkey": "9yYya3F5EJoLnBNKW6z4bZvyQytMXzDcpU5D6yYr4jqL"
+    },
+    {
+      "label": "Boomer",
+      "pubkey": "4JyenL2p8eQZAQuRS8QAASy7TzEcqAeKGha6bhiJXudh"
+    },
+    {
+      "label": "Dani",
+      "pubkey": "AuPp4YTMTyqxYXQnHc5KUc6pUuCSsHQpBJhgnD45yqrf"
+    },
+    {
+      "label": "Tom",
+      "pubkey": "CEUA7zVoDRqRYoeHTP58UHU6TR8yvtVbeLrX1dppqoXJ"
+    },
+    {
+      "label": "Kadenox",
+      "pubkey": "B32QbbdDAyhvUQzjcaM5j6ZVKwjCxAwGH5Xgvb9SJqnC"
+    }
+  ]
+}
