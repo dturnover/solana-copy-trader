@@ -1,5 +1,5 @@
 {
-  "_comment": "Candidates for screening, NOT a tracking list. screen_wallets reads tracked_wallets purely as its input format; nothing here is polled. Seeded with all 29 wallets tracked before the 2026-08-09 prune, so the first run re-examines that decision over a longer window than the 5 days it was based on.",
+  "_comment": "Candidates for screening, NOT a tracking list. screen_wallets reads tracked_wallets purely as its input format; nothing here is polled. Seeded with all 29 wallets tracked before the 2026-08-09 prune, so the first run re-examines that decision over a longer window than the 5 days it was based on. NOTE: the 2026-08-09 run over all 29 at 30 days was defeated by rate limiting -- most wallets returned 0 signatures. Screen in small batches.",
   "engine": "poll",
   "rpc": {
     "endpoint": "https://rpc.shyft.to?api_key=SHYFT_API_KEY_PLACEHOLDER"
