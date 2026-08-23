@@ -160,41 +160,59 @@ def decode_trade_events(tx):
     return events
 
 
-def pick_event(tx, mint, is_buy, token_amount, checks):
-    """The event matching what the collector independently recorded, or None.
+def offsets_ok(e):
+    """virtual - real equals the constants verified across 1,480 snapshots.
 
-    `checks` accumulates why decodes were rejected, so a systematic layout
-    error shows up as a pattern rather than as quietly missing rows.
+    An independent check on the field offsets, available per event: getting
+    them wrong would not reproduce two exact constants by chance.
     """
-    found = decode_trade_events(tx)
-    if not found:
-        checks["no TradeEvent in logs"] += 1
-        return None
-
-    on_mint = [e for e in found if e["mint"] == mint]
-    if not on_mint:
-        checks["no event on this mint (layout suspect)"] += 1
-        return None
-
-    right_side = [e for e in on_mint if e["is_buy"] == is_buy]
-    if not right_side:
-        checks["no event on this side"] += 1
-        return None
-
-    # The decisive check: the collector derived token_amount from balance
-    # deltas, with no knowledge of this layout. Agreement is independent
-    # confirmation that the reserve fields are being read from the right place.
-    exact = [e for e in right_side if e["token_amount"] == token_amount]
-    if not exact:
-        checks["token_amount disagrees with collector"] += 1
-        return None
-
-    e = dict(exact[0])
-    e["offsets_ok"] = (
+    return (
         e["real_sol"] is not None
         and e["virtual_sol"] - e["real_sol"] == VIRTUAL_SOL_OFFSET
         and e["virtual_token"] - e["real_token"] == VIRTUAL_TOKEN_OFFSET
     )
+
+
+def pick_event(tx, mint, is_buy, token_amount, checks, leg):
+    """The wallet's own trade event on this mint, or None.
+
+    On the BUY leg the token amount must match what the collector derived
+    independently from balance deltas -- that agreement is what confirms the
+    field offsets are right, so it stays strict.
+
+    On the SELL leg it must not. We mirror the wallet's buy size, but the
+    wallet is free to exit a different amount than it entered (that is what
+    incomplete_position flags), and their exit size has no bearing on ours: we
+    sell OUR tokens into the curve as it stands after their sell, whatever size
+    theirs was. Requiring the two to be equal rejected real partial exits as
+    decode failures -- it discarded 8 of 25 rows and read as a layout problem.
+    """
+    found = decode_trade_events(tx)
+    if not found:
+        checks[f"{leg}: no TradeEvent in logs"] += 1
+        return None
+
+    candidates = [e for e in found if e["mint"] == mint and e["is_buy"] == is_buy]
+    if not candidates:
+        checks[f"{leg}: no event on this mint/side"] += 1
+        return None
+
+    exact = [e for e in candidates if e["token_amount"] == token_amount]
+    if is_buy:
+        if not exact:
+            checks["buy: token_amount disagrees with collector (layout suspect)"] += 1
+            return None
+        e = dict(exact[0])
+    else:
+        # Largest sell on the mint is the wallet's own; a co-landing bot's sell
+        # would be a separate, smaller event.
+        e = dict(exact[0] if exact else max(candidates, key=lambda x: x["token_amount"]))
+        e["size_differs"] = not exact
+
+    e["offsets_ok"] = offsets_ok(e)
+    if not e["offsets_ok"]:
+        checks[f"{leg}: reserve offsets wrong (layout suspect)"] += 1
+        return None
     return e
 
 
@@ -264,6 +282,7 @@ def main():
     now_ms = pd.Timestamp.utcnow().value // 1_000_000
     print("Retention probe (can the endpoint still serve these?):")
     newest_missing = None
+    served = {}
     for i in probe_idx:
         row = all_rows.iloc[i]
         age_d = (now_ms - int(row["epoch_ms"])) / 86_400_000
@@ -273,10 +292,37 @@ def main():
             print(f"  {age_d:5.1f}d old  ERROR {type(e).__name__}")
             continue
         ok = got is not None
+        served[i] = ok
         print(f"  {age_d:5.1f}d old  {'served' if ok else 'NOT RETAINED (null)'}")
         if not ok:
             newest_missing = age_d if newest_missing is None else min(newest_missing, age_d)
-    if newest_missing is not None:
+    # Bisect between the oldest transaction still served and the newest one
+    # already gone, to turn "somewhere between 0.1 and 8.8 days" into a usable
+    # number. One RPC call per step, and the answer is a project deadline: past
+    # this age a recorded round trip can never be re-priced by anything.
+    lo = max((i for i in probe_idx if served.get(i)), default=None)   # oldest served
+    hi = min((i for i in probe_idx if served.get(i) is False), default=None)
+    if lo is not None and hi is not None and lo > hi:
+        for _ in range(6):
+            mid = (lo + hi) // 2
+            if mid == lo or mid == hi:
+                break
+            row = all_rows.iloc[mid]
+            try:
+                got = rpc(args.endpoint, "getTransaction", [row["entry_signature"], TX_OPTS])
+            except Exception:
+                break
+            if got is not None:
+                lo = mid
+            else:
+                hi = mid
+        served_age = (now_ms - int(all_rows.iloc[lo]["epoch_ms"])) / 86_400_000
+        gone_age = (now_ms - int(all_rows.iloc[hi]["epoch_ms"])) / 86_400_000
+        print(f"  -> retention horizon is between {served_age:.1f} and {gone_age:.1f} days")
+        replayable = int((now_ms - all_rows["epoch_ms"]) / 86_400_000 <= served_age)
+        print(f"  -> {replayable} of {len(all_rows)} recorded round trips are still "
+              f"young enough to replay; the rest are permanently unpriceable")
+    elif newest_missing is not None:
         print(f"  -> history is gone by {newest_missing:.1f} days; only fresher "
               f"round trips can be replayed at all")
     print()
@@ -284,6 +330,7 @@ def main():
     checks = collections.Counter()
     offsets_confirmed = 0
     rows, fee_samples = [], []
+    partial_exits = 0
 
     for _, r in usable.iterrows():
         mint = r["mint"]
@@ -300,11 +347,12 @@ def main():
             continue
 
         tokens = int(r["wallet_token_amount"])
-        be = pick_event(buy_tx, mint, True, tokens, checks)
-        se = pick_event(sell_tx, mint, False, tokens, checks)
+        be = pick_event(buy_tx, mint, True, tokens, checks, "buy")
+        se = pick_event(sell_tx, mint, False, tokens, checks, "sell")
         if not be or not se:
             continue
-        offsets_confirmed += int(bool(be["offsets_ok"]) and bool(se["offsets_ok"]))
+        offsets_confirmed += 1  # pick_event already rejected any event failing the check
+        partial_exits += int(bool(se.get("size_differs")))
 
         # The wallet's recorded lamports include the fee; the event's
         # sol_amount is the trade itself. The gap is the fee, measured.
@@ -346,7 +394,9 @@ def main():
     print(f"Decoded and validated {len(rows)} of {attempted} round trips "
           f"({100 * match_rate:.1f}%)")
     print(f"Reserve offsets independently confirmed on {offsets_confirmed} of {len(rows)} "
-          f"({100 * offsets_confirmed / len(rows):.1f}% carried real reserves)")
+          f"({100 * offsets_confirmed / len(rows):.1f}%)")
+    print(f"Wallet exited a different size than it entered on {partial_exits} "
+          f"({100 * partial_exits / len(rows):.1f}%) -- ours is priced at our own size regardless")
     if match_rate < MIN_DECODE_MATCH_RATE:
         sys.exit(f"\nMatch rate {100 * match_rate:.1f}% is below "
                  f"{100 * MIN_DECODE_MATCH_RATE:.0f}% -- the layout hypothesis is not "
