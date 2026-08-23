@@ -279,7 +279,7 @@ def main():
     all_rows = all_rows.sort_values("epoch_ms")
     probe_idx = [int(i * (len(all_rows) - 1) / (RETENTION_PROBE_ROWS - 1))
                  for i in range(RETENTION_PROBE_ROWS)]
-    now_ms = pd.Timestamp.utcnow().value // 1_000_000
+    now_ms = pd.Timestamp.now("UTC").value // 1_000_000
     print("Retention probe (can the endpoint still serve these?):")
     newest_missing = None
     served = {}
@@ -319,9 +319,23 @@ def main():
         served_age = (now_ms - int(all_rows.iloc[lo]["epoch_ms"])) / 86_400_000
         gone_age = (now_ms - int(all_rows.iloc[hi]["epoch_ms"])) / 86_400_000
         print(f"  -> retention horizon is between {served_age:.1f} and {gone_age:.1f} days")
-        replayable = int((now_ms - all_rows["epoch_ms"]) / 86_400_000 <= served_age)
+        ages_d = (now_ms - all_rows["epoch_ms"]) / 86_400_000
+        replayable = int((ages_d <= served_age).sum())
         print(f"  -> {replayable} of {len(all_rows)} recorded round trips are still "
               f"young enough to replay; the rest are permanently unpriceable")
+
+        # Drop rows past the horizon before spending calls on them. They come
+        # back null, and counting those as decode failures would trip the
+        # layout guard -- which exists to catch a wrong offset, not an expired
+        # transaction. Keeping them apart is what lets the guard stay strict.
+        keep = (now_ms - usable["epoch_ms"]) / 86_400_000 <= served_age
+        dropped_old = int((~keep).sum())
+        usable = usable[keep]
+        if dropped_old:
+            print(f"  -> dropping {dropped_old} selected row(s) already past the horizon")
+        if usable.empty:
+            sys.exit("Every selected round trip is older than the retention horizon. "
+                     "Nothing can be replayed; run this closer to collection.")
     elif newest_missing is not None:
         print(f"  -> history is gone by {newest_missing:.1f} days; only fresher "
               f"round trips can be replayed at all")
