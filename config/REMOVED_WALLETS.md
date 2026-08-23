@@ -45,6 +45,7 @@ bootstrap resamples of the wallet's own trades that net <= 0.
 | Doji | 47 | -33.49 | 23.4% | 25% | 1.000 |
 | Zuki | 111 | -26.44 | 27.9% | 20% | 0.996 |
 | Monki | 85 | -2.07 | 45.9% | 25% | 0.604 |
+| Tom | 265 | -171.25 | 26.0% | 10.5% | 1.000 |
 
 - `Doji` (5ZuV8eqkvzYFVEKbLvGBdexL2tFv7E5BCd2HZpjqbdg)
 - `Zuki` (922VvmmYDHV9KMTJJ71Y5Yd3Vn7cfJuFasLNSsZPygrG)
@@ -52,6 +53,18 @@ bootstrap resamples of the wallet's own trades that net <= 0.
 - `Monki` (53BnNc49Ajgstciq3CRoyxuBpkkW1r8pgPyvr7JGYnsh)
 - `KOREAN` (6KR7SorsUQtNH6CB6JpAnWCAKeTysa95iyXeWihdNeGT)
 - `Insyder` (G3g1CKqKWSVEVURZDNMazDBv7YAhMNTjhJBVRTiKZygk)
+- `Tom` (CEUA7zVoDRqRYoeHTP58UHU6TR8yvtVbeLrX1dppqoXJ)
+
+Tom is the most conclusive entry in this table and the last one removed,
+because he was the only tracked wallet with a full 19 days of v3 history --
+the others were cut after five. That length is what makes it conclusive
+rather than merely bad: 265 trades, profitable on 2 of 19 days, and every
+one of 10,000 bootstrap resamples of his own trades nets negative. He also
+dominated the collector, producing 98 of the 163 round trips in the last
+seven days -- more than the other seven wallets combined -- so he was
+setting the pace of data collection while being the thing the data most
+clearly rejects. Over that week Tom lost 85.69 SOL while the rest of the
+tracked set together made 20.59.
 
 Monki is the weakest case (p_luck 0.604 -- consistent with no edge rather
 than proven negative) and is removed for volume, not verdict: 85 trades that
