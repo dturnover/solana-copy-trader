@@ -52,11 +52,22 @@ reporting that as "no trades happened".
 
 So the walk now reports whether it actually got back past the start of its
 window, and a row it did not reach is skipped instead of priced. That turns a
-confident wrong number into a visible gap -- which is the whole of the fix so
-far. Making the walk reach the window is a separate problem, and paging
-backwards from the present may simply be the wrong shape for it: the cost
-scales with everything the token did after the trade, which for a token that
-went on to run is unbounded.
+confident wrong number into a visible gap.
+
+The probe then named the cause, and it is not a tunable one. Across 8 curves:
+half returned an EMPTY first page of getSignaturesForAddress -- no history for
+the account at all -- and the other half returned exactly one page of 100 and
+then nothing, with every signature newer than the window. No signature was
+missing a blockTime. The endpoint does not serve the historical signature list
+this design needs, so no page cap fixes it: there is nothing to page through.
+
+That kills backward reconstruction on this RPC. What survives is cheaper
+anyway: the entry transaction itself carries the curve state immediately after
+the wallet's own buy, in pump.fun's TradeEvent log. One getTransaction per row,
+by a signature we already record, no paging. It prices the same-block fill --
+the best case no latency purchase can beat -- which together with the
+collector's existing ~18.5s snapshot brackets the whole question. If the
+same-block fill still loses money, gRPC cannot rescue it.
 """
 
 import argparse
