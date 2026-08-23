@@ -43,7 +43,7 @@ jobs:
           set -o pipefail
           python3 reports/replay_lag.py \
             reports/paper_trades_final.csv reports/replay_lag_curve.csv \
-            --lags "${{ inputs.lags }}" --limit "${{ inputs.limit }}" | tee replay.txt
+            --lags "${{ inputs.lags }}" --limit "${{ inputs.limit }}" 2>&1 | tee replay.txt
 
       - name: Publish curve to the run summary
         if: always()
@@ -55,6 +55,14 @@ jobs:
             echo
             echo '```'
             cat replay.txt 2>/dev/null || echo "(replay produced no output)"
+            echo '```'
+            echo
+            # The aggregate CSV goes in the summary too, not only the artifact.
+            # Artifacts download from an Azure blob host that some environments
+            # cannot reach, and a result nobody can read is not a result.
+            echo '### replay_lag_curve.csv'
+            echo '```'
+            cat reports/replay_lag_curve.csv 2>/dev/null || echo "(no curve written)"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 

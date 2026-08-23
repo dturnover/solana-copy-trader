@@ -251,12 +251,33 @@ def main():
     ).reset_index()
     curve.to_csv(args.out, index=False)
 
+    # The diagnostic columns print alongside the ratios, not only into the CSV.
+    # The first diagnostic run wrote them to an artifact and printed the ratios
+    # alone, so the log showed a flat curve with no way to tell whether it meant
+    # anything -- which is the exact question the diagnostic was added to settle.
     print("Entry cost vs the wallet's, by simulated lag "
           "(ratio > 1 = we pay more than they did):")
     for _, c in curve.iterrows():
         print(f"  {int(c['target_lag_ms']):>6} ms  n={int(c['fills']):>5}  "
               f"median {c['median_fill_ratio']:.4f}x  mean {c['mean_fill_ratio']:.4f}x  "
-              f"worse-than-wallet {c['pct_worse_than_wallet']:.1f}%")
+              f"worse-than-wallet {c['pct_worse_than_wallet']:.1f}%  "
+              f"curve txs/window {c['mean_txs_in_window']:.2f}  "
+              f"empty {c['pct_windows_empty']:.1f}%")
+
+    # A lag curve is only evidence if the windows it prices across actually
+    # contained trades. If they did not, every lag reconstructs the same state
+    # and the flat result says nothing about lag.
+    empty = float(curve["pct_windows_empty"].min())
+    if empty > 95.0:
+        print(f"\n!! {empty:.1f}% of windows contained NO curve transactions at every lag.\n"
+              "!! This curve is NOT evidence that lag is cheap -- each lag reconstructed the\n"
+              "!! same state, so identical ratios are arithmetic, not a measurement. Either\n"
+              "!! these curves genuinely sat idle, or the signature lookup is finding nothing.\n"
+              "!! Do not quote these numbers as a lag result.", file=sys.stderr)
+    elif empty > 50.0:
+        print(f"\n!  {empty:.1f}% of windows were empty; the curve is thin evidence at best.",
+              file=sys.stderr)
+
     print(f"\nWrote {args.out}")
 
 
