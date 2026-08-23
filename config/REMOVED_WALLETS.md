@@ -77,3 +77,24 @@ be the best wallet tracked. On uncensored v3 data it is -26.44 over 111
 trades. The earlier verdict was an artifact of censored rows, and 89 of the
 188 partial-position rows in the old dataset were Zuki's. Worth remembering
 before re-adding anything on the strength of pre-v3 numbers.
+
+## Note on execution cost (2026-08-23)
+
+The same-block replay measured what a round trip actually costs above the
+curve price: 243 basis points per leg, tightly distributed (p25 238, p75 253)
+across 57 trades. That is the wallet's whole SOL outlay against the trade
+amount the chain reports, so it covers protocol fee, creator fee, priority fee
+and network fee together -- everything real execution pays and a curve
+simulation does not.
+
+The collector applies none of it. simulate_buy_sol_cost and
+simulate_sell_sol_proceeds price straight off the constant product, so every
+our_pnl_sol figure in the dataset omits roughly 4.9% per round trip. Wallet-side
+figures are unaffected -- those come from real balance deltas -- so the
+scorecard and every wallet verdict here still stand. It is the simulated
+copy P&L that is optimistic, and by a margin that exceeds most of the edges
+being looked for.
+
+The tight spread is itself evidence: a fixed per-trade cost would vary widely
+with trade size, and this does not, so the cost is proportional rather than
+dominated by one-off rent.
