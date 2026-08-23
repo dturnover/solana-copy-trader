@@ -67,6 +67,17 @@ VIRTUAL_TOKEN_OFFSET = 279_900_000_000_000
 
 LAMPORTS_PER_SOL = 1_000_000_000.0
 
+# Exactly what src/rpc/rpc_client.cpp sends. The collector fetched every one of
+# these transactions successfully at the time, so anything it can do, this can.
+TX_OPTS = {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 0,
+           "commitment": "confirmed"}
+
+# How many rows, spread across the dataset's span, to test before pricing.
+# getTransaction returns null for a transaction the endpoint no longer retains,
+# and null is indistinguishable from a bad request -- so the horizon gets
+# measured rather than discovered as a wall of failures.
+RETENTION_PROBE_ROWS = 8
+
 # Field offsets within the base64 `Program data:` blob, after the 8-byte event
 # discriminator. Treated as a hypothesis that every decode must earn.
 OFF_MINT = 8
@@ -229,13 +240,46 @@ def main():
         & (df["wallet_token_amount"] > 0)
     ]
     excluded_multi = int((df["buy_count"] > 1).sum())
-    usable = usable.head(args.limit)
+
+    # Newest first. The dataset is time-ordered, so head() silently selected the
+    # oldest rows -- the ones an RPC is least likely to still retain, which is
+    # how the first run got null for all 25.
+    usable = usable.sort_values("epoch_ms", ascending=False).head(args.limit)
 
     if not args.endpoint:
         sys.exit("Set --endpoint or RPC_ENDPOINT.")
 
+    span = pd.to_datetime(usable["epoch_ms"], unit="ms")
     print(f"Pricing {len(usable)} single-buy round trips at same-block execution "
-          f"({excluded_multi} multi-buy positions excluded)\n")
+          f"({excluded_multi} multi-buy positions excluded)")
+    print(f"Selected rows span {span.min():%Y-%m-%d} to {span.max():%Y-%m-%d}\n")
+
+    # Measure how far back the endpoint still serves transactions, before
+    # spending the budget. A transaction it no longer retains comes back as a
+    # null result, not an error, so an unmeasured horizon looks like a bug.
+    all_rows = df[df["entry_signature"].notna() & (df["entry_signature"] != "")]
+    all_rows = all_rows.sort_values("epoch_ms")
+    probe_idx = [int(i * (len(all_rows) - 1) / (RETENTION_PROBE_ROWS - 1))
+                 for i in range(RETENTION_PROBE_ROWS)]
+    now_ms = pd.Timestamp.utcnow().value // 1_000_000
+    print("Retention probe (can the endpoint still serve these?):")
+    newest_missing = None
+    for i in probe_idx:
+        row = all_rows.iloc[i]
+        age_d = (now_ms - int(row["epoch_ms"])) / 86_400_000
+        try:
+            got = rpc(args.endpoint, "getTransaction", [row["entry_signature"], TX_OPTS])
+        except Exception as e:
+            print(f"  {age_d:5.1f}d old  ERROR {type(e).__name__}")
+            continue
+        ok = got is not None
+        print(f"  {age_d:5.1f}d old  {'served' if ok else 'NOT RETAINED (null)'}")
+        if not ok:
+            newest_missing = age_d if newest_missing is None else min(newest_missing, age_d)
+    if newest_missing is not None:
+        print(f"  -> history is gone by {newest_missing:.1f} days; only fresher "
+              f"round trips can be replayed at all")
+    print()
 
     checks = collections.Counter()
     offsets_confirmed = 0
@@ -245,11 +289,9 @@ def main():
         mint = r["mint"]
         try:
             buy_tx = rpc(args.endpoint, "getTransaction",
-                         [r["entry_signature"], {"encoding": "jsonParsed",
-                                                 "maxSupportedTransactionVersion": 0}])
+                         [r["entry_signature"], TX_OPTS])
             sell_tx = rpc(args.endpoint, "getTransaction",
-                          [r["sell_signature"], {"encoding": "jsonParsed",
-                                                 "maxSupportedTransactionVersion": 0}])
+                          [r["sell_signature"], TX_OPTS])
         except Exception as e:
             checks[f"rpc error: {type(e).__name__}"] += 1
             continue
