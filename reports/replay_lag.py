@@ -35,9 +35,32 @@ constant cancels:
 Virtual reserves come from real ones by a fixed offset. That is not assumed --
 it is verified against the collector's own paired readings on startup, and
 measured at 30 SOL and 279,900,000e6 across 1,088 of 1,089 v3 rows.
+
+STATUS: THE WALK DOES NOT REACH ITS WINDOWS YET
+
+Three runs have produced a lag curve, and none of them measured lag. The
+2026-08-23 run settled it: 100% of windows contained no curve transactions,
+at every lag from 1s to 20s, which cannot be true -- these are pump.fun
+tokens seconds after a tracked wallet bought them, and a 17-second window on
+one is never empty. Every lag was reconstructing the same state, so the
+identical fill ratios were arithmetic, not a result.
+
+Wall-clock says where it breaks: 720 window lookups finished in 148 seconds,
+about one RPC call each, when reaching a window days in the past should cost
+many pages of backward walking. The loop was giving up on its first page and
+reporting that as "no trades happened".
+
+So the walk now reports whether it actually got back past the start of its
+window, and a row it did not reach is skipped instead of priced. That turns a
+confident wrong number into a visible gap -- which is the whole of the fix so
+far. Making the walk reach the window is a separate problem, and paging
+backwards from the present may simply be the wrong shape for it: the cost
+scales with everything the token did after the trade, which for a token that
+went on to run is unbounded.
 """
 
 import argparse
+import collections
 import json
 import os
 import sys
@@ -54,6 +77,17 @@ VIRTUAL_SOL_OFFSET = 30_000_000_000
 VIRTUAL_TOKEN_OFFSET = 279_900_000_000_000
 
 DEFAULT_LAGS_MS = [200, 500, 1000, 1500, 3000, 5000, 10000, 20000]
+
+# getSignaturesForAddress pages backwards from the newest transaction, so
+# reaching a window that sits days in the past costs one call per 100
+# transactions the curve has seen since. A popular token can outrun any cap;
+# what matters is that hitting the cap is reported rather than priced as zero.
+MAX_PAGES = 20
+
+# reached=False means the walk never got back to the start of the window, so
+# the deltas describe a shorter span than asked for and the row is unusable.
+Window = collections.namedtuple(
+    "Window", "d_lamports d_tokens n_tx reached pages no_blocktime")
 
 
 def rpc(endpoint, method, params, retries=4):
@@ -113,15 +147,33 @@ def curve_deltas_between(endpoint, curve, t_from_ms, t_to_ms, cache):
     if key in cache:
         return cache[key]
 
-    sigs, before = [], None
-    for _ in range(20):
+    # `reached` records whether the walk actually got back past the start of
+    # the window. Without it, "paged back to the window and found no trades"
+    # and "never got there at all" both end as an empty sig list and price as
+    # zero change -- which is exactly how the first two replay runs produced a
+    # confident flat lag curve out of 720 lookups that found nothing.
+    sigs, before, reached, pages, no_bt = [], None, False, 0, 0
+    for _ in range(MAX_PAGES):
         page = rpc(endpoint, "getSignaturesForAddress", [curve, {"limit": 100, **({"before": before} if before else {})}])
         if not page:
+            # History ran out. Only counts as covering the window if we had
+            # already walked back into it; on the first page it means the RPC
+            # returned nothing for this account at all.
             break
+        pages += 1
         stop = False
         for s in page:
-            bt = (s.get("blockTime") or 0) * 1000
+            raw_bt = s.get("blockTime")
+            if not raw_bt:
+                # A signature with no blockTime cannot be placed in or out of
+                # the window. Treating it as time 0 would look older than any
+                # window and stop the walk immediately -- silently, on the
+                # first page -- so it is counted and skipped instead.
+                no_bt += 1
+                continue
+            bt = raw_bt * 1000
             if bt <= t_from_ms:
+                reached = True
                 stop = True
                 break
             if bt <= t_to_ms and not s.get("err"):
@@ -153,8 +205,9 @@ def curve_deltas_between(endpoint, curve, t_from_ms, t_to_ms, cache):
 
     # n_tx is the diagnostic that separates "lag genuinely costs nothing here"
     # from "the lookup silently found nothing". A flat lag curve means the
-    # first only if windows actually contained transactions.
-    cache[key] = (d_lamports, d_tokens, len(sigs))
+    # first only if windows actually contained transactions -- and `reached`
+    # is what makes an empty window trustworthy rather than merely empty.
+    cache[key] = Window(d_lamports, d_tokens, len(sigs), reached, pages, no_bt)
     return cache[key]
 
 
@@ -178,6 +231,8 @@ def main():
     ap.add_argument("--lags", default=",".join(str(x) for x in DEFAULT_LAGS_MS))
     ap.add_argument("--limit", type=int, default=200, help="round trips to replay (RPC cost scales with this)")
     ap.add_argument("--validate-only", action="store_true")
+    ap.add_argument("--probe", type=int, default=0, metavar="N",
+                    help="dump what the signature walk actually saw for the first N curves")
     args = ap.parse_args()
 
     df = pd.read_csv(args.csv)
@@ -207,6 +262,8 @@ def main():
 
     lags = [int(x) for x in args.lags.split(",")]
     cache, rows = {}, []
+    skipped = collections.Counter()
+    probes_left = args.probe
 
     for _, r in usable.iterrows():
         # The moment the collector read the curve, which is the state we walk
@@ -218,13 +275,27 @@ def main():
             if target_ms >= snap_ms:
                 continue  # the snapshot is already at or before this lag
             try:
-                d_lam, d_tok, n_tx = curve_deltas_between(args.endpoint, r["bonding_curve"], target_ms, snap_ms, cache)
+                w = curve_deltas_between(args.endpoint, r["bonding_curve"], target_ms, snap_ms, cache)
             except Exception as e:
                 print(f"  skip {r['entry_signature'][:12]}… lag={lag}: {e}")
+                skipped["rpc error"] += 1
                 continue
 
-            real_sol = float(r["entry_real_sol_reserves"]) - d_lam
-            real_tok = float(r["entry_real_token_reserves"]) - d_tok
+            if probes_left and lag == lags[0]:
+                probes_left -= 1
+                print(f"  probe {r['bonding_curve'][:12]}… window {target_ms}..{snap_ms} "
+                      f"({(snap_ms - target_ms) / 1000:.1f}s): pages={w.pages} txs={w.n_tx} "
+                      f"reached={w.reached} sigs_without_blocktime={w.no_blocktime}")
+
+            # A window the walk never reached describes a shorter span than
+            # asked for. Pricing it anyway is what produced a flat lag curve
+            # from 720 lookups that had found nothing.
+            if not w.reached:
+                skipped["window not reached"] += 1
+                continue
+
+            real_sol = float(r["entry_real_sol_reserves"]) - w.d_lamports
+            real_tok = float(r["entry_real_token_reserves"]) - w.d_tokens
             v_sol, v_tok = real_sol + VIRTUAL_SOL_OFFSET, real_tok + VIRTUAL_TOKEN_OFFSET
             cost = constant_product_buy_cost(v_sol, v_tok, float(r["wallet_token_amount"]))
             if cost is None or cost <= 0:
@@ -233,12 +304,17 @@ def main():
                 "entry_signature": r["entry_signature"], "wallet_label": r["wallet_label"],
                 "target_lag_ms": lag, "our_cost_lamports": cost,
                 "wallet_cost_lamports": float(r["wallet_lamports_spent"]),
-                "curve_txs_in_window": n_tx,
+                "curve_txs_in_window": w.n_tx,
                 "fill_ratio": cost / float(r["wallet_lamports_spent"]) if r["wallet_lamports_spent"] else float("nan"),
             })
 
+    if skipped:
+        print("\nSkipped: " + ", ".join(f"{n} {why}" for why, n in skipped.most_common()))
     if not rows:
-        sys.exit("Replay produced no priced fills -- nothing to summarise.")
+        sys.exit("Replay produced no priced fills -- nothing to summarise. "
+                 "If these are mostly 'window not reached', the walk never paged back "
+                 "far enough (or the RPC returned no history for the curve); rerun with "
+                 "--probe 5 to see what it saw.")
 
     out = pd.DataFrame(rows)
     curve = out.groupby("target_lag_ms").agg(
