@@ -18,6 +18,10 @@ on:
         description: "Round trips to replay (RPC cost scales with this)"
         required: false
         default: "150"
+      probe:
+        description: "Dump what the signature walk saw for the first N curves"
+        required: false
+        default: "5"
 
 jobs:
   replay:
@@ -43,7 +47,8 @@ jobs:
           set -o pipefail
           python3 reports/replay_lag.py \
             reports/paper_trades_final.csv reports/replay_lag_curve.csv \
-            --lags "${{ inputs.lags }}" --limit "${{ inputs.limit }}" 2>&1 | tee replay.txt
+            --lags "${{ inputs.lags }}" --limit "${{ inputs.limit }}" \
+            --probe "${{ inputs.probe }}" 2>&1 | tee replay.txt
 
       - name: Publish curve to the run summary
         if: always()
