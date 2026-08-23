@@ -1,0 +1,70 @@
+name: Same-Block Replay
+
+# Prices recorded round trips as if we had filled in the same block as the
+# wallet -- the floor on execution lag that no infrastructure purchase can go
+# below. This is the run that settles the gRPC question: if the strategy loses
+# money at same-block execution, latency is not what is wrong with it.
+#
+# Unlike replay-lag.yml, this needs no curve history -- only getTransaction on
+# two signatures the collector already recorded -- so it works on the free tier
+# that could not serve the lag sweep.
+#
+# Manual dispatch only: it shares the free RPC tier with the collector and
+# must not compete with it on a schedule.
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Round trips to price (2 RPC calls each)"
+        required: false
+        default: "300"
+      fee_bps:
+        description: "Override the fee measured from the data (basis points)"
+        required: false
+        default: ""
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps
+        run: pip install --quiet pandas
+
+      - name: Price same-block fills
+        env:
+          RPC_ENDPOINT: https://rpc.shyft.to?api_key=${{ secrets.SHYFT_API_KEY }}
+          FEE_BPS: ${{ inputs.fee_bps }}
+        run: |
+          set -o pipefail
+          # The script aborts if its TradeEvent decode does not agree with the
+          # token amounts the collector recorded independently, so a failure
+          # here means the layout is wrong -- not that the data is bad.
+          python3 reports/replay_same_block.py \
+            reports/paper_trades_final.csv reports/same_block_trades.csv \
+            --limit "${{ inputs.limit }}" \
+            ${FEE_BPS:+--fee-bps "$FEE_BPS"} 2>&1 | tee same_block.txt
+
+      - name: Publish to the run summary
+        if: always()
+        run: |
+          {
+            echo '## Same-block execution vs recorded ~18.5s lag'
+            echo
+            echo '```'
+            cat same_block.txt 2>/dev/null || echo "(no output)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: same-block-${{ github.run_id }}
+          path: |
+            reports/same_block_trades.csv
+            same_block.txt
+          if-no-files-found: warn
