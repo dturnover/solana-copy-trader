@@ -24,6 +24,9 @@ on:
         required: false
         default: "config/config.screen.ci.json"
 
+permissions:
+  contents: write   # commits screened history, which the RPC will not keep
+
 jobs:
   screen:
     runs-on: ubuntu-latest
@@ -106,6 +109,30 @@ jobs:
             cat scorecard.txt 2>/dev/null || echo "(screening produced no scorecard)"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # Commit the screened round trips, do not just upload them. Artifacts
+      # expire, and more to the point the RPC forgets a transaction after
+      # roughly 3.5 days (measured 2026-08-23), so a wallet's history is
+      # perishable in a way the repo is not: what is not captured on the day
+      # cannot be recovered later by rerunning this.
+      - name: Commit screened history
+        if: always()
+        run: |
+          test -s screened_wallets.csv || { echo "nothing screened, not committing"; exit 0; }
+          mkdir -p reports/screened
+          stamp="$(date -u +%Y%m%d)"
+          cp screened_wallets.csv "reports/screened/screened_${stamp}.csv"
+          cp screened_scorecard.csv "reports/screened/scorecard_${stamp}.csv" 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/screened
+          git diff --staged --quiet && { echo "no change"; exit 0; }
+          git commit -m "Screened wallet history ${stamp} (${{ inputs.days }}d) [skip ci]"
+          for attempt in 1 2 3 4; do
+            git pull --rebase --quiet origin master && git push origin HEAD:master && break
+            echo "push failed (attempt ${attempt}), retrying"
+            sleep $((attempt * 2))
+          done
 
       - name: Upload results
         if: always()
