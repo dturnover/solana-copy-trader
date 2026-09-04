@@ -98,3 +98,47 @@ being looked for.
 The tight spread is itself evidence: a fixed per-trade cost would vary widely
 with trade size, and this does not, so the cost is proportional rather than
 dominated by one-off rent.
+
+## Silent, and paying for it (2026-09-04)
+
+Removed after the first scheduled status report surfaced something nobody had
+been watching for: three of seven tracked wallets had stopped trading and
+were still consuming their full poll cost.
+
+| wallet | last trade | v3 trades | their P&L | p_luck |
+|---|---|---|---|---|
+| Dedmeow5 | 18 days | 44 | -15.72 | 1.000 |
+| Loopierr | 12 days | 14 | -12.34 | 0.866 |
+| Boomer | 5 days | 30 | -7.78 | 1.000 |
+
+- `Dedmeow5` (9THzoX5yGNSgPBAjCF4Lgqc1wLXoFkMQit4XWbhhRnqE)
+- `Loopierr` (9yYya3F5EJoLnBNKW6z4bZvyQytMXzDcpU5D6yYr4jqL)
+- `Boomer` (4JyenL2p8eQZAQuRS8QAASy7TzEcqAeKGha6bhiJXudh)
+
+Dedmeow5 and Boomer are conclusive losers on their own record. Loopierr is
+not conclusive -- 14 trades is short -- but it is silent, negative, and its
+slot is not free.
+
+Between them they were spending roughly 129,600 RPC calls a day to record
+nothing, against a poll budget that is the binding constraint on detection
+lag for the wallets that ARE trading. Collection had fallen to 3.7 round trips
+a day across seven wallets; four of them were producing all of it.
+
+## Note on screening (2026-09-04)
+
+Screening was supposed to be the way out of waiting: read a candidate's
+existing on-chain history instead of collecting it live. It cannot do that on
+this endpoint. A 30-day screen of 8 wallets returned 14 round trips spanning
+2 days, from 2 wallets; theo and Sheep produced nothing at all.
+
+The cause is the same retention wall measured on 2026-08-23: getTransaction
+returns null past roughly 3.5 days, and the screener must fetch every
+historical transaction to reconstruct a round trip. It cannot see further back
+than the endpoint remembers, so it cannot build a track record faster than
+the collector does.
+
+This makes the RPC the single constraint on the whole project. It caps live
+collection through the poll budget, caps screening at about three days of
+reach, and caps replay at the same. An endpoint with real historical retention
+would remove all three at once, and is a different and much cheaper purchase
+than the gRPC one the same-block replay ruled out.
