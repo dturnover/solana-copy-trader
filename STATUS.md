@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-09-05 15:38 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-05 16:17 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **1,536 closed round trips**, all collector v3, Aug 05 to Sep 05
-- Newest trade **10.4 h old**
-- **5 in the last 24h**, 28 in the last 7 days (4.0/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-05 11:15 UTC)
+- **1,537 closed round trips**, all collector v3, Aug 05 to Sep 05
+- Newest trade **1.8 h old**
+- **4 in the last 24h**, 29 in the last 7 days (4.1/day across 4 tracked wallets)
+- **+1 since the last report** (2026-09-05 15:38 UTC)
 
 ## Has anything been proven yet?
 
@@ -17,15 +17,15 @@ Generated 2026-09-05 15:38 UTC. This file is written by a scheduled job -- nobod
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| theo | 25 | 5 more | +37.66 | 80% | 92% | 0.001 | 10.4 h ago |
-| Sheep | 27 | 3 more | +27.55 | 78% | 85% | 0.000 | 2.6 d ago |
+| theo | 26 | 4 more | +40.06 | 81% | 92% | 0.001 | 1.8 h ago |
+| Sheep | 27 | 3 more | +27.55 | 78% | 85% | 0.000 | 2.7 d ago |
 | Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 28.7 d ago |
 | Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 30.5 d ago |
 
-- theo needs 5 more trades; at its recent rate that is roughly 5 days away.
+- theo needs 4 more trades; at its recent rate that is roughly 4 days away.
 - Sheep needs 3 more trades; at its recent rate that is roughly 3 days away.
-- Cented needs 28 more trades; at its recent rate that is roughly 28 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 29 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 27 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 28 days away.
 
 ## Tracked wallets that have gone quiet
 
@@ -36,7 +36,7 @@ None — every tracked wallet has traded recently.
 | wallet | verdict | trades | P&L | win rate | days up | ex-top-3 | p_luck |
 |---|---|---|---|---|---|---|---|
 | Dani | UNPROVEN | 78 | +27.77 | 50% | 56% | -4.70 | 0.127 |
-| theo | INSUFFICIENT | 25 | +37.66 | 80% | 92% | +23.30 | 0.001 |
+| theo | INSUFFICIENT | 26 | +40.06 | 81% | 92% | +25.70 | 0.001 |
 | Sheep | INSUFFICIENT | 27 | +27.55 | 78% | 85% | +19.33 | 0.000 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.251 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
