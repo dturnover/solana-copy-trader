@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include <curl/curl.h>
 #include <nlohmann/json.hpp>
 
 namespace rpc {
@@ -25,6 +26,11 @@ struct SignatureInfo {
 class RpcClient {
 public:
     explicit RpcClient(std::string endpoint);
+    ~RpcClient();
+
+    // Owns a curl handle, so it is movable but not copyable.
+    RpcClient(const RpcClient&) = delete;
+    RpcClient& operator=(const RpcClient&) = delete;
 
     // Returns signatures newer than `until_signature` (exclusive),
     // oldest-first. The RPC itself returns newest-first; this reverses that
@@ -63,6 +69,16 @@ private:
     nlohmann::json call(const std::string& method, const nlohmann::json& params);
 
     std::string endpoint_;
+
+    // One handle for the client's whole life, so curl keeps the TCP+TLS
+    // connection open between calls. A handle per call meant a fresh DNS
+    // lookup, TCP handshake and TLS negotiation for every single request --
+    // tens of thousands a day against one host, all of it avoidable.
+    //
+    // NOT thread-safe: a curl easy handle belongs to one thread at a time.
+    // Every user of this class polls on a single thread; give each thread its
+    // own RpcClient if that ever changes.
+    CURL* curl_ = nullptr;
 };
 
 } // namespace rpc
