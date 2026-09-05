@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-09-05 02:21 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-05 09:02 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,535 closed round trips**, all collector v3, Aug 05 to Sep 04
-- Newest trade **5.4 h old**
+- Newest trade **12.0 h old**  ⚠️ collector may be stuck
 - **6 in the last 24h**, 27 in the last 7 days (3.9/day across 4 tracked wallets)
-- **+1 since the last report** (2026-09-05 01:55 UTC)
+- **+0 since the last report** (2026-09-05 02:21 UTC)
 
 ## Has anything been proven yet?
 
@@ -17,10 +17,10 @@ Generated 2026-09-05 02:21 UTC. This file is written by a scheduled job -- nobod
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| theo | 24 | 6 more | +35.45 | 79% | 91% | 0.003 | 10.1 h ago |
-| Sheep | 27 | 3 more | +27.55 | 78% | 85% | 0.000 | 2.1 d ago |
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 28.1 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 29.9 d ago |
+| theo | 24 | 6 more | +35.45 | 79% | 91% | 0.003 | 16.8 h ago |
+| Sheep | 27 | 3 more | +27.55 | 78% | 85% | 0.000 | 2.4 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 28.4 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 30.2 d ago |
 
 - theo needs 6 more trades; at its recent rate that is roughly 6 days away.
 - Sheep needs 3 more trades; at its recent rate that is roughly 3 days away.
