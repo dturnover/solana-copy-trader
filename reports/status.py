@@ -91,6 +91,31 @@ def main():
         L.append(f"- **{added:+d} since the last report** ({prev.get('generated', 'unknown')})")
     L.append("")
 
+    # Detection lag went wrong for weeks because nothing reported it: a
+    # 15-second curl timeout was being read as an inherent property of the
+    # free tier, and it framed every latency conclusion in the project. It is
+    # a headline number now.
+    if "entry_on_chain_age_ms" in df.columns:
+        recent = df[df["dt"] > now - pd.Timedelta(days=2)]["entry_on_chain_age_ms"].dropna() / 1000
+        older = df[df["dt"] <= now - pd.Timedelta(days=2)]["entry_on_chain_age_ms"].dropna() / 1000
+        L.append("## Detection lag")
+        L.append("")
+        L.append("How stale a trade already was when the collector noticed it. This is "
+                 "what execution lag a row actually represents.")
+        L.append("")
+        if len(recent):
+            L.append(f"- Last 2 days: **median {recent.median():.1f}s**, "
+                     f"p90 {recent.quantile(0.9):.1f}s ({len(recent)} rows)")
+        else:
+            L.append("- Last 2 days: no rows yet")
+        if len(older):
+            L.append(f"- Before that: median {older.median():.1f}s, "
+                     f"p90 {older.quantile(0.9):.1f}s ({len(older)} rows)")
+        if len(recent) and recent.median() > 10:
+            L.append("- ⚠️ Still above 10s. The 4s HTTP timeout should have brought this "
+                     "down; if it has not, the timeout was not the whole cause.")
+        L.append("")
+
     # The headline the whole project is trying to answer.
     proven = sc[sc["verdict"].isin(["CONSISTENT"])]
     L.append("## Has anything been proven yet?")
