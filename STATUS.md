@@ -1,12 +1,13 @@
 # Status
 
-Generated 2026-09-04 22:19 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-05 01:55 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,534 closed round trips**, all collector v3, Aug 05 to Sep 04
-- Newest trade **2.3 h old**
-- **6 in the last 24h**, 26 in the last 7 days (3.7/day across 7 tracked wallets)
+- Newest trade **5.9 h old**
+- **5 in the last 24h**, 26 in the last 7 days (3.7/day across 4 tracked wallets)
+- **+0 since the last report** (2026-09-04 22:19 UTC)
 
 ## Has anything been proven yet?
 
@@ -16,23 +17,19 @@ Generated 2026-09-04 22:19 UTC. This file is written by a scheduled job -- nobod
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| theo | 24 | 6 more | +35.45 | 79% | 91% | 0.002 | 6.1 h ago |
-| Sheep | 27 | 3 more | +27.55 | 78% | 85% | 0.000 | 46.0 h ago |
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 28.0 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 29.8 d ago |
+| theo | 24 | 6 more | +35.45 | 79% | 91% | 0.002 | 9.7 h ago |
+| Sheep | 27 | 3 more | +27.55 | 78% | 85% | 0.000 | 2.1 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 28.1 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 29.9 d ago |
 
-- theo needs 6 more trades; at its recent rate that is roughly 11 days away.
-- Sheep needs 3 more trades; at its recent rate that is roughly 6 days away.
-- Cented needs 28 more trades; at its recent rate that is roughly 53 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 55 days away.
+- theo needs 6 more trades; at its recent rate that is roughly 6 days away.
+- Sheep needs 3 more trades; at its recent rate that is roughly 3 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 30 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 31 days away.
 
 ## Tracked wallets that have gone quiet
 
-- **Dedmeow5** — last trade 18.0 d ago. Costs ~43,200 RPC calls/day regardless.
-- **Loopierr** — last trade 12.1 d ago. Costs ~43,200 RPC calls/day regardless.
-- **Boomer** — last trade 5.0 d ago. Costs ~43,200 RPC calls/day regardless.
-
-A silent wallet is not necessarily a dead one: it may be trading somewhere the collector does not parse. Either way it is spending poll budget for nothing.
+None — every tracked wallet has traded recently.
 
 ## Every wallet
 
