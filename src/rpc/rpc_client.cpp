@@ -21,7 +21,14 @@ size_t write_callback(char* ptr, size_t size, size_t nmemb, void* userdata) {
 
 } // namespace
 
-RpcClient::RpcClient(std::string endpoint) : endpoint_(std::move(endpoint)) {}
+RpcClient::RpcClient(std::string endpoint) : endpoint_(std::move(endpoint)) {
+    curl_ = curl_easy_init();
+    if (!curl_) throw std::runtime_error("curl_easy_init failed");
+}
+
+RpcClient::~RpcClient() {
+    if (curl_) curl_easy_cleanup(curl_);
+}
 
 nlohmann::json RpcClient::call(const std::string& method, const nlohmann::json& params) {
     nlohmann::json request = {
@@ -33,26 +40,35 @@ nlohmann::json RpcClient::call(const std::string& method, const nlohmann::json& 
     std::string body = request.dump();
     std::string response;
 
-    CURL* curl = curl_easy_init();
-    if (!curl) {
-        throw std::runtime_error("curl_easy_init failed");
-    }
-
     struct curl_slist* headers = nullptr;
     headers = curl_slist_append(headers, "Content-Type: application/json");
+    headers = curl_slist_append(headers, "Connection: keep-alive");
 
-    curl_easy_setopt(curl, CURLOPT_URL, endpoint_.c_str());
-    curl_easy_setopt(curl, CURLOPT_POST, 1L);
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, static_cast<long>(body.size()));
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);
+    curl_easy_setopt(curl_, CURLOPT_URL, endpoint_.c_str());
+    curl_easy_setopt(curl_, CURLOPT_POST, 1L);
+    curl_easy_setopt(curl_, CURLOPT_POSTFIELDS, body.c_str());
+    curl_easy_setopt(curl_, CURLOPT_POSTFIELDSIZE, static_cast<long>(body.size()));
+    curl_easy_setopt(curl_, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl_, CURLOPT_WRITEFUNCTION, write_callback);
+    curl_easy_setopt(curl_, CURLOPT_WRITEDATA, &response);
 
-    CURLcode res = curl_easy_perform(curl);
+    // These two numbers set the collector's detection lag, and the old value
+    // of 15 seconds IS the "~17s free-tier latency" this project spent weeks
+    // treating as a property of the RPC. Under load the endpoint holds a
+    // connection open instead of refusing it, so a poll that would normally
+    // answer in ~200ms sat here for the full fifteen seconds, once per cycle,
+    // blocking every other wallet behind it. The 2026-09-04 collector log is
+    // an unbroken run of timeouts spaced 17.4-17.6s apart.
+    //
+    // A copy trade that has not been detected within a few seconds is worth
+    // nothing anyway, so waiting longer buys nothing and costs the poll loop
+    // everything. Fail fast and get on with the next wallet.
+    curl_easy_setopt(curl_, CURLOPT_TIMEOUT, 4L);
+    curl_easy_setopt(curl_, CURLOPT_CONNECTTIMEOUT, 3L);
+    curl_easy_setopt(curl_, CURLOPT_TCP_KEEPALIVE, 1L);
+
+    CURLcode res = curl_easy_perform(curl_);
     curl_slist_free_all(headers);
-    curl_easy_cleanup(curl);
 
     if (res != CURLE_OK) {
         throw std::runtime_error(std::string("RPC request failed: ") + curl_easy_strerror(res));
