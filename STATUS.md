@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-09-06 21:06 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-06 21:18 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,541 closed round trips**, all collector v3, Aug 05 to Sep 06
-- Newest trade **16.1 h old**  ⚠️ collector may be stuck
-- **2 in the last 24h**, 33 in the last 7 days (4.7/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-06 20:35 UTC)
+- Newest trade **16.3 h old**  ⚠️ collector may be stuck
+- **1 in the last 24h**, 32 in the last 7 days (4.6/day across 4 tracked wallets)
+- **+0 since the last report** (2026-09-06 21:06 UTC)
 
 ## Detection lag
 
@@ -25,7 +25,7 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| theo | 29 | 1 more | +43.94 | 83% | 92% | 0.000 | 23.8 h ago |
+| theo | 29 | 1 more | +43.94 | 83% | 92% | 0.000 | 24.0 h ago |
 | Sheep | 27 | 3 more | +27.55 | 78% | 85% | 0.000 | 3.9 d ago |
 | Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 29.9 d ago |
 | Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 31.7 d ago |
