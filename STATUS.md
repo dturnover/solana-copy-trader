@@ -1,19 +1,19 @@
 # Status
 
-Generated 2026-09-06 01:30 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-06 02:00 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **1,539 closed round trips**, all collector v3, Aug 05 to Sep 05
-- Newest trade **6.5 h old**
-- **4 in the last 24h**, 31 in the last 7 days (4.4/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-05 21:12 UTC)
+- **1,540 closed round trips**, all collector v3, Aug 05 to Sep 05
+- Newest trade **4.7 h old**
+- **5 in the last 24h**, 32 in the last 7 days (4.6/day across 4 tracked wallets)
+- **+1 since the last report** (2026-09-06 01:30 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 12.3s**, p90 371.7s (10 rows)
+- Last 2 days: **median 12.4s**, p90 16.0s (11 rows)
 - Before that: median 18.4s, p90 36.1s (1446 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
@@ -25,15 +25,15 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| theo | 28 | 2 more | +43.55 | 82% | 92% | 0.000 | 6.5 h ago |
-| Sheep | 27 | 3 more | +27.55 | 78% | 85% | 0.000 | 3.0 d ago |
+| theo | 29 | 1 more | +43.94 | 83% | 92% | 0.000 | 4.7 h ago |
+| Sheep | 27 | 3 more | +27.55 | 78% | 85% | 0.000 | 3.1 d ago |
 | Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 29.1 d ago |
 | Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 30.9 d ago |
 
-- theo needs 2 more trades; at its recent rate that is roughly 2 days away.
+- theo needs 1 more trades; at its recent rate that is roughly 1 days away.
 - Sheep needs 3 more trades; at its recent rate that is roughly 3 days away.
-- Cented needs 28 more trades; at its recent rate that is roughly 25 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 26 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 24 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 25 days away.
 
 ## Tracked wallets that have gone quiet
 
@@ -44,7 +44,7 @@ None — every tracked wallet has traded recently.
 | wallet | verdict | trades | P&L | win rate | days up | ex-top-3 | p_luck |
 |---|---|---|---|---|---|---|---|
 | Dani | UNPROVEN | 78 | +27.77 | 50% | 56% | -4.70 | 0.127 |
-| theo | INSUFFICIENT | 28 | +43.55 | 82% | 92% | +29.19 | 0.000 |
+| theo | INSUFFICIENT | 29 | +43.94 | 83% | 92% | +29.57 | 0.000 |
 | Sheep | INSUFFICIENT | 27 | +27.55 | 78% | 85% | +19.33 | 0.000 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.251 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
