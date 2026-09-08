@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-09-08 21:42 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-08 21:49 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,549 closed round trips**, all collector v3, Aug 05 to Sep 08
-- Newest trade **6.5 h old**
+- Newest trade **6.7 h old**
 - **4 in the last 24h**, 30 in the last 7 days (4.3/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-08 17:02 UTC)
+- **+0 since the last report** (2026-09-08 21:42 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 11.3s**, p90 11.8s (8 rows)
-- Before that: median 18.3s, p90 36.5s (1458 rows)
+- Last 2 days: **median 11.4s**, p90 11.8s (7 rows)
+- Before that: median 18.3s, p90 36.5s (1459 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
 ## Has anything been proven yet?
@@ -25,7 +25,7 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Sheep | 29 | 1 more | +30.92 | 79% | 86% | 0.000 | 7.9 h ago |
+| Sheep | 29 | 1 more | +30.92 | 79% | 86% | 0.000 | 8.0 h ago |
 | Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 31.9 d ago |
 | Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 33.7 d ago |
 
