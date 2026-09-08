@@ -1,19 +1,19 @@
 # Status
 
-Generated 2026-09-08 02:44 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-08 03:08 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **1,545 closed round trips**, all collector v3, Aug 05 to Sep 07
-- Newest trade **9.1 h old**
-- **1 in the last 24h**, 27 in the last 7 days (3.9/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-07 23:04 UTC)
+- **1,547 closed round trips**, all collector v3, Aug 05 to Sep 08
+- Newest trade **1.0 h old**
+- **3 in the last 24h**, 29 in the last 7 days (4.1/day across 4 tracked wallets)
+- **+2 since the last report** (2026-09-08 02:44 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 11.4s**, p90 1403.9s (5 rows)
+- Last 2 days: **median 11.5s**, p90 940.2s (7 rows)
 - Before that: median 18.3s, p90 36.1s (1457 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
@@ -25,19 +25,17 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Sheep | 27 | 3 more | +27.55 | 78% | 85% | 0.000 | 5.1 d ago |
+| Sheep | 28 | 2 more | +29.27 | 79% | 86% | 0.000 | 1.8 h ago |
 | Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 31.2 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 32.9 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 33.0 d ago |
 
-- Sheep needs 3 more trades; at its recent rate that is roughly 3 days away.
-- Cented needs 28 more trades; at its recent rate that is roughly 29 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 30 days away.
+- Sheep needs 2 more trades; at its recent rate that is roughly 2 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 27 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 28 days away.
 
 ## Tracked wallets that have gone quiet
 
-- **Sheep** — last trade 5.1 d ago. Costs ~43,200 RPC calls/day regardless.
-
-A silent wallet is not necessarily a dead one: it may be trading somewhere the collector does not parse. Either way it is spending poll budget for nothing.
+None — every tracked wallet has traded recently.
 
 ## Every wallet
 
@@ -45,15 +43,15 @@ A silent wallet is not necessarily a dead one: it may be trading somewhere the c
 |---|---|---|---|---|---|---|---|
 | theo | CONSISTENT | 30 | +45.62 | 83% | 92% | +31.26 | 0.000 |
 | Dani | UNPROVEN | 79 | +27.93 | 51% | 58% | -4.55 | 0.128 |
-| Sheep | INSUFFICIENT | 27 | +27.55 | 78% | 85% | +19.33 | 0.000 |
+| Sheep | INSUFFICIENT | 28 | +29.27 | 79% | 86% | +21.06 | 0.000 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.251 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
 | Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.969 |
-| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.866 |
-| Kadenox | LOSING | 41 | -2.51 | 51% | 43% | -9.55 | 0.624 |
-| Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.620 |
+| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.869 |
+| Kadenox | LOSING | 42 | -2.40 | 52% | 46% | -9.44 | 0.616 |
+| Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.621 |
 | Boomer | LOSING | 30 | -7.78 | 27% | 19% | -8.50 | 1.000 |
 | Dedmeow5 | LOSING | 44 | -15.72 | 7% | 0% | -15.86 | 1.000 |
 | Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.997 |
