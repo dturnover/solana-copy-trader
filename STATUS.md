@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-09-09 02:45 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-09 09:13 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,552 closed round trips**, all collector v3, Aug 05 to Sep 09
-- Newest trade **7 min old**
-- **5 in the last 24h**, 31 in the last 7 days (4.4/day across 4 tracked wallets)
-- **+1 since the last report** (2026-09-09 02:16 UTC)
+- Newest trade **6.6 h old**
+- **5 in the last 24h**, 29 in the last 7 days (4.1/day across 4 tracked wallets)
+- **+0 since the last report** (2026-09-09 02:45 UTC)
 
 ## Detection lag
 
@@ -25,13 +25,13 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Sheep | 29 | 1 more | +30.92 | 79% | 86% | 0.000 | 13.0 h ago |
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 32.2 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 33.9 d ago |
+| Sheep | 29 | 1 more | +30.92 | 79% | 86% | 0.000 | 19.4 h ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 32.4 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 34.2 d ago |
 
 - Sheep needs 1 more trades; at its recent rate that is roughly 1 days away.
-- Cented needs 28 more trades; at its recent rate that is roughly 25 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 26 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 27 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 28 days away.
 
 ## Tracked wallets that have gone quiet
 
