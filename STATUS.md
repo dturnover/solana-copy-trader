@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-09-08 22:13 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-09 02:16 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,551 closed round trips**, all collector v3, Aug 05 to Sep 08
-- Newest trade **2.8 h old**
-- **6 in the last 24h**, 32 in the last 7 days (4.6/day across 4 tracked wallets)
-- **+2 since the last report** (2026-09-08 21:49 UTC)
+- Newest trade **6.8 h old**
+- **4 in the last 24h**, 30 in the last 7 days (4.3/day across 4 tracked wallets)
+- **+0 since the last report** (2026-09-08 22:13 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 11.5s**, p90 13.0s (9 rows)
-- Before that: median 18.3s, p90 36.5s (1459 rows)
+- Last 2 days: **median 11.6s**, p90 13.1s (7 rows)
+- Before that: median 18.3s, p90 36.3s (1461 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
 ## Has anything been proven yet?
@@ -25,13 +25,13 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Sheep | 29 | 1 more | +30.92 | 79% | 86% | 0.000 | 8.4 h ago |
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 32.0 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 33.8 d ago |
+| Sheep | 29 | 1 more | +30.92 | 79% | 86% | 0.000 | 12.5 h ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 32.1 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 33.9 d ago |
 
 - Sheep needs 1 more trades; at its recent rate that is roughly 1 days away.
-- Cented needs 28 more trades; at its recent rate that is roughly 24 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 25 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 26 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 27 days away.
 
 ## Tracked wallets that have gone quiet
 
