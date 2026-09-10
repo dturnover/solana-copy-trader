@@ -303,7 +303,13 @@ def main():
     lo = max((i for i in probe_idx if served.get(i)), default=None)   # oldest served
     hi = min((i for i in probe_idx if served.get(i) is False), default=None)
     if lo is not None and hi is not None and lo > hi:
-        for _ in range(6):
+        # Bisecting on row INDEX, not on time. With a non-uniform time
+        # distribution six steps could not close a 1,476-row gap, so
+        # served_age stayed at the newest probe (0.2 days) and the filter threw
+        # away every row that was actually still retained -- the 2026-09-10 run
+        # priced 1 round trip instead of roughly a dozen. Enough steps to
+        # converge fully costs a handful of extra calls and is worth it.
+        for _ in range(14):
             mid = (lo + hi) // 2
             if mid == lo or mid == hi:
                 break
@@ -459,9 +465,20 @@ def main():
     print(g.to_string())
 
     print(f"\nWrote {args.out}")
-    if same_block <= 0:
+    # This sentence decided the gRPC question once. It should not be printed
+    # off a handful of round trips, and it must not be printed off a sample
+    # dominated by one wallet -- the original verdict came from 57 rows of
+    # which 38 were a single wallet since removed as a conclusive loser.
+    top_share = out["wallet_label"].value_counts(normalize=True).iloc[0]
+    if same_block <= 0 and n >= 40 and top_share <= 0.5:
         print("\nSame-block execution still loses money. Latency is not the binding "
               "problem, and no infrastructure purchase changes this -- it is the floor.")
+    elif same_block <= 0:
+        print(f"\nSame-block is negative here, but this sample cannot settle it: "
+              f"n={n}"
+              + (f", and {100 * top_share:.0f}% of it is one wallet"
+                 if top_share > 0.5 else "")
+              + ". Not a verdict on latency.")
 
 
 if __name__ == "__main__":

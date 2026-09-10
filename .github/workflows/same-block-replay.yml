@@ -12,6 +12,12 @@ name: Same-Block Replay
 # Manual dispatch only: it shares the free RPC tier with the collector and
 # must not compete with it on a schedule.
 on:
+  # Daily, because the inputs are perishable: the endpoint forgets a
+  # transaction after a few days, so a round trip not priced while it is fresh
+  # can never be priced at all. Running this only on request is why 1,475 of
+  # 1,476 recorded round trips are now permanently unpriceable.
+  schedule:
+    - cron: "40 6 * * *"
   workflow_dispatch:
     inputs:
       limit:
@@ -22,6 +28,9 @@ on:
         description: "Override the fee measured from the data (basis points)"
         required: false
         default: ""
+
+permissions:
+  contents: write   # commits pricing that cannot be recomputed later
 
 jobs:
   replay:
@@ -58,6 +67,24 @@ jobs:
             cat same_block.txt 2>/dev/null || echo "(no output)"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # Keep them. An artifact expires and the underlying transactions expire
+      # sooner; the repository is the only durable record.
+      - name: Commit priced round trips
+        if: always()
+        run: |
+          test -s reports/same_block_trades.csv || { echo "nothing priced"; exit 0; }
+          mkdir -p reports/same_block
+          cp reports/same_block_trades.csv "reports/same_block/$(date -u +%Y%m%d).csv"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/same_block
+          git diff --staged --quiet && { echo "no change"; exit 0; }
+          git commit -m "Same-block pricing $(date -u +%Y-%m-%d) [skip ci]"
+          for attempt in 1 2 3 4; do
+            git pull --rebase --quiet origin master && git push origin HEAD:master && break
+            sleep $((attempt * 2))
+          done
 
       - name: Upload results
         if: always()
