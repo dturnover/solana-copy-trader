@@ -1,19 +1,19 @@
 # Status
 
-Generated 2026-09-16 22:07 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-16 22:40 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **1,581 closed round trips**, all collector v3, Aug 05 to Sep 16
-- Newest trade **5.2 h old**
-- **4 in the last 24h**, 26 in the last 7 days (3.7/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-16 21:54 UTC)
+- **1,590 closed round trips**, all collector v3, Aug 05 to Sep 16
+- Newest trade **1.6 h old**
+- **13 in the last 24h**, 35 in the last 7 days (5.0/day across 4 tracked wallets)
+- **+9 since the last report** (2026-09-16 22:07 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 12.3s**, p90 13.6s (14 rows)
+- Last 2 days: **median 12.4s**, p90 13.7s (23 rows)
 - Before that: median 18.3s, p90 35.5s (1484 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
@@ -28,28 +28,26 @@ How stale a trade already was when the collector noticed it. This is what execut
 | Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 40.0 d ago |
 | Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 41.8 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 30 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 31 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 22 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 23 days away.
 
 ## Tracked wallets that have gone quiet
 
-- **Sheep** — last trade 6.3 d ago. Costs ~43,200 RPC calls/day regardless.
-
-A silent wallet is not necessarily a dead one: it may be trading somewhere the collector does not parse. Either way it is spending poll budget for nothing.
+None — every tracked wallet has traded recently.
 
 ## Every wallet
 
 | wallet | verdict | trades | P&L | win rate | days up | ex-top-3 | p_luck |
 |---|---|---|---|---|---|---|---|
 | theo | CONSISTENT | 34 | +60.46 | 85% | 94% | +44.84 | 0.000 |
-| Dani | CONSISTENT | 96 | +38.22 | 52% | 60% | +5.75 | 0.064 |
-| Sheep | CONSISTENT | 30 | +32.29 | 80% | 87% | +24.08 | 0.000 |
+| Dani | CONSISTENT | 104 | +39.35 | 51% | 60% | +5.34 | 0.071 |
+| Sheep | CONSISTENT | 31 | +32.76 | 81% | 88% | +24.55 | 0.000 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.251 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
-| Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.967 |
-| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.865 |
+| Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.968 |
+| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.867 |
 | Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.622 |
 | Boomer | LOSING | 30 | -7.78 | 27% | 19% | -8.50 | 1.000 |
 | Kadenox | LOSING | 53 | -8.27 | 49% | 43% | -15.75 | 0.802 |
