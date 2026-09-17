@@ -1,19 +1,19 @@
 # Status
 
-Generated 2026-09-17 09:32 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-17 10:38 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **1,598 closed round trips**, all collector v3, Aug 05 to Sep 17
-- Newest trade **6.9 h old**
-- **20 in the last 24h**, 41 in the last 7 days (5.9/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-17 02:58 UTC)
+- **1,599 closed round trips**, all collector v3, Aug 05 to Sep 17
+- Newest trade **5.2 h old**
+- **21 in the last 24h**, 42 in the last 7 days (6.0/day across 4 tracked wallets)
+- **+1 since the last report** (2026-09-17 09:32 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 12.6s**, p90 13.6s (29 rows)
+- Last 2 days: **median 12.5s**, p90 13.6s (30 rows)
 - Before that: median 18.2s, p90 35.5s (1486 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
@@ -25,11 +25,11 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 40.4 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 42.2 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 40.5 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 42.3 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 19 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 20 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 19 days away.
 
 ## Tracked wallets that have gone quiet
 
@@ -39,7 +39,7 @@ None — every tracked wallet has traded recently.
 
 | wallet | verdict | trades | P&L | win rate | days up | ex-top-3 | p_luck |
 |---|---|---|---|---|---|---|---|
-| theo | CONSISTENT | 34 | +60.46 | 85% | 94% | +44.84 | 0.000 |
+| theo | CONSISTENT | 35 | +63.16 | 86% | 94% | +47.55 | 0.000 |
 | Sheep | CONSISTENT | 31 | +32.76 | 81% | 88% | +24.55 | 0.000 |
 | Dani | UNPROVEN | 112 | +29.91 | 49% | 58% | -4.11 | 0.150 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.251 |
