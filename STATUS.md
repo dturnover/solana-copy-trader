@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-09-18 17:07 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-18 21:30 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,611 closed round trips**, all collector v3, Aug 05 to Sep 18
-- Newest trade **12.0 h old**
-- **10 in the last 24h**, 50 in the last 7 days (7.1/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-18 16:15 UTC)
+- Newest trade **16.4 h old**  ⚠️ collector may be stuck
+- **7 in the last 24h**, 49 in the last 7 days (7.0/day across 4 tracked wallets)
+- **+0 since the last report** (2026-09-18 17:07 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 12.7s**, p90 13.6s (30 rows)
-- Before that: median 18.2s, p90 35.3s (1498 rows)
+- Last 2 days: **median 12.7s**, p90 13.3s (21 rows)
+- Before that: median 18.2s, p90 35.2s (1507 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
 ## Has anything been proven yet?
@@ -25,11 +25,11 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 41.8 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 43.5 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 41.9 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 43.7 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 16 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 16 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 17 days away.
 
 ## Tracked wallets that have gone quiet
 
