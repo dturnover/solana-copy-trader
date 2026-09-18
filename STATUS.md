@@ -1,19 +1,19 @@
 # Status
 
-Generated 2026-09-18 09:20 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-18 10:27 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **1,610 closed round trips**, all collector v3, Aug 05 to Sep 18
-- Newest trade **6.7 h old**
-- **11 in the last 24h**, 49 in the last 7 days (7.0/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-18 03:01 UTC)
+- **1,611 closed round trips**, all collector v3, Aug 05 to Sep 18
+- Newest trade **5.3 h old**
+- **12 in the last 24h**, 50 in the last 7 days (7.1/day across 4 tracked wallets)
+- **+1 since the last report** (2026-09-18 09:20 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 12.7s**, p90 13.5s (32 rows)
+- Last 2 days: **median 12.6s**, p90 13.5s (33 rows)
 - Before that: median 18.2s, p90 35.4s (1495 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
@@ -25,11 +25,11 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 41.4 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 43.2 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 41.5 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 43.3 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 16 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 17 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 16 days away.
 
 ## Tracked wallets that have gone quiet
 
@@ -47,10 +47,10 @@ None — every tracked wallet has traded recently.
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
 | Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.969 |
-| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.872 |
+| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.869 |
 | Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.617 |
 | Boomer | LOSING | 30 | -7.78 | 27% | 19% | -8.50 | 1.000 |
-| Kadenox | LOSING | 54 | -8.36 | 48% | 41% | -15.84 | 0.802 |
+| Kadenox | LOSING | 55 | -8.05 | 49% | 43% | -15.53 | 0.790 |
 | Dedmeow5 | LOSING | 44 | -15.72 | 7% | 0% | -15.86 | 1.000 |
 | Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.997 |
 | Doji | LOSING | 59 | -41.68 | 20% | 20% | -44.39 | 1.000 |
