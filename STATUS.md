@@ -1,19 +1,19 @@
 # Status
 
-Generated 2026-09-20 21:30 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-20 21:50 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **1,615 closed round trips**, all collector v3, Aug 05 to Sep 20
-- Newest trade **15.3 h old**  ⚠️ collector may be stuck
-- **1 in the last 24h**, 50 in the last 7 days (7.1/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-20 21:09 UTC)
+- **1,618 closed round trips**, all collector v3, Aug 05 to Sep 20
+- Newest trade **1.5 h old**
+- **4 in the last 24h**, 53 in the last 7 days (7.6/day across 4 tracked wallets)
+- **+3 since the last report** (2026-09-20 21:30 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 10.5s**, p90 12.2s (3 rows)
+- Last 2 days: **median 10.9s**, p90 12.3s (6 rows)
 - Before that: median 18.1s, p90 35.0s (1529 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
@@ -28,8 +28,8 @@ How stale a trade already was when the collector noticed it. This is what execut
 | Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 43.9 d ago |
 | Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 45.7 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 16 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 16 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 15 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 15 days away.
 
 ## Tracked wallets that have gone quiet
 
@@ -41,16 +41,16 @@ None — every tracked wallet has traded recently.
 |---|---|---|---|---|---|---|---|
 | theo | CONSISTENT | 36 | +64.46 | 86% | 95% | +48.84 | 0.000 |
 | Sheep | CONSISTENT | 31 | +32.76 | 81% | 88% | +24.55 | 0.000 |
-| Dani | UNPROVEN | 125 | +11.27 | 48% | 58% | -22.74 | 0.365 |
+| Dani | UNPROVEN | 128 | +12.54 | 48% | 59% | -21.47 | 0.352 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.251 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
-| Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.971 |
-| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.866 |
-| Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.620 |
+| Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.972 |
+| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.871 |
+| Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.616 |
 | Boomer | LOSING | 30 | -7.78 | 27% | 19% | -8.50 | 1.000 |
-| Kadenox | LOSING | 55 | -8.05 | 49% | 43% | -15.53 | 0.789 |
+| Kadenox | LOSING | 55 | -8.05 | 49% | 43% | -15.53 | 0.791 |
 | Dedmeow5 | LOSING | 44 | -15.72 | 7% | 0% | -15.86 | 1.000 |
 | Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.997 |
 | Doji | LOSING | 59 | -41.68 | 20% | 20% | -44.39 | 1.000 |
