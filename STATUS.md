@@ -1,19 +1,19 @@
 # Status
 
-Generated 2026-09-22 09:25 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-22 10:44 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **1,627 closed round trips**, all collector v3, Aug 05 to Sep 22
-- Newest trade **6.0 h old**
-- **3 in the last 24h**, 58 in the last 7 days (8.3/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-22 03:35 UTC)
+- **1,630 closed round trips**, all collector v3, Aug 05 to Sep 22
+- Newest trade **1.2 h old**
+- **6 in the last 24h**, 61 in the last 7 days (8.7/day across 4 tracked wallets)
+- **+3 since the last report** (2026-09-22 09:25 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 10.8s**, p90 12.2s (12 rows)
+- Last 2 days: **median 10.9s**, p90 12.2s (15 rows)
 - Before that: median 18.1s, p90 35.0s (1532 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
@@ -25,11 +25,11 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 45.4 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 47.2 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 45.5 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 47.3 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 14 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 14 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 13 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 13 days away.
 
 ## Tracked wallets that have gone quiet
 
@@ -40,7 +40,7 @@ None — every tracked wallet has traded recently.
 | wallet | verdict | trades | P&L | win rate | days up | ex-top-3 | p_luck |
 |---|---|---|---|---|---|---|---|
 | theo | CONSISTENT | 36 | +64.46 | 86% | 95% | +48.84 | 0.000 |
-| Sheep | CONSISTENT | 32 | +33.89 | 81% | 88% | +25.68 | 0.000 |
+| Sheep | CONSISTENT | 35 | +38.86 | 83% | 89% | +30.65 | 0.000 |
 | Dani | UNPROVEN | 136 | +4.09 | 48% | 56% | -29.92 | 0.458 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.251 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
