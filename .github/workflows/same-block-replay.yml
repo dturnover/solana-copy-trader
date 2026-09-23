@@ -52,9 +52,16 @@ jobs:
           # The script aborts if its TradeEvent decode does not agree with the
           # token amounts the collector recorded independently, so a failure
           # here means the layout is wrong -- not that the data is bad.
+          # inputs.* are EMPTY on a schedule -- the defaults declared under
+          # workflow_dispatch apply only to manual runs. Passing --limit "" made
+          # argparse reject it before the script did anything, and every
+          # scheduled run from 2026-09-11 to 09-23 failed on this one line while
+          # emailing a failure notice each morning. Default in the shell, where
+          # both trigger paths go through it.
+          LIMIT="${{ inputs.limit }}"
           python3 reports/replay_same_block.py \
             reports/paper_trades_final.csv reports/same_block_trades.csv \
-            --limit "${{ inputs.limit }}" \
+            --limit "${LIMIT:-300}" \
             ${FEE_BPS:+--fee-bps "$FEE_BPS"} 2>&1 | tee same_block.txt
 
       - name: Publish to the run summary

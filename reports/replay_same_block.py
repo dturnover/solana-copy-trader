@@ -340,8 +340,13 @@ def main():
         if dropped_old:
             print(f"  -> dropping {dropped_old} selected row(s) already past the horizon")
         if usable.empty:
-            sys.exit("Every selected round trip is older than the retention horizon. "
-                     "Nothing can be replayed; run this closer to collection.")
+            # Not a fault. On a slow collection day there is simply nothing
+            # young enough to price, and a daily job that exits non-zero for
+            # that emails a failure notice for a normal outcome. Reserve
+            # failure for things that are actually wrong.
+            print("Nothing young enough to price today -- every selected round trip "
+                  "is past the retention horizon. Not an error.")
+            sys.exit(0)
     elif newest_missing is not None:
         print(f"  -> history is gone by {newest_missing:.1f} days; only fresher "
               f"round trips can be replayed at all")
@@ -405,9 +410,16 @@ def main():
         print()
 
     if not rows:
-        sys.exit("Nothing priced. If 'token_amount disagrees with collector' dominates, "
-                 "the TradeEvent field offsets in this script are wrong -- fix those "
-                 "rather than relaxing the check.")
+        # Distinguish "no input" from "input we could not decode". The first is
+        # a quiet day; the second means the layout is broken and must be loud.
+        decode_failures = sum(n for why, n in checks.items() if "disagree" in why or "layout" in why)
+        if decode_failures:
+            sys.exit(f"Nothing priced and {decode_failures} decode failure(s) -- the "
+                     "TradeEvent field offsets in this script are likely wrong. Fix "
+                     "those rather than relaxing the check.")
+        print("Nothing priced -- no usable round trips reached the pricing stage "
+              "(see the outcomes above). Not a decode problem.")
+        sys.exit(0)
 
     attempted = len(rows) + sum(checks.values())
     match_rate = len(rows) / attempted if attempted else 0.0
