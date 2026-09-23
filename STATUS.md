@@ -1,19 +1,19 @@
 # Status
 
-Generated 2026-09-23 16:31 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-23 17:26 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **1,649 closed round trips**, all collector v3, Aug 05 to Sep 23
-- Newest trade **10.4 h old**
-- **19 in the last 24h**, 69 in the last 7 days (9.9/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-23 12:44 UTC)
+- **1,651 closed round trips**, all collector v3, Aug 05 to Sep 23
+- Newest trade **3.5 h old**
+- **20 in the last 24h**, 69 in the last 7 days (9.9/day across 4 tracked wallets)
+- **+2 since the last report** (2026-09-23 16:31 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 10.3s**, p90 11.3s (25 rows)
+- Last 2 days: **median 10.4s**, p90 11.3s (27 rows)
 - Before that: median 18.0s, p90 34.7s (1541 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
@@ -25,8 +25,8 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 46.7 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 48.5 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 46.8 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 48.6 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 11 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 12 days away.
@@ -42,7 +42,7 @@ A silent wallet is not necessarily a dead one: it may be trading somewhere the c
 | wallet | verdict | trades | P&L | win rate | days up | ex-top-3 | p_luck |
 |---|---|---|---|---|---|---|---|
 | theo | CONSISTENT | 40 | +70.11 | 88% | 95% | +54.49 | 0.000 |
-| Sheep | CONSISTENT | 39 | +43.29 | 82% | 89% | +34.72 | 0.000 |
+| Sheep | CONSISTENT | 41 | +44.99 | 83% | 90% | +36.42 | 0.000 |
 | Dani | UNPROVEN | 147 | +13.95 | 48% | 54% | -21.31 | 0.341 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.251 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
