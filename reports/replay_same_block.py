@@ -223,6 +223,24 @@ def pick_event(tx, mint, is_buy, token_amount, checks, leg):
     return e
 
 
+def layout_verdict(priced, attempted, offsets_confirmed):
+    """'price', 'price-small-sample', 'price-offsets-confirmed' or 'abort'.
+
+    A low match rate only indicts the TradeEvent layout when the sample is big
+    enough for a rate to mean anything AND the decodes that did succeed fail to
+    reproduce the reserve constants. Pure, so it is unit-tested directly -- the
+    previous inline version refused to price 13 good round trips out of 15.
+    """
+    rate = priced / attempted if attempted else 0.0
+    if rate >= MIN_DECODE_MATCH_RATE:
+        return "price"
+    if attempted < MIN_ROWS_FOR_LAYOUT_VERDICT:
+        return "price-small-sample"
+    if offsets_confirmed == priced:
+        return "price-offsets-confirmed"
+    return "abort"
+
+
 def buy_cost(v_sol, v_tok, tokens_out):
     if tokens_out <= 0 or tokens_out >= v_tok:
         return None
@@ -408,6 +426,13 @@ def main():
             "raw_cost_lamports": cost,
             "raw_proceeds_lamports": proceeds,
             "wallet_cost_lamports": float(r["wallet_lamports_spent"]),
+            # The curve itself, just after each of the wallet's legs. With these
+            # saved, any copy size can be re-priced offline forever -- after the
+            # RPC has long forgotten the transactions. Without them, the
+            # fixed-size sweep has to reconstruct them from the constant-product
+            # invariant (see size_sweep.py).
+            "buy_vs": float(be["virtual_sol"]),
+            "sell_vs": float(se["virtual_sol"]),
         })
 
     if checks:
@@ -442,13 +467,13 @@ def main():
     # also reproduced both reserve constants, the field offsets are provably
     # right and the failures are individual odd transactions (a different
     # program version, a venue we do not model), not a systemic break.
-    offsets_all_confirmed = offsets_confirmed == len(rows)
-    if match_rate < MIN_DECODE_MATCH_RATE:
-        if attempted < MIN_ROWS_FOR_LAYOUT_VERDICT:
+    verdict = layout_verdict(len(rows), attempted, offsets_confirmed)
+    if verdict != "price":
+        if verdict == "price-small-sample":
             print(f"\n!  Match rate {100 * match_rate:.1f}% on only {attempted} attempted "
                   f"round trips -- too few for that rate to indict the layout. Pricing "
                   f"the {len(rows)} that decoded cleanly.", file=sys.stderr)
-        elif offsets_all_confirmed:
+        elif verdict == "price-offsets-confirmed":
             print(f"\n!  Match rate {100 * match_rate:.1f}%, but all {len(rows)} successful "
                   "decodes reproduced both reserve constants -- the offsets are right and "
                   "the failures are per-transaction, not systemic. Pricing anyway.",

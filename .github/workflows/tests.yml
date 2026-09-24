@@ -1,0 +1,29 @@
+name: Tests
+
+# Runs tests/ on every push and pull request.
+#
+# Everything that reached production broken in this repo -- a --limit default
+# that only existed on manual runs, int() on a pandas Series, a 90% gate that
+# refused 13 good trades out of 15 -- was a code path nobody executed until it
+# mattered. build-check.yml compiles the C++ but nothing ran the Python at all.
+# This runs every scheduled script against the real committed data, and each
+# of those three bugs is pinned by a test that was confirmed to fail on it.
+#
+# The bot's own dataset commits carry [skip ci], so this does not fire every
+# few hours on data refreshes -- only when code or config changes.
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: pip install --quiet pandas numpy pytest pyyaml
+      - name: Run tests
+        run: python3 -m pytest tests/ -v

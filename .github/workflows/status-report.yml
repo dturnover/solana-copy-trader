@@ -14,7 +14,7 @@ on:
   # Also right after new data lands, so the file is never stale relative to
   # the dataset it describes.
   workflow_run:
-    workflows: ["Merge Paper Trades"]
+    workflows: ["Merge Paper Trades", "Same-Block Replay"]
     types: [completed]
   workflow_dispatch: {}
 

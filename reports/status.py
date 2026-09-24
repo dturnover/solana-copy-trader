@@ -190,16 +190,54 @@ def main():
              "losing 26 SOL.")
     L.append("")
 
-    L.append("## Settled")
+    # Copyability, computed live from the same-block files. This replaces a
+    # hardcoded "Settled" block that told the reader "gRPC: no" for two weeks
+    # after the evidence behind it was withdrawn -- it rested on a sample that
+    # was two-thirds one since-removed losing wallet, and on buy-side fill
+    # alone. A conclusion baked into a string cannot notice when it goes stale.
+    sweep_out = "/tmp/status_sweep.csv"
+    sw = subprocess.run([sys.executable, "reports/size_sweep.py", "--out", sweep_out],
+                        capture_output=True, text=True)
+    L.append("## Can we actually copy them?")
     L.append("")
-    L.append("- **gRPC: no.** Filling in the same block as the wallet -- the floor no "
-             "speed purchase can beat -- still loses money (-39.14 SOL over 57 round "
-             "trips). Latency is worth ~32 SOL of that; the rest is the wallets.")
-    L.append("- **Execution costs 243 bps per leg** (~4.9% round trip), measured. The "
-             "collector applies none of it, so simulated copy P&L is optimistic by "
-             "that much. Wallet-side figures are unaffected.")
-    L.append("- **The RPC forgets transactions after ~3.5 days.** Anything not "
-             "replayed or screened within that window can never be re-priced.")
+    if sw.returncode != 0 or not os.path.exists(sweep_out):
+        L.append("_Size sweep unavailable this run -- no same-block data yet._")
+    else:
+        m = pd.read_csv(sweep_out)
+        m = m[(m["scenario"] == "measured") & (m["size_sol"] == 0.25) & (m["wallet"] != "ALL")]
+        L.append("Same-block execution, copying at a **fixed 0.25 SOL** instead of the "
+                 "wallet's own size, measured fees (2%/leg + 0.002 SOL/trip). "
+                 "`exit/entry` below 1 means we sell below where we bought -- the wallet "
+                 "is using us as exit liquidity.")
+        L.append("")
+        L.append("| wallet | n | return/trade | win rate | exit/entry | median hold |")
+        L.append("|---|---|---|---|---|---|")
+        for _, r in m.sort_values("mean_return", ascending=False).iterrows():
+            L.append(f"| {r['wallet']} | {int(r['n'])} | {100 * r['mean_return']:+.1f}% | "
+                     f"{r['win_rate']:.0%} | {r['exit_over_entry']:.2f} | "
+                     f"{r['median_hold_s']:.1f}s |")
+        L.append("")
+        L.append("**This is a ceiling, not a forecast.** It assumes we land in the same "
+                 "block as the wallet. The collector's real detection lag is ~12s, and a "
+                 "wallet with a 3-second hold has already sold by then.")
+    L.append("")
+
+    L.append("## What we know")
+    L.append("")
+    L.append("- **Copy size is the biggest cost lever, not speed.** Mirroring the "
+             "wallet's size puts us straight after them on a curve they just pushed: "
+             "position size vs fill penalty correlates at +0.84 (0.26 SOL fills at "
+             "1.007x, 5 SOL at 1.34x). Copy small.")
+    L.append("- **Some good traders are uncopyable by construction.** theo is profitable "
+             "but sells into strength; we exit after theo's own dump, 18% below entry. "
+             "No speed fixes that.")
+    L.append("- **Whether latency is worth paying for is OPEN again.** For fast wallets "
+             "it decides everything. The earlier \"gRPC: no\" was withdrawn -- it was "
+             "measured on the wrong sample and the wrong metric.")
+    L.append("- **Execution costs ~2% per leg all-in**, measured. The live collector "
+             "applies none, so its simulated copy P&L is optimistic.")
+    L.append("- **The RPC forgets transactions in ~2 days.** Same-block pricing now runs "
+             "daily and saves the curve state, so each day's trades stay analysable.")
     L.append("")
 
     open(OUT, "w").write("\n".join(L) + "\n")
