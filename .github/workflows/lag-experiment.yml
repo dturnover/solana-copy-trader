@@ -4,9 +4,16 @@ name: Lag Experiment
 # hosted runners instead of needing a home PC left on -- this is a research
 # instrument collecting price-decay samples, not a production service, so
 # bounded scheduled runs are the right shape rather than a true daemon.
+#
+# UNSCHEDULED 2026-09-24. In firehose mode this polls the entire pump.fun
+# program, on the same free-tier RPC key as the paper-trade collector, ~20
+# hours a day -- overlapping every collector run. Nothing consumes its output
+# (reports/lag_samples_final.csv was never produced), and the question it was
+# built for is answered by the collector's own on_chain_age_ms and the
+# same-block replay. Meanwhile the collector was losing trades to
+# RateLimitExceeded. Manual runs only; do not put it back on a schedule while
+# it shares a key with the collector.
 on:
-  schedule:
-    - cron: "0 */6 * * *" # every 6 hours
   workflow_dispatch: {} # allows manual triggering via `gh workflow run` or the Actions UI
 
 jobs:
