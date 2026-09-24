@@ -25,6 +25,13 @@ from collections import Counter
 # three minutes of one run alone).
 MAX_FAILURES_WITH_NO_TRADES = 30
 
+# ...and "some trades" is not "healthy". The first run after the v1 fix
+# recorded 1 round trip against 872 rate-limited fetches and went green. Each
+# failed fetch is a trade we may have lost, so past this many per recorded
+# trade the run is degraded, not quiet. A normal pre-outage run: ~35 failures,
+# 3+ trades.
+MAX_FAILURES_PER_TRADE = 25
+
 
 def rows_recorded(csv_path):
     if not os.path.exists(csv_path):
@@ -36,13 +43,15 @@ def rows_recorded(csv_path):
 def verdict(log_text, rows):
     """(ok, message). Pure, so the rule itself is tested."""
     failures = re.findall(r"getTransaction failed for \S+: (.*)", log_text)
-    if len(failures) >= MAX_FAILURES_WITH_NO_TRADES and rows == 0:
+    if len(failures) >= MAX_FAILURES_WITH_NO_TRADES and len(failures) > MAX_FAILURES_PER_TRADE * max(rows, 1):
         # The error text carries the signature-free cause; group by it so the
         # failure message names the fault instead of listing 500 lines.
         causes = Counter(re.sub(r"\d{3,}", "N", f)[:160] for f in failures)
         top = "\n".join(f"  {n:>5}x  {c}" for c, n in causes.most_common(3))
-        return False, (f"BLIND: {len(failures)} getTransaction failures and 0 trades recorded.\n"
-                       f"This is a broken collector, not quiet wallets. Most common causes:\n{top}")
+        kind = "BLIND" if rows == 0 else "DEGRADED"
+        return False, (f"{kind}: {len(failures)} getTransaction failures and {rows} trade(s) recorded.\n"
+                       f"Trades are being lost, not missing because wallets were quiet. "
+                       f"Most common causes:\n{top}")
     return True, f"ok: {rows} trade(s) recorded, {len(failures)} getTransaction failure(s)"
 
 
@@ -52,7 +61,7 @@ def main():
     ok, msg = verdict(log_text, rows_recorded(csv_path))
     print(msg)
     if not ok:
-        print(f"::error title=Collector was blind::{msg.splitlines()[0]}")
+        print(f"::error title=Collector lost data::{msg.splitlines()[0]}")
         sys.exit(1)
 
 

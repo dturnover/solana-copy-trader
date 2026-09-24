@@ -171,7 +171,9 @@ V1_REJECTION = ('RPC error: {"code":-32015,"message":"Transaction version (1) is
 
 @pytest.mark.parametrize("failures,rows,ok", [
     (131, 0, False),   # the 2026-09-23 outage: blind, and green
-    (131, 4, True),    # failures, but it is still seeing trades
+    (131, 10, True),   # failures, but still recording plenty
+    (872, 1, False),   # 2026-09-24: green with 1 trade against 872 lost fetches
+    (35, 3, True),     # a normal pre-outage run
     (3, 0, True),      # a quiet day: few trades means few fetches to fail
     (0, 0, True),
 ])
@@ -184,6 +186,29 @@ def test_collector_health_tells_blind_from_quiet(failures, rows, ok):
         assert "Transaction version (1)" in msg, "failure must name its cause"
 
 
+def test_collector_runs_never_overlap():
+    """Two collectors on one free-tier key rate-limit each other into losing
+    trades (2026-09-24, 17:28-20:08)."""
+    wf = (ROOT / ".github/workflows/paper-trade.yml").read_text()
+    assert re.search(r"^concurrency:\s*\n\s+group: paper-trade", wf, re.M)
+
+
+def test_nothing_else_polls_the_collectors_key_on_a_schedule():
+    """lag-experiment firehosed the pump.fun program on the same key ~20h/day."""
+    wf = (ROOT / ".github/workflows/lag-experiment.yml").read_text()
+    assert not re.search(r"^\s*schedule:", wf, re.M)
+
+
 def test_paper_trade_workflow_runs_the_health_check():
     wf = (ROOT / ".github/workflows/paper-trade.yml").read_text()
     assert "tee collector.log" in wf and "collector_health.py collector.log" in wf
+
+
+def test_rpc_client_retries_rate_limited_calls():
+    """Callers skip past a signature whose fetch failed, so a dropped
+    RateLimitExceeded is a trade lost for good. The client must back off and
+    retry instead."""
+    src = (ROOT / "src/rpc/rpc_client.cpp").read_text()
+    body = src[src.index("RpcClient::call"):]
+    body = body[:body.index("\n}\n")]
+    assert "RateLimit" in body and "sleep_for" in body, "rate-limited RPC calls are dropped, not retried"

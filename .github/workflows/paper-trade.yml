@@ -10,6 +10,14 @@ on:
     - cron: "30 */6 * * *" # every 6 hours, offset 30m from lag-experiment.yml
   workflow_dispatch: {}
 
+# Never two collectors at once. A manual run on 2026-09-24 14:48 was still
+# going when the 17:28 schedule fired; both polled the same free-tier key for
+# three hours, rate-limited failures went from ~60/h to 783/h, and trades were
+# lost. A run that fires while one is active now waits for it.
+concurrency:
+  group: paper-trade
+  cancel-in-progress: false
+
 permissions:
   actions: read   # to fetch the previous run's carried-over position state
 

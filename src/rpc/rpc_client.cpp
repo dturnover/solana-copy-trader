@@ -3,6 +3,9 @@
 #include "util/logging.h"
 
 #include <algorithm>
+#include <chrono>
+#include <iterator>
+#include <thread>
 #include <stdexcept>
 
 #include <curl/curl.h>
@@ -67,14 +70,38 @@ nlohmann::json RpcClient::call(const std::string& method, const nlohmann::json& 
     curl_easy_setopt(curl_, CURLOPT_CONNECTTIMEOUT, 3L);
     curl_easy_setopt(curl_, CURLOPT_TCP_KEEPALIVE, 1L);
 
-    CURLcode res = curl_easy_perform(curl_);
+    // A rate-limited request used to be dropped on the spot, and callers
+    // advance past a signature whose fetch failed -- so every RateLimitExceeded
+    // on a getTransaction permanently lost that trade. When the one sell of a
+    // round trip is lost, the position never closes: the 2026-09-24 run saw
+    // ~30 buys and closed one, against 872 rate-limited fetches. Back off and
+    // retry instead. A few seconds late is a data point; lost is nothing.
+    //
+    // Not getAccountInfo: that read prices our simulated fill at a fixed
+    // execution lag, and retrying it would silently price the fill seconds
+    // later than every row claims. Dropping that one is the honest outcome.
+    static constexpr int kRateLimitBackoffMs[] = {250, 750, 2000};
+    const bool retry_rate_limit = method != "getAccountInfo";
+    nlohmann::json parsed;
+    for (int attempt = 0;; ++attempt) {
+        response.clear();
+        CURLcode res = curl_easy_perform(curl_);
+        if (res != CURLE_OK) {
+            curl_slist_free_all(headers);
+            throw std::runtime_error(std::string("RPC request failed: ") + curl_easy_strerror(res));
+        }
+        long http_status = 0;
+        curl_easy_getinfo(curl_, CURLINFO_RESPONSE_CODE, &http_status);
+        parsed = nlohmann::json::parse(response, nullptr, false);
+        bool rate_limited = http_status == 429 ||
+                            (!parsed.is_discarded() && parsed.contains("error") &&
+                             parsed["error"].dump().find("RateLimit") != std::string::npos);
+        if (!rate_limited || !retry_rate_limit ||
+            attempt >= static_cast<int>(std::size(kRateLimitBackoffMs))) break;
+        std::this_thread::sleep_for(std::chrono::milliseconds(kRateLimitBackoffMs[attempt]));
+    }
     curl_slist_free_all(headers);
 
-    if (res != CURLE_OK) {
-        throw std::runtime_error(std::string("RPC request failed: ") + curl_easy_strerror(res));
-    }
-
-    nlohmann::json parsed = nlohmann::json::parse(response, nullptr, false);
     if (parsed.is_discarded()) {
         throw std::runtime_error("RPC response was not valid JSON: " + response);
     }
