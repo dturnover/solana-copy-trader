@@ -86,7 +86,21 @@ nlohmann::json RpcClient::call(const std::string& method, const nlohmann::json& 
 
 std::vector<SignatureInfo> RpcClient::get_signatures_for_address(const std::string& address_base58,
                                                                    const std::string& until_signature, int limit) {
-    nlohmann::json options = {{"limit", limit}};
+    // "confirmed", not the RPC's default of "finalized". Finalization takes 32
+    // slots, about 12.8 seconds, and a signature is invisible to this call
+    // until it happens -- so every trade the collector ever recorded was
+    // detected no sooner than ~13s after it landed, however fast we polled.
+    // That was the real floor under the "~12s free-tier detection lag": the
+    // 15s-timeout fix (2026-09-05) cut the median from 18.3s only to 11.8s, and
+    // nothing was ever observed under ~9s. Confirmed signatures appear after
+    // one or two slots. get_transaction below already reads at "confirmed", so
+    // the transaction a confirmed signature points to is fetchable.
+    //
+    // This matters beyond speed: the one wallet that is profitable to copy at
+    // same-block execution (Sheep, median hold 2.8s) loses money at ~12s, and
+    // there was no data at all between 0 and 9s to say where it turns. Every
+    // row collected after this change lands in that gap.
+    nlohmann::json options = {{"limit", limit}, {"commitment", "confirmed"}};
     if (!until_signature.empty()) {
         options["until"] = until_signature;
     }

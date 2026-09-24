@@ -139,3 +139,13 @@ def test_status_report_runs(tmp_path):
     r = run(tmp_path / "reports" / "status.py", cwd=tmp_path)
     assert r.returncode == 0, r.stderr
     assert (tmp_path / "STATUS.md").read_text().startswith("# Status")
+
+
+def test_live_signature_polling_reads_at_confirmed_commitment():
+    """The RPC default is 'finalized' (~12.8s after landing). That hidden floor
+    set every detection lag in the dataset for over a month and was mistaken for
+    a property of the free tier. Pin it: live polling must ask for 'confirmed'."""
+    src = (ROOT / "src/rpc/rpc_client.cpp").read_text()
+    body = src[src.index("RpcClient::get_signatures_for_address"):]
+    body = body[:body.index("\n}\n")]
+    assert '"commitment", "confirmed"' in body, "live signature polling fell back to finalized"
