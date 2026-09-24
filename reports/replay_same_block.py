@@ -69,7 +69,7 @@ LAMPORTS_PER_SOL = 1_000_000_000.0
 
 # Exactly what src/rpc/rpc_client.cpp sends. The collector fetched every one of
 # these transactions successfully at the time, so anything it can do, this can.
-TX_OPTS = {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 0,
+TX_OPTS = {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 1,
            "commitment": "confirmed"}
 
 # How many rows, spread across the dataset's span, to test before pricing.

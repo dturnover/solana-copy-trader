@@ -133,7 +133,7 @@ std::vector<SignatureInfo> RpcClient::get_signatures_for_address(const std::stri
 std::optional<nlohmann::json> RpcClient::get_transaction(const std::string& signature_base58) {
     nlohmann::json options = {
         {"encoding", "jsonParsed"},
-        {"maxSupportedTransactionVersion", 0},
+        {"maxSupportedTransactionVersion", 1},
         {"commitment", "confirmed"},
     };
     nlohmann::json params = nlohmann::json::array({signature_base58, options});
