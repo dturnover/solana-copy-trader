@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-09-24 10:37 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-24 12:11 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,651 closed round trips**, all collector v3, Aug 05 to Sep 23
-- Newest trade **20.7 h old**  ⚠️ collector may be stuck
+- Newest trade **22.3 h old**  ⚠️ collector may be stuck
 - **2 in the last 24h**, 52 in the last 7 days (7.4/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-24 09:19 UTC)
+- **+0 since the last report** (2026-09-24 10:37 UTC)
 
 ## Detection lag
 
@@ -33,7 +33,7 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 ## Tracked wallets that have gone quiet
 
-- **Kadenox** — last trade 6.2 d ago. Costs ~43,200 RPC calls/day regardless.
+- **Kadenox** — last trade 6.3 d ago. Costs ~43,200 RPC calls/day regardless.
 
 A silent wallet is not necessarily a dead one: it may be trading somewhere the collector does not parse. Either way it is spending poll budget for nothing.
 
@@ -69,7 +69,7 @@ Same-block execution, copying at a **fixed 0.25 SOL** instead of the wallet's ow
 
 | wallet | n | return/trade | win rate | exit/entry | median hold |
 |---|---|---|---|---|---|
-| Sheep | 10 | +14.7% | 80% | 1.23 | 2.8s |
+| Sheep | 12 | +12.5% | 75% | 1.21 | 1.8s |
 | Dani | 9 | -0.1% | 56% | 1.05 | 3.8s |
 | Kadenox | 4 | -5.3% | 25% | 1.03 | 35.5s |
 | theo | 4 | -13.8% | 25% | 0.82 | 50.8s |
@@ -83,10 +83,10 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
 | theo | -14% (4) | · | · | · | · | · | -35% (3) | · |
-| Sheep | +15% (10) | · | · | · | · | -6% (9) | -6% (26) | · |
+| Sheep | +12% (12) | · | · | · | · | -6% (9) | -6% (26) | · |
 | Dani | -0% (9) | · | · | · | · | -13% (10) | -23% (57) | -7% (14) |
 | Kadenox | -5% (4) | · | · | · | · | -36% (5) | -16% (30) | · |
-| ALL | +3% (27) | · | · | · | · | -16% (24) | -22% (476) | -15% (385) |
+| ALL | +2% (29) | · | · | · | · | -16% (24) | -22% (476) | -15% (385) |
 
 ## What we know
 
