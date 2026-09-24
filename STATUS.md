@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-09-24 22:21 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-24 22:54 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,652 closed round trips**, all collector v3, Aug 05 to Sep 24
-- Newest trade **5.9 h old**
-- **1 in the last 24h**, 47 in the last 7 days (6.7/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-24 20:40 UTC)
+- Newest trade **6.4 h old**
+- **1 in the last 24h**, 46 in the last 7 days (6.6/day across 4 tracked wallets)
+- **+0 since the last report** (2026-09-24 22:21 UTC)
 
 ## Detection lag
 
@@ -29,7 +29,7 @@ How stale a trade already was when the collector noticed it. This is what execut
 | Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 49.8 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 17 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 17 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 18 days away.
 
 ## Tracked wallets that have gone quiet
 
