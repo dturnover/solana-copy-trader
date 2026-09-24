@@ -103,11 +103,70 @@ def copy_trade(rows, size_sol, prop, fixed_sol):
     return ret, Sc / tokens, gross / tokens
 
 
+LAG_BUCKETS_S = [0, 2, 4, 6, 9, 13, 20, 1e9]
+LAG_LABELS = ["0-2s", "2-4s", "4-6s", "6-9s", "9-13s", "13-20s", "20s+"]
+
+
+def load_lagged(main_csv):
+    """Every clean round trip the collector recorded, with its real detection lag.
+
+    The collector logs the curve it priced our entry against, and the proceeds
+    of our exit. Entry reserves are read directly (and checked: the logged cost
+    must equal the constant-product cost from those reserves to 1e-6, which it
+    does on 99% of rows). Exit reserves are reconstructed from the proceeds;
+    rows that fail either check -- mostly multi-sell exits whose proceeds span
+    several curve states -- are dropped rather than forced.
+    """
+    df = pd.read_csv(main_csv)
+    c = df[(df["buy_count"] == 1) & (df["incomplete_position"].fillna(0) == 0)
+           & (df["entry_virtual_sol_reserves"] > 0) & (df["wallet_token_amount"] > 0)
+           & (df["our_lamports_received"] > 0)].copy()
+    T = c["wallet_token_amount"].astype(float)
+    vs = c["entry_virtual_sol_reserves"].astype(float)
+    entry_err = ((K / (K / vs - T) - vs - c["entry_our_cost_lamports"])
+                 / c["entry_our_cost_lamports"]).abs()
+    p = c["our_lamports_received"].astype(float)
+    c["buy_vs"] = vs
+    c["sell_vs"] = (p * T + np.sqrt((p * T) ** 2 + 4 * T * p * K)) / (2 * T)
+    ok = (entry_err < 1e-6) & ((c["sell_vs"] - V0) / LAMPORTS).between(0, 90)
+    c = c[ok].copy()
+    c["lag_s"] = c["entry_on_chain_age_ms"] / 1000
+    c["lag_bucket"] = pd.cut(c["lag_s"], LAG_BUCKETS_S, labels=LAG_LABELS, right=False)
+    return c
+
+
+def lag_curve(main_csv, same_block_pattern, size=0.25, scenario="measured"):
+    """Return per trade at a fixed copy size, by how late we actually saw the trade.
+
+    Same-block (0s) comes from the replay; every other bucket from the live
+    collector's own recorded lag. Before 2026-09-24 the collector polled at
+    'finalized' commitment and never saw a trade under ~9s, so the low buckets
+    fill in only from then on -- which is where the break-even lives.
+    """
+    prop, fx = SCENARIOS[scenario]
+    rows = []
+    try:
+        sb, _ = load(same_block_pattern, main_csv)
+        for w, g in list(sb.groupby("wallet_label")) + [("ALL", sb)]:
+            r, _, _ = copy_trade(g, size, prop, fx)
+            rows.append({"wallet": w, "lag": "same-block", "n": len(g), "mean_return": r.mean()})
+    except SystemExit:
+        pass
+    lg = load_lagged(main_csv)
+    for w, g in list(lg.groupby("wallet_label")) + [("ALL", lg)]:
+        for b, gb in g.groupby("lag_bucket", observed=True):
+            r, _, _ = copy_trade(gb, size, prop, fx)
+            rows.append({"wallet": w, "lag": str(b), "n": len(gb), "mean_return": r.mean()})
+    return pd.DataFrame(rows)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--same-block", default="reports/same_block/*.csv")
     ap.add_argument("--main", default="reports/paper_trades_final.csv")
     ap.add_argument("--out", default="reports/size_sweep.csv")
+    ap.add_argument("--lag-out", default=None,
+                    help="also write return-by-detection-lag at 0.25 SOL to this CSV")
     args = ap.parse_args()
 
     d, nfiles = load(args.same_block, args.main)
@@ -133,6 +192,16 @@ def main():
     print(m[m["size_sol"] == 0.25].set_index("wallet")[["exit_over_entry", "median_hold_s", "n"]]
           .round(3).to_string())
     print(f"\nWrote {args.out}")
+
+    if args.lag_out:
+        lc = lag_curve(args.main, args.same_block)
+        lc.to_csv(args.lag_out, index=False)
+        order = ["same-block"] + LAG_LABELS
+        piv = lc.pivot(index="wallet", columns="lag", values="mean_return")
+        piv = piv[[c for c in order if c in piv.columns]] * 100
+        print("\nReturn per trade at 0.25 SOL by ACTUAL detection lag (measured fees)")
+        print(piv.round(1).to_string())
+        print(f"Wrote {args.lag_out}")
 
 
 if __name__ == "__main__":

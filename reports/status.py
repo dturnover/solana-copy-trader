@@ -195,9 +195,9 @@ def main():
     # after the evidence behind it was withdrawn -- it rested on a sample that
     # was two-thirds one since-removed losing wallet, and on buy-side fill
     # alone. A conclusion baked into a string cannot notice when it goes stale.
-    sweep_out = "/tmp/status_sweep.csv"
-    sw = subprocess.run([sys.executable, "reports/size_sweep.py", "--out", sweep_out],
-                        capture_output=True, text=True)
+    sweep_out, lag_out = "/tmp/status_sweep.csv", "/tmp/status_lag.csv"
+    sw = subprocess.run([sys.executable, "reports/size_sweep.py", "--out", sweep_out,
+                         "--lag-out", lag_out], capture_output=True, text=True)
     L.append("## Can we actually copy them?")
     L.append("")
     if sw.returncode != 0 or not os.path.exists(sweep_out):
@@ -222,6 +222,35 @@ def main():
                  "wallet with a 3-second hold has already sold by then.")
     L.append("")
 
+    # The question the whole project now turns on. Sheep is profitable to copy
+    # at same-block execution and loses at ~12s; there was no data in between
+    # until the collector switched to confirmed commitment on 2026-09-24. This
+    # table is where the break-even becomes visible as those rows arrive.
+    if sw.returncode == 0 and os.path.exists(lag_out):
+        lc = pd.read_csv(lag_out)
+        cols = ["same-block", "0-2s", "2-4s", "4-6s", "6-9s", "9-13s", "13-20s", "20s+"]
+        show = [w for w in tracked if w in set(lc["wallet"])] + ["ALL"]
+        L.append("## Where does the edge die?")
+        L.append("")
+        L.append("Return per trade copying at 0.25 SOL, by how late we actually saw the "
+                 "wallet's trade. Cells are `return (trades)`; `·` means fewer than 3. "
+                 "Until 2026-09-24 nothing was ever seen under ~9s, so the fast columns "
+                 "fill in from then on. **The column where a row turns positive is the "
+                 "latency we would need.**")
+        L.append("")
+        L.append("| wallet | " + " | ".join(cols) + " |")
+        L.append("|---|" + "---|" * len(cols))
+        for w in show:
+            cells = []
+            for col in cols:
+                hit = lc[(lc["wallet"] == w) & (lc["lag"] == col)]
+                if hit.empty or int(hit["n"].iloc[0]) < 3:
+                    cells.append("·")
+                else:
+                    cells.append(f"{100 * hit['mean_return'].iloc[0]:+.0f}% ({int(hit['n'].iloc[0])})")
+            L.append(f"| {w} | " + " | ".join(cells) + " |")
+        L.append("")
+
     L.append("## What we know")
     L.append("")
     L.append("- **Copy size is the biggest cost lever, not speed.** Mirroring the "
@@ -231,9 +260,13 @@ def main():
     L.append("- **Some good traders are uncopyable by construction.** theo is profitable "
              "but sells into strength; we exit after theo's own dump, 18% below entry. "
              "No speed fixes that.")
-    L.append("- **Whether latency is worth paying for is OPEN again.** For fast wallets "
-             "it decides everything. The earlier \"gRPC: no\" was withdrawn -- it was "
-             "measured on the wrong sample and the wrong metric.")
+    L.append("- **At our old ~12s detection lag, every wallet loses money at every copy "
+             "size** (924 clean round trips). Sheep goes from +15% at same-block to "
+             "-5% at ~14s.")
+    L.append("- **That 12s was never the free tier.** Polling asked for *finalized* "
+             "transactions, which Solana only produces ~12.8s after they land. Switched "
+             "to *confirmed* (~1s) on 2026-09-24. The table above will show whether "
+             "that is fast enough before anything is spent on paid infrastructure.")
     L.append("- **Execution costs ~2% per leg all-in**, measured. The live collector "
              "applies none, so its simulated copy P&L is optimistic.")
     L.append("- **The RPC forgets transactions in ~2 days.** Same-block pricing now runs "
