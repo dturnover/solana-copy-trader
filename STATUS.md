@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-09-24 20:13 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-24 20:40 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,652 closed round trips**, all collector v3, Aug 05 to Sep 24
-- Newest trade **3.7 h old**
+- Newest trade **4.2 h old**
 - **1 in the last 24h**, 48 in the last 7 days (6.9/day across 4 tracked wallets)
-- **+1 since the last report** (2026-09-24 16:48 UTC)
+- **+0 since the last report** (2026-09-24 20:13 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 10.2s**, p90 11.2s (15 rows)
-- Before that: median 18.0s, p90 34.6s (1554 rows)
+- Last 2 days: **median 10.2s**, p90 11.2s (14 rows)
+- Before that: median 18.0s, p90 34.6s (1555 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
 ## Has anything been proven yet?
