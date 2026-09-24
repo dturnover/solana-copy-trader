@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-09-23 22:50 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-24 02:42 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,651 closed round trips**, all collector v3, Aug 05 to Sep 23
-- Newest trade **8.9 h old**
-- **11 in the last 24h**, 60 in the last 7 days (8.6/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-23 22:15 UTC)
+- Newest trade **12.8 h old**  ⚠️ collector may be stuck
+- **5 in the last 24h**, 53 in the last 7 days (7.6/day across 4 tracked wallets)
+- **+0 since the last report** (2026-09-23 22:50 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 10.4s**, p90 11.3s (27 rows)
-- Before that: median 18.0s, p90 34.7s (1541 rows)
+- Last 2 days: **median 10.4s**, p90 11.3s (25 rows)
+- Before that: median 18.0s, p90 34.7s (1543 rows)
 - ⚠️ Still above 10s. The 4s HTTP timeout should have brought this down; if it has not, the timeout was not the whole cause.
 
 ## Has anything been proven yet?
@@ -25,15 +25,15 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 47.0 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 48.8 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 47.1 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 48.9 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 13 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 14 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 15 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 15 days away.
 
 ## Tracked wallets that have gone quiet
 
-- **Kadenox** — last trade 5.7 d ago. Costs ~43,200 RPC calls/day regardless.
+- **Kadenox** — last trade 5.9 d ago. Costs ~43,200 RPC calls/day regardless.
 
 A silent wallet is not necessarily a dead one: it may be trading somewhere the collector does not parse. Either way it is spending poll budget for nothing.
 
