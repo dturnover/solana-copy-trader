@@ -149,3 +149,41 @@ def test_live_signature_polling_reads_at_confirmed_commitment():
     body = src[src.index("RpcClient::get_signatures_for_address"):]
     body = body[:body.index("\n}\n")]
     assert '"commitment", "confirmed"' in body, "live signature polling fell back to finalized"
+
+
+def test_every_transaction_fetch_accepts_version_1():
+    """Solana began producing version-1 transactions on 2026-09-23. Asking for
+    at most version 0 made every getTransaction fail, and the collector
+    recorded nothing for over a day while reporting success. Every fetch, C++
+    and Python, must accept them."""
+    offenders = []
+    for path in [ROOT / "src/rpc/rpc_client.cpp", *sorted(REPORTS.glob("*.py"))]:
+        for n, line in enumerate(path.read_text().splitlines(), 1):
+            m = re.search(r'"maxSupportedTransactionVersion"\s*[,:]\s*(\d+)', line)
+            if m and int(m.group(1)) < 1:
+                offenders.append(f"{path.relative_to(ROOT)}:{n}: {line.strip()}")
+    assert not offenders, "transaction fetch rejects v1:\n" + "\n".join(offenders)
+
+
+V1_REJECTION = ('RPC error: {"code":-32015,"message":"Transaction version (1) is not supported '
+                'by the requesting client."}')
+
+
+@pytest.mark.parametrize("failures,rows,ok", [
+    (131, 0, False),   # the 2026-09-23 outage: blind, and green
+    (131, 4, True),    # failures, but it is still seeing trades
+    (3, 0, True),      # a quiet day: few trades means few fetches to fail
+    (0, 0, True),
+])
+def test_collector_health_tells_blind_from_quiet(failures, rows, ok):
+    health = load_module("collector_health")
+    log = "".join(f"[WARN] getTransaction failed for sig{i}: {V1_REJECTION}\n" for i in range(failures))
+    got, msg = health.verdict(log, rows)
+    assert got == ok, msg
+    if not ok:
+        assert "Transaction version (1)" in msg, "failure must name its cause"
+
+
+def test_paper_trade_workflow_runs_the_health_check():
+    wf = (ROOT / ".github/workflows/paper-trade.yml").read_text()
+    assert "tee collector.log" in wf and "collector_health.py collector.log" in wf

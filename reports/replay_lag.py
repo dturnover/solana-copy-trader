@@ -196,7 +196,7 @@ def curve_deltas_between(endpoint, curve, t_from_ms, t_to_ms, cache):
     d_lamports = d_tokens = 0
     for sig in sigs:
         tx = rpc(endpoint, "getTransaction",
-                 [sig, {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 0}])
+                 [sig, {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 1}])
         if not tx or "meta" not in tx:
             continue
         meta, msg = tx["meta"], tx["transaction"]["message"]

@@ -161,7 +161,9 @@ jobs:
       # job-level timeout-minutes cap (which cancels the whole job, cache
       # save included -- see above).
       - name: Run paper trade experiment
-        run: timeout -k 30s "${EXPERIMENT_BUDGET_SECONDS}s" ./build/paper_trade config/config.json || true
+        # Output is kept so the health check below can read it: `|| true`
+        # means the exit code says nothing about whether anything was seen.
+        run: timeout -k 30s "${EXPERIMENT_BUDGET_SECONDS}s" ./build/paper_trade config/config.json 2>&1 | tee collector.log || true
 
       - name: Upload collected trades
         if: always()
@@ -181,3 +183,10 @@ jobs:
           name: paper-state-${{ github.run_id }}
           path: paper_trade_state.json
           if-no-files-found: warn
+
+      # Last, so the data and state above are uploaded either way. From
+      # 2026-09-23 every getTransaction was rejected (version-1 transactions)
+      # and this job still went green for over a day while recording nothing.
+      # Many fetch failures and zero trades now turns it red, naming the cause.
+      - name: Fail if the collector was blind
+        run: python3 reports/collector_health.py collector.log paper_trades.csv

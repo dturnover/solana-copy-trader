@@ -1,0 +1,40 @@
+name: Probe Transaction Format
+
+# Fetches live pump.fun transactions exactly as the collector does and checks
+# every field the parsers read, on version-1 transactions specifically.
+#
+# Solana began producing v1 transactions on 2026-09-23 and our fetches, capped
+# at v0, rejected every one of them. Raising the cap lets the RPC return them;
+# this is what shows the parsers can actually read what comes back, in a
+# minute, instead of waiting five hours for the collector to say so.
+#
+# Runs on fix branches that touch fetching or parsing, and on request.
+on:
+  push:
+    branches: ["fix/**"]
+    paths:
+      - "src/rpc/**"
+      - "src/parsing/**"
+      - "reports/replay_same_block.py"
+      - "reports/probe_tx_format.py"
+      - ".github/workflows/probe-tx-format.yml"
+  workflow_dispatch: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: pip install --quiet pandas
+      - name: Probe
+        env:
+          RPC_ENDPOINT: https://rpc.shyft.to?api_key=${{ secrets.SHYFT_API_KEY }}
+        run: |
+          set -o pipefail
+          python3 reports/probe_tx_format.py 2>&1 | tee probe.txt
+      - name: Publish to the run summary
+        if: always()
+        run: |
+          { echo '```'; cat probe.txt 2>/dev/null || echo "(no output)"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
