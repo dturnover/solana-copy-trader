@@ -232,8 +232,8 @@ def main():
         show = [w for w in tracked if w in set(lc["wallet"])] + ["ALL"]
         L.append("## Where does the edge die?")
         L.append("")
-        L.append("Return per trade copying at 0.25 SOL, by how late we actually saw the "
-                 "wallet's trade. Cells are `return (trades)`; `·` means fewer than 3. "
+        L.append("Return per trade copying at 0.25 SOL, by time from the wallet's trade "
+                 "to our fill (detection + 1.5s to submit and land). Cells are `return (trades)`; `·` means fewer than 3. "
                  "Until 2026-09-24 nothing was ever seen under ~9s, so the fast columns "
                  "fill in from then on. **The column where a row turns positive is the "
                  "latency we would need.**")

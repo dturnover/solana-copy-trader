@@ -48,6 +48,7 @@ import pandas as pd
 K = 30_000_000_000 * 1_073_000_000_000_000   # pump.fun constant product (lamports x raw tokens)
 V0 = 30_000_000_000                           # virtual SOL at launch
 LAMPORTS = 1e9
+CONFIG = "config/config.paper_trade.ci.json"
 
 SIZES_SOL = [0.05, 0.1, 0.25, 0.5, 1.0, 2.0]
 
@@ -130,7 +131,15 @@ def load_lagged(main_csv):
     c["sell_vs"] = (p * T + np.sqrt((p * T) ** 2 + 4 * T * p * K)) / (2 * T)
     ok = (entry_err < 1e-6) & ((c["sell_vs"] - V0) / LAMPORTS).between(0, 90)
     c = c[ok].copy()
-    c["lag_s"] = c["entry_on_chain_age_ms"] / 1000
+    # Time from the wallet's trade to OUR fill, not to our noticing it. The
+    # collector detects at entry_on_chain_age_ms, then waits execution_lag_ms
+    # (its simulated submit-and-land delay) before reading the curve it prices
+    # us against. Bucketing on detection alone would place every row 1.5s
+    # faster than the fill it actually represents -- understating the latency
+    # a profitable column would require.
+    import json
+    exec_ms = json.load(open(CONFIG))["paper_trade"]["execution_lag_ms"]
+    c["lag_s"] = (c["entry_on_chain_age_ms"] + exec_ms) / 1000
     c["lag_bucket"] = pd.cut(c["lag_s"], LAG_BUCKETS_S, labels=LAG_LABELS, right=False)
     return c
 
@@ -199,7 +208,7 @@ def main():
         order = ["same-block"] + LAG_LABELS
         piv = lc.pivot(index="wallet", columns="lag", values="mean_return")
         piv = piv[[c for c in order if c in piv.columns]] * 100
-        print("\nReturn per trade at 0.25 SOL by ACTUAL detection lag (measured fees)")
+        print("\nReturn per trade at 0.25 SOL by time from the wallet's trade to our fill (measured fees)")
         print(piv.round(1).to_string())
         print(f"Wrote {args.lag_out}")
 
