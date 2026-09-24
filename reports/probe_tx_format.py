@@ -64,7 +64,11 @@ def shape_problems(tx):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--limit", type=int, default=40)
+    ap.add_argument("--limit", type=int, default=40, help="signatures per tracked wallet")
+    ap.add_argument("--program-limit", type=int, default=250,
+                    help="signatures from the pump.fun program; v1 is still a few percent of them")
+    ap.add_argument("--min-v1", type=int, default=3,
+                    help="v1 pump.fun transactions required before PASS means anything")
     args = ap.parse_args()
     endpoint = os.environ["RPC_ENDPOINT"]
 
@@ -75,7 +79,8 @@ def main():
     for addr in [PUMPFUN] + wallets:
         try:
             got = rpc(endpoint, "getSignaturesForAddress",
-                      [addr, {"limit": args.limit, "commitment": "confirmed"}]) or []
+                      [addr, {"limit": args.program_limit if addr == PUMPFUN else args.limit,
+                              "commitment": "confirmed"}]) or []
         except Exception as e:
             print(f"  getSignaturesForAddress failed for {addr[:8]}: {e}")
             continue
@@ -102,7 +107,8 @@ def main():
             example = example or tx
             if probs:
                 bad.append((sig, probs))
-        print(f"  v{v:<6} {sig[:16]}  {'OK' if not probs else '; '.join(probs)}")
+        if NO_PUMP not in probs or v == "1":   # skip the wallets' unrelated transfers
+            print(f"  v{v:<6} {sig[:16]}  {'OK' if not probs else '; '.join(probs)}")
 
     print(f"\nversions: {dict(versions)}")
     if example:
@@ -119,15 +125,17 @@ def main():
     pump_v1 = versions["1"] - sum(NO_PUMP in p for _, p in bad)
     structural = [(s, p) for s, p in bad if [x for x in p if x not in (NO_PUMP, NO_EVENT)]]
     no_event = sum(p == [NO_EVENT] for _, p in bad)
-    if versions["1"] == 0 or pump_v1 == 0:
-        sys.exit("FAIL: no v1 pump.fun transaction seen -- nothing verified")
+    # The first run of this passed on ONE v1 pump.fun transaction. That is an
+    # anecdote, not a check.
+    if pump_v1 < args.min_v1:
+        sys.exit(f"FAIL: only {pump_v1} v1 pump.fun transaction(s) seen (need {args.min_v1}) -- not verified")
     if structural:
         for s, p in structural:
             print(f"FAIL {s}: {p}")
         sys.exit(f"FAIL: {len(structural)} of {versions['1']} v1 transactions are missing parser fields")
     if no_event > pump_v1 / 2:
         sys.exit(f"FAIL: TradeEvent decoded on only {pump_v1 - no_event} of {pump_v1} v1 pump.fun transactions")
-    print(f"\nPASS: {versions['1']} v1 transactions carry every field the parsers read")
+    print(f"\nPASS: {pump_v1 - no_event} of {pump_v1} v1 pump.fun transactions carry every field the parsers read")
 
 
 if __name__ == "__main__":
