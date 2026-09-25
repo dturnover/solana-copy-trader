@@ -17,6 +17,7 @@ on:
       - "src/parsing/**"
       - "reports/replay_same_block.py"
       - "reports/probe_tx_format.py"
+      - "reports/probe_instructions.py"
       - ".github/workflows/probe-tx-format.yml"
   workflow_dispatch: {}
 
@@ -34,6 +35,13 @@ jobs:
         run: |
           set -o pipefail
           python3 reports/probe_tx_format.py 2>&1 | tee probe.txt
+      - name: Which instructions do our wallets trade through
+        if: always()
+        env:
+          RPC_ENDPOINT: https://rpc.shyft.to?api_key=${{ secrets.SHYFT_API_KEY }}
+        run: |
+          set -o pipefail
+          python3 reports/probe_instructions.py 2>&1 | tee -a probe.txt
       - name: Publish to the run summary
         if: always()
         run: |

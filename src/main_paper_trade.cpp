@@ -409,7 +409,7 @@ int main(int argc, char** argv) {
                     // the old, bound-respecting strategy. Both are now
                     // answerable from the data, and the skip RATE is finally
                     // measurable at all.
-                    bool buy_would_revert = our_cost > static_cast<double>(trade->sol_amount);
+                    bool buy_would_revert = trade->has_sol_bound && our_cost > static_cast<double>(trade->sol_amount);
                     if (buy_would_revert) {
                         LOG_INFO(wallet.label + " BUY mint=" + trade->mint.to_base58() +
                                  " would have REVERTED on-chain at the wallet's own max_sol_cost bound "
@@ -497,7 +497,7 @@ int main(int argc, char** argv) {
                     // the old bound-respecting behaviour; keeping them shows
                     // what a bot that actually had to get out would have
                     // eaten.
-                    bool sell_would_revert = our_proceeds < static_cast<double>(trade->sol_amount);
+                    bool sell_would_revert = trade->has_sol_bound && our_proceeds < static_cast<double>(trade->sol_amount);
                     if (sell_would_revert) {
                         LOG_INFO(wallet.label + " SELL mint=" + trade->mint.to_base58() +
                                  " would have REVERTED on-chain at the wallet's own min_sol_output bound "

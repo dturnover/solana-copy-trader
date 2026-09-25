@@ -24,6 +24,10 @@ struct TradeEvent {
     // sol_amount=max_sol_cost bound, NOT necessarily the actual fill price).
     uint64_t token_amount = 0;
     uint64_t sol_amount = 0;
+    // False when the trade was read from pump.fun's event log (sell_v2 and
+    // newer buy instructions): the event records the fill, not the wallet's
+    // slippage limit, so sol_amount is 0 and carries no bound.
+    bool has_sol_bound = true;
 
     uint64_t slot = 0;
     std::string signature_base58;
