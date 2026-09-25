@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-09-25 03:08 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-25 05:51 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,652 closed round trips**, all collector v3, Aug 05 to Sep 24
-- Newest trade **10.7 h old**
-- **1 in the last 24h**, 42 in the last 7 days (6.0/day across 4 tracked wallets)
-- **+0 since the last report** (2026-09-24 22:54 UTC)
+- Newest trade **13.4 h old**  ⚠️ collector may be stuck
+- **1 in the last 24h**, 41 in the last 7 days (5.9/day across 4 tracked wallets)
+- **+0 since the last report** (2026-09-25 03:08 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 9.9s**, p90 10.7s (6 rows)
-- Before that: median 18.0s, p90 34.6s (1563 rows)
+- Last 2 days: **median 9.7s**, p90 10.8s (5 rows)
+- Before that: median 18.0s, p90 34.5s (1564 rows)
 
 ## Has anything been proven yet?
 
@@ -24,15 +24,15 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 48.2 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 50.0 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 48.3 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 50.1 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 19 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 19 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 20 days away.
 
 ## Tracked wallets that have gone quiet
 
-- **Kadenox** — last trade 6.9 d ago. Costs ~43,200 RPC calls/day regardless.
+- **Kadenox** — last trade 7.0 d ago. Costs ~43,200 RPC calls/day regardless.
 
 A silent wallet is not necessarily a dead one: it may be trading somewhere the collector does not parse. Either way it is spending poll budget for nothing.
 
