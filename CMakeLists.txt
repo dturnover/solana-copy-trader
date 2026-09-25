@@ -9,6 +9,9 @@ find_package(Protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(CURL REQUIRED)
+# Already in the vcpkg tree as a dependency of curl and gRPC; used directly
+# for SHA-256 and big-number arithmetic in PDA derivation (src/solana/pda.cpp).
+find_package(OpenSSL REQUIRED)
 
 # --- Protobuf/gRPC codegen (manual add_custom_command, not protobuf_generate(),
 # so this doesn't depend on which CMake helper macros a given vcpkg protobuf/grpc
@@ -66,6 +69,7 @@ add_library(core STATIC
     src/solana/base58.cpp
     src/solana/base64.cpp
     src/solana/pubkey.cpp
+    src/solana/pda.cpp
     src/parsing/trade_event.cpp
     src/parsing/venue_pumpfun.cpp
     src/parsing/tx_parser.cpp
@@ -77,7 +81,7 @@ add_library(core STATIC
 )
 
 target_include_directories(core PUBLIC src)
-target_link_libraries(core PUBLIC geyser_proto nlohmann_json::nlohmann_json CURL::libcurl)
+target_link_libraries(core PUBLIC geyser_proto nlohmann_json::nlohmann_json CURL::libcurl OpenSSL::Crypto)
 
 # --- Executables ---------------------------------------------------------------
 
@@ -102,3 +106,9 @@ target_link_libraries(paper_trade PRIVATE core)
 # paper_trade it has no latency assumptions baked into its output.
 add_executable(screen_wallets src/main_screen_wallets.cpp)
 target_link_libraries(screen_wallets PRIVATE core)
+
+# Parser regression test over real captured transactions (tests/fixtures).
+enable_testing()
+add_executable(parser_test tests/cpp/parser_test.cpp)
+target_link_libraries(parser_test PRIVATE core)
+add_test(NAME parser_test COMMAND parser_test ${CMAKE_SOURCE_DIR}/tests/fixtures)

@@ -15,6 +15,8 @@ on:
       - "src/**"
       - "CMakeLists.txt"
       - "vcpkg.json"
+      - "tests/cpp/**"
+      - "tests/fixtures/**"
       - ".github/workflows/build-check.yml"
   workflow_dispatch: {}
 
@@ -82,3 +84,8 @@ jobs:
 
       - name: Build
         run: cmake --build build -j"$(nproc)"
+
+      # Compiling is not enough: the parser compiled fine through a week of
+      # reading every sell as "not a trade". Run it on real transactions.
+      - name: Parser test on real transactions
+        run: ctest --test-dir build --output-on-failure

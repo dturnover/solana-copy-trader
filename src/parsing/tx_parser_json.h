@@ -24,4 +24,7 @@ std::optional<TradeEvent> parse_json_transaction(const nlohmann::json& tx_result
                                                   const std::string& wallet_label,
                                                   const std::string& signature_base58, int64_t detected_at_micros);
 
+// pump.fun's bonding-curve account for a mint: PDA(["bonding-curve", mint]).
+std::optional<solana::Pubkey> pumpfun_bonding_curve(const solana::Pubkey& mint);
+
 } // namespace parsing

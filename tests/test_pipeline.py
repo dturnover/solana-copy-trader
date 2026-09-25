@@ -212,3 +212,12 @@ def test_rpc_client_retries_rate_limited_calls():
     body = src[src.index("RpcClient::call"):]
     body = body[:body.index("\n}\n")]
     assert "RateLimit" in body and "sleep_for" in body, "rate-limited RPC calls are dropped, not retried"
+
+
+def test_parser_runs_on_real_transactions_in_ci():
+    """The C++ parser compiled cleanly through a week of reading every sell_v2
+    as "not a trade". build-check must RUN it on captured transactions."""
+    wf = (ROOT / ".github/workflows/build-check.yml").read_text()
+    assert "ctest" in wf
+    for name in ("pumpfun_sell_v2.json", "pumpfun_buy_new_instruction.json"):
+        assert (ROOT / "tests/fixtures" / name).exists(), name
