@@ -138,6 +138,7 @@ def main():
     # (wallet, event side, instruction name) -> count
     tally = Counter()
     rules = Counter()
+    fixtures = {}
     per_wallet = defaultdict(Counter)
     for w in wallets:
         sigs = rpc(endpoint, "getSignaturesForAddress",
@@ -160,6 +161,11 @@ def main():
                 continue
             events = [e for e in decode_trade_events(tx) if e["user"] == w["pubkey"]]
             for e in events:
+                # One real transaction per (side, instruction) as a parser
+                # test fixture, printed whole so it can be committed.
+                key = ("buy" if e["is_buy"] else "sell", tuple(sorted(set(names))))
+                if key not in fixtures:
+                    fixtures[key] = {"wallet": w["pubkey"], "signature": s["signature"], "tx": tx}
                 for rule, ok in curve_rules(tx, e).items():
                     rules[(rule, "buy" if e["is_buy"] else "sell", ok)] += 1
             sides = {("buy" if e["is_buy"] else "sell") for e in events} or {"no-own-event"}
@@ -177,6 +183,9 @@ def main():
     print("\nBonding-curve rules vs the derived PDA  (rule, side, holds?): n")
     for k, c in sorted(rules.items()):
         print(f"  {k}: {c}")
+    for (side, names), fx in fixtures.items():
+        print(f"\nFIXTURE {side} {'+'.join(names)}")
+        print("FIXTURE_JSON " + json.dumps(fx, separators=(",", ":")))
     trades = {k: c for k, c in tally.items() if k[1] in ("buy", "sell")}
     unseen = sum(c for k, c in trades.items() if k[2] not in KNOWN_TO_PARSER)
     print(f"\n{unseen} wallet trade(s) went through instructions the collector does not recognize")
