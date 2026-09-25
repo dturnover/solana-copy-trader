@@ -93,6 +93,21 @@ def curve_rules(tx, event):
                 else (bound <= event["sol_amount"])
             out[f"{name}: arg0 == sol_amount"] = amt == event["sol_amount"]
         out[f"{name}: data length {len(raw)}"] = True
+    # The curve owns the pool's token account for this mint; its token
+    # balance moves by exactly the traded amount, opposite to the wallet.
+    def tb(lst):
+        return {(b["accountIndex"]): b for b in lst or []}
+    pre_tb, post_tb = tb(meta.get("preTokenBalances")), tb(meta.get("postTokenBalances"))
+    owners = []
+    for idx, b in post_tb.items():
+        if b.get("mint") != event["mint"]:
+            continue
+        before = int(((pre_tb.get(idx) or {}).get("uiTokenAmount") or {}).get("amount") or 0)
+        after = int((b.get("uiTokenAmount") or {}).get("amount") or 0)
+        want_tok = -event["token_amount"] if event["is_buy"] else event["token_amount"]
+        if after - before == want_tok and b.get("owner") != event["user"]:
+            owners.append(b.get("owner"))
+    out["unique token-delta owner is curve"] = len(set(owners)) == 1 and b58decode(owners[0]) == pda
     deltas = [post - pre for pre, post in zip(meta["preBalances"], meta["postBalances"])]
     want = event["sol_amount"] if event["is_buy"] else -event["sol_amount"]
     hits = [keys[i] for i, dl in enumerate(deltas) if dl == want]
