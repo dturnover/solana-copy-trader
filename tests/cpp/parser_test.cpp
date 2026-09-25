@@ -33,15 +33,15 @@ void fixture(const std::string& dir, const std::string& name) {
     nlohmann::json fx = nlohmann::json::parse(f);
     solana::Pubkey wallet;
     solana::Pubkey::from_base58(fx["wallet"].get<std::string>(), wallet);
-    auto ev = parsing::parse_json_transaction(fx["result"], wallet, "fixture", fx["signature"], 0);
+    auto ev = parsing::parse_json_transaction(fx["result"], wallet, "fixture", fx["signature"].get<std::string>(), 0);
     const auto& want = fx["expect"];
     check(ev.has_value(), name + ": parsed as a trade");
     if (!ev) return;
     bool is_buy = ev->direction == parsing::Direction::Buy;
-    check(is_buy == (want["direction"] == "buy"), name + ": direction " + std::string(want["direction"]));
-    check(ev->mint.to_base58() == want["mint"], name + ": mint");
+    check(is_buy == (want["direction"] == "buy"), name + ": direction " + want["direction"].get<std::string>());
+    check(ev->mint.to_base58() == want["mint"].get<std::string>(), name + ": mint");
     check(ev->token_amount == want["token_amount"].get<uint64_t>(), name + ": token amount");
-    check(ev->bonding_curve.to_base58() == want["bonding_curve"], name + ": bonding curve");
+    check(ev->bonding_curve.to_base58() == want["bonding_curve"].get<std::string>(), name + ": bonding curve");
 }
 
 } // namespace
