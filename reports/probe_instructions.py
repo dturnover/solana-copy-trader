@@ -82,6 +82,17 @@ def curve_rules(tx, event):
     pump = [ix for ix in ixs if ix.get("programId") == PUMPFUN and len(ix.get("accounts") or []) > 3
             and ix["accounts"][2] == event["mint"]]
     out["ix accounts[3] is curve"] = bool(pump) and all(b58decode(ix["accounts"][3]) == pda for ix in pump)
+    import struct
+    for ix in pump:
+        raw = b58decode(ix["data"])
+        name = NAME_BY_DISC.get(raw[:8].hex(), "unknown:" + raw[:8].hex())
+        if len(raw) >= 24:
+            amt, bound = struct.unpack_from("<QQ", raw, 8)
+            out[f"{name}: arg0 == token_amount"] = amt == event["token_amount"]
+            out[f"{name}: arg1 is a sol bound"] = (bound >= event["sol_amount"]) if event["is_buy"] \
+                else (bound <= event["sol_amount"])
+            out[f"{name}: arg0 == sol_amount"] = amt == event["sol_amount"]
+        out[f"{name}: data length {len(raw)}"] = True
     deltas = [post - pre for pre, post in zip(meta["preBalances"], meta["postBalances"])]
     want = event["sol_amount"] if event["is_buy"] else -event["sol_amount"]
     hits = [keys[i] for i, dl in enumerate(deltas) if dl == want]
