@@ -45,6 +45,50 @@ def b58decode(s):
     return b"\0" * (len(s) - len(s.lstrip("1"))) + raw
 
 
+P = 2**255 - 19
+D = (-121665 * pow(121666, P - 2, P)) % P
+
+
+def on_curve(b):
+    y = int.from_bytes(b, "little") & ((1 << 255) - 1)
+    if y >= P:
+        return False
+    x2 = (y * y - 1) * pow(D * y * y + 1, P - 2, P) % P
+    return x2 == 0 or pow(x2, (P - 1) // 2, P) == 1
+
+
+def bonding_curve_pda(mint):
+    """Program-derived address, computed from first principles so the rules
+    below are checked against something the transaction itself cannot fake."""
+    prog = b58decode(PUMPFUN)
+    for bump in range(255, -1, -1):
+        h = hashlib.sha256(b"bonding-curve" + b58decode(mint) + bytes([bump]) + prog
+                           + b"ProgramDerivedAddress").digest()
+        if not on_curve(h):
+            return h
+    return None
+
+
+def curve_rules(tx, event):
+    """Which cheap rules would find the bonding curve for this trade?"""
+    pda = bonding_curve_pda(event["mint"])
+    msg = tx["transaction"]["message"]
+    keys = [k["pubkey"] for k in msg["accountKeys"]]
+    meta = tx["meta"]
+    out = {}
+    ixs = list(msg.get("instructions") or [])
+    for inner in meta.get("innerInstructions") or []:
+        ixs += inner.get("instructions") or []
+    pump = [ix for ix in ixs if ix.get("programId") == PUMPFUN and len(ix.get("accounts") or []) > 3
+            and ix["accounts"][2] == event["mint"]]
+    out["ix accounts[3] is curve"] = bool(pump) and all(b58decode(ix["accounts"][3]) == pda for ix in pump)
+    deltas = [post - pre for pre, post in zip(meta["preBalances"], meta["postBalances"])]
+    want = event["sol_amount"] if event["is_buy"] else -event["sol_amount"]
+    hits = [keys[i] for i, dl in enumerate(deltas) if dl == want]
+    out["unique lamport delta = sol_amount is curve"] = len(hits) == 1 and b58decode(hits[0]) == pda
+    return out
+
+
 def pump_discriminators(tx):
     msg = (tx.get("transaction") or {}).get("message") or {}
     ixs = list(msg.get("instructions") or [])
@@ -67,6 +111,7 @@ def main():
 
     # (wallet, event side, instruction name) -> count
     tally = Counter()
+    rules = Counter()
     per_wallet = defaultdict(Counter)
     for w in wallets:
         sigs = rpc(endpoint, "getSignaturesForAddress",
@@ -88,6 +133,9 @@ def main():
                 per_wallet[w["label"]]["not pump.fun"] += 1
                 continue
             events = [e for e in decode_trade_events(tx) if e["user"] == w["pubkey"]]
+            for e in events:
+                for rule, ok in curve_rules(tx, e).items():
+                    rules[(rule, "buy" if e["is_buy"] else "sell", ok)] += 1
             sides = {("buy" if e["is_buy"] else "sell") for e in events} or {"no-own-event"}
             for side in sides:
                 for n in set(names):
@@ -100,6 +148,9 @@ def main():
         known = "yes" if n in KNOWN_TO_PARSER else "NO"
         print(f"{w:<9} {side:<13} {n:<26} {known:<17} {c}")
 
+    print("\nBonding-curve rules vs the derived PDA  (rule, side, holds?): n")
+    for k, c in sorted(rules.items()):
+        print(f"  {k}: {c}")
     trades = {k: c for k, c in tally.items() if k[1] in ("buy", "sell")}
     unseen = sum(c for k, c in trades.items() if k[2] not in KNOWN_TO_PARSER)
     print(f"\n{unseen} wallet trade(s) went through instructions the collector does not recognize")
