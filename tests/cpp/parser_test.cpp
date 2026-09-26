@@ -14,6 +14,7 @@
 #include <nlohmann/json.hpp>
 
 #include "parsing/tx_parser_json.h"
+#include "parsing/venue_pumpfun.h"
 
 namespace {
 
@@ -61,6 +62,15 @@ int main(int argc, char** argv) {
         auto curve = parsing::pumpfun_bonding_curve(mint);
         check(curve && curve->to_base58() == p[1], std::string(p[0]).substr(0, 8) + "...");
     }
+
+    std::cout << "SOL vs other-quote curves (reserves read from chain, 2026-09-26)\n";
+    parsing::pumpfun::BondingCurveState sol_curve, quote_curve;
+    sol_curve.virtual_sol_reserves = 30'077'118'162;          // FN9ktFiz...: SOL-quoted
+    sol_curve.virtual_token_reserves = 1'070'248'825'424'186;
+    quote_curve.virtual_sol_reserves = 578'167'476;           // MJCRxKf3...: quoted in another token
+    quote_curve.virtual_token_reserves = 1'072'872'693'259'863;
+    check(parsing::pumpfun::is_standard_sol_curve(sol_curve), "SOL curve accepted");
+    check(!parsing::pumpfun::is_standard_sol_curve(quote_curve), "non-SOL curve rejected");
 
     std::cout << "real transactions\n";
     fixture(dir, "pumpfun_sell_v2.json");
