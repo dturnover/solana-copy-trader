@@ -1,0 +1,47 @@
+name: Discover Wallets
+
+# Ranks candidate wallets for a tracking slot from pump.fun's own trade events
+# (reports/discover_wallets.py). Manual, and on fix/** pushes that touch it.
+# Shares the collector's RPC key; the collector retries rate-limited calls,
+# and this paces itself.
+on:
+  workflow_dispatch: {}
+  push:
+    branches: ["fix/**"]
+    paths:
+      - "reports/discover_wallets.py"
+      - ".github/workflows/discover-wallets.yml"
+
+permissions:
+  contents: write   # the ranking is committed: the history behind it expires
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: pip install --quiet pandas
+      - name: Discover and profile
+        env:
+          RPC_ENDPOINT: https://rpc.shyft.to?api_key=${{ secrets.SHYFT_API_KEY }}
+        run: |
+          set -o pipefail
+          python3 reports/discover_wallets.py 2>&1 | tee discover.txt
+      - name: Publish to the run summary
+        if: always()
+        run: |
+          { echo '```'; tail -60 discover.txt 2>/dev/null || echo "(no output)"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Commit ranking
+        if: github.ref == 'refs/heads/master'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/screened/discovered_*.csv
+          git diff --staged --quiet && exit 0
+          git commit -m "Wallet discovery $(date -u +%Y-%m-%d) [skip ci]"
+          for attempt in 1 2 3 4; do
+            git pull --rebase --quiet origin master && git push origin HEAD:master && break
+            sleep $((attempt * 2))
+          done

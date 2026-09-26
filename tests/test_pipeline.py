@@ -237,3 +237,16 @@ def test_nonstandard_curves_are_flagged(tmp_path):
     assert confirmed <= flagged
     # and it is a flag, not a filter: nothing is dropped
     assert len(df) == len(pd.read_csv(DATASET).drop_duplicates(subset=["sell_signature"]))
+
+
+def test_round_trip_pairing():
+    pair = load_module("discover_wallets").pair_round_trips
+    ev = lambda mint, buy, tok, sol, t: {"mint": mint, "is_buy": buy, "token_amount": tok, "sol_amount": sol, "t": t}
+    trips = pair([
+        ev("A", True, 100, 1e9, 0), ev("A", True, 100, 2e9, 10),   # two lots
+        ev("A", False, 150, 6e9, 30),                              # closes lot 1 + half of lot 2
+        ev("B", False, 50, 1e9, 5),                                # sell with no buy in window: ignored
+    ])
+    assert len(trips) == 1
+    assert trips[0]["hold_s"] == 30
+    assert abs(trips[0]["pnl"] - (6.0 - 1.0 - 1.0)) < 1e-9
