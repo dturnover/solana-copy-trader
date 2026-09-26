@@ -18,6 +18,7 @@ on:
       - "reports/replay_same_block.py"
       - "reports/probe_tx_format.py"
       - "reports/probe_instructions.py"
+      - "reports/probe_curves.py"
       - ".github/workflows/probe-tx-format.yml"
   workflow_dispatch: {}
 
@@ -42,6 +43,13 @@ jobs:
         run: |
           set -o pipefail
           python3 reports/probe_instructions.py 2>&1 | tee -a probe.txt
+      - name: Curves that break the constant product
+        if: always()
+        env:
+          RPC_ENDPOINT: https://rpc.shyft.to?api_key=${{ secrets.SHYFT_API_KEY }}
+        run: |
+          set -o pipefail
+          python3 reports/probe_curves.py 2>&1 | tee -a probe.txt
       - name: Publish to the run summary
         if: always()
         run: |
