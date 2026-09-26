@@ -375,6 +375,23 @@ int main(int argc, char** argv) {
                     }
                     int64_t spent = -*wallet_delta;
 
+                    // Never OPEN a copy on a buy we only found long after it
+                    // landed. A newly tracked wallet has no last-seen
+                    // signature, and GitHub starts scheduled runs up to an
+                    // hour late, so the first poll walks back through old
+                    // history: on 2026-09-26 the collector "copied" three of
+                    // Pavel's buys 26-78 minutes after the fact. No live bot
+                    // does that, and those rows are not copy trades of any
+                    // lag worth measuring. Buys that add to a position we
+                    // already hold are still counted, so the position's size
+                    // stays right for its sell.
+                    constexpr int64_t kMaxEntryAgeMs = 60'000;
+                    if (on_chain_age_ms > kMaxEntryAgeMs && open_positions.find(position_key) == open_positions.end()) {
+                        LOG_INFO(wallet.label + " BUY mint=" + trade->mint.to_base58() + " skipped: found " +
+                                 std::to_string(on_chain_age_ms / 1000) + "s after it landed (backlog, not a copyable signal)");
+                        continue;
+                    }
+
                     std::optional<parsing::pumpfun::BondingCurveState> state;
                     try {
                         state = read_curve_after_lag(client, bonding_curve_b58, detected_at,

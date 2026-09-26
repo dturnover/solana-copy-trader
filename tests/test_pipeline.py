@@ -250,3 +250,12 @@ def test_round_trip_pairing():
     assert len(trips) == 1
     assert trips[0]["hold_s"] == 30
     assert abs(trips[0]["pnl"] - (6.0 - 1.0 - 1.0)) < 1e-9
+
+
+def test_collector_never_opens_a_copy_on_a_stale_buy():
+    """A newly tracked wallet, or a run that starts an hour late, makes the
+    first poll walk back through old history; the collector once "copied"
+    buys 26-78 minutes after they landed. Pin the entry-age guard."""
+    src = (ROOT / "src/main_paper_trade.cpp").read_text()
+    assert re.search(r"kMaxEntryAgeMs\s*=\s*60'000", src)
+    assert "on_chain_age_ms > kMaxEntryAgeMs" in src
