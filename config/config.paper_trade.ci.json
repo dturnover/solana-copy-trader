@@ -12,20 +12,24 @@
   },
   "tracked_wallets": [
     {
-      "label": "theo",
-      "pubkey": "Bi4rd5FH5bYEN8scZ7wevxNZyNmKHdaBcvewdPFxYdLt"
-    },
-    {
       "label": "Sheep",
       "pubkey": "78N177fzNJpp8pG49xDv1efYcTMSzo9tPTKEA9mAVkh2"
     },
     {
-      "label": "Dani",
-      "pubkey": "AuPp4YTMTyqxYXQnHc5KUc6pUuCSsHQpBJhgnD45yqrf"
-    },
-    {
       "label": "Kadenox",
       "pubkey": "B32QbbdDAyhvUQzjcaM5j6ZVKwjCxAwGH5Xgvb9SJqnC"
+    },
+    {
+      "label": "Pikalosi",
+      "pubkey": "9cdZg6xR4c9kZiqKSzqjn4QHCXNQuC9HEWBzzMJ3mzqw"
+    },
+    {
+      "label": "Pavel",
+      "pubkey": "3jckt69SiN3aCMbBWJoDS1s4xxGpqNxFFKnwhpRAQmuL"
+    },
+    {
+      "label": "West",
+      "pubkey": "JDd3hy3gQn2V982mi1zqhNqUw1GfV2UL6g76STojCJPN"
     }
   ]
 }
