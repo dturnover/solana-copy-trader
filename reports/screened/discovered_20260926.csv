@@ -1,0 +1,38 @@
+wallet,sigs_scanned,span_days,sol_trades,round_trips,trips_per_day,median_hold_s,copyable_share,win_rate,pnl_sol,label,source,copyable_trips_per_day
+2k2jJVet1SeAKvVSbvd8pZbqpaLcbMgRmYx8EhNTUJf9,100,0.04,95,44,1056.0,82.5,0.95,0.68,1.116,2k2jJV,discovered x2,1003.2
+C8TKYy7Pn4fuL5pGcfs82GG9CpBovf2ccE7qPZo59xMH,91,0.04,87,39,936.0,154.0,1.0,0.26,-0.357,C8TKYy,discovered x2,936.0
+23wQ7bodYreW3qhnh2YrW8dMkTYSkHHJqGcsiYEJS3Pr,100,0.04,84,56,1344.0,4.0,0.21,0.75,-0.735,Cope,removed,282.2
+Hx44ecKZzK2UqZfVSxBp6B46jLBc2KGUwp4x9bLoR9GJ,85,0.04,65,28,672.0,7.0,0.36,0.68,0.164,Hx44ec,discovered x3,241.9
+31unkYHFU7q82Fi7yErUV6XQsr9GZ6QHnRbD5c9kfsmM,98,0.08,60,30,356.2,16.0,0.67,0.23,-0.367,31unkY,discovered x2,238.7
+DHdbGZMM35kNAL6ioBcjnmCptgdCM3Dgxwcg8xebGfsK,99,0.09,65,32,357.9,6.0,0.44,0.47,-0.155,DHdbGZ,discovered x2,157.5
+4SPbsqxbw6HRFgovwMtE7JjSSP9ZRkUT6TitL14biURG,50,0.04,38,6,144.0,57.0,0.67,0.5,-0.016,4SPbsq,discovered x2,96.5
+7TvuCHczYMppbcAvt3dG5L8PpKHoLuFY86Fb6QLqyN9Q,100,0.04,95,43,1032.0,6.0,0.09,0.51,-0.001,7TvuCH,discovered x3,92.9
+9cdZg6xR4c9kZiqKSzqjn4QHCXNQuC9HEWBzzMJ3mzqw,96,0.55,22,17,30.9,12.0,0.65,0.24,-1.926,Pikalosi,removed,20.1
+JDd3hy3gQn2V982mi1zqhNqUw1GfV2UL6g76STojCJPN,18,0.05,12,2,40.0,13.0,0.5,0.5,-0.169,West,removed,20.0
+3jckt69SiN3aCMbBWJoDS1s4xxGpqNxFFKnwhpRAQmuL,100,0.9,26,13,14.4,15.0,0.92,0.46,-0.082,Pavel,removed,13.2
+922VvmmYDHV9KMTJJ71Y5Yd3Vn7cfJuFasLNSsZPygrG,70,0.32,25,4,12.3,79.5,1.0,0.25,-1.445,Zuki,removed,12.3
+78N177fzNJpp8pG49xDv1efYcTMSzo9tPTKEA9mAVkh2,74,0.44,8,6,13.8,9.5,0.5,1.0,2.605,Sheep,tracked,6.9
+CEUA7zVoDRqRYoeHTP58UHU6TR8yvtVbeLrX1dppqoXJ,100,0.34,5,2,6.0,215.0,1.0,0.5,0.598,Tom,removed,6.0
+6KR7SorsUQtNH6CB6JpAnWCAKeTysa95iyXeWihdNeGT,95,0.28,33,15,53.0,3.0,0.07,0.27,0.474,KOREAN,removed,3.7
+3uz65G8e463MA5FxcSu1rTUyWRtrRLRZYskKtEHHj7qn,94,0.75,5,2,2.7,38.5,1.0,0.0,-0.287,Felix,removed,2.7
+G3g1CKqKWSVEVURZDNMazDBv7YAhMNTjhJBVRTiKZygk,98,0.51,2,1,1.9,19.0,1.0,0.0,-0.192,Insyder,removed,1.9
+F2SuErm4MviWJ2HzKXk2nuzBC6xe883CFWUDCPz6cyWm,29,0.19,0,0,0.0,,,,0.0,Earl,removed,0.0
+B32QbbdDAyhvUQzjcaM5j6ZVKwjCxAwGH5Xgvb9SJqnC,0,,0,0,0.0,,,,0.0,Kadenox,tracked,0.0
+AuPp4YTMTyqxYXQnHc5KUc6pUuCSsHQpBJhgnD45yqrf,100,0.9,0,0,0.0,,,,0.0,Dani,tracked,0.0
+Bi4rd5FH5bYEN8scZ7wevxNZyNmKHdaBcvewdPFxYdLt,2,0.04,0,0,0.0,,,,0.0,theo,tracked,0.0
+5ZuV8eqkvzYFVEKbLvGBdexL2tFv7E5BCd2HZpjqbdg,70,0.3,2,0,0.0,,,,0.0,Doji,removed,0.0
+3BLjRcxWGtR7WRshJ3hL25U3RjWr5Ud98wMcczQqk4Ei,0,,0,0,0.0,,,,0.0,Sebastian,removed,0.0
+H31vEBxSJk1nQdUN11qZgZyhScyShhscKhvhZZU3dQoU,0,,0,0,0.0,,,,0.0,Megga,removed,0.0
+4vw54BmAogeRV3vPKWyFet5yf8DTLcREzdSzx4rw9Ud9,3,0.04,0,0,0.0,,,,0.0,decu,removed,0.0
+6aXFYXbFob1ZKAEDCcqZnX2vooA3TgEqDoy5dAQbeWoV,100,0.55,0,0,0.0,,,,0.0,Flames,removed,0.0
+CyaE1VxvBrahnPWkqm5VsdCvyS2QmNht2UFrKJHga54o,4,0.04,0,0,0.0,,,,0.0,Cented,removed,0.0
+8nqtxpFpuXwfXG4pBLsDkkuMMPK9FjSkBMCn542HiM3v,89,0.71,0,0,0.0,,,,0.0,dov7,removed,0.0
+6S8GezkxYUfZy9JPtYnanbcZTMB87Wjt1qx3c6ELajKC,0,,0,0,0.0,,,,0.0,Nyhrox,removed,0.0
+831yhv67QpKqLBJjbmw2xoDUeeFHGUx8RnuRj9imeoEs,0,,0,0,0.0,,,,0.0,Trey,removed,0.0
+Bi8gjp6g7hYmLJ2gsHbtdMwHyin4js1efTzDdJSQ6m4T,100,1.15,0,0,0.0,,,,0.0,Bi8gjp,removed,0.0
+BtMBMPkoNbnLF9Xn552guQq528KKXcsNBNNBre3oaQtr,99,0.88,0,0,0.0,,,,0.0,Letterbomb,removed,0.0
+53BnNc49Ajgstciq3CRoyxuBpkkW1r8pgPyvr7JGYnsh,91,0.73,0,0,0.0,,,,0.0,Monki,removed,0.0
+4JyenL2p8eQZAQuRS8QAASy7TzEcqAeKGha6bhiJXudh,80,2.67,0,0,0.0,,,,0.0,Boomer,removed,0.0
+9yYya3F5EJoLnBNKW6z4bZvyQytMXzDcpU5D6yYr4jqL,99,0.59,0,0,0.0,,,,0.0,Loopierr,removed,0.0
+9THzoX5yGNSgPBAjCF4Lgqc1wLXoFkMQit4XWbhhRnqE,100,1.21,0,0,0.0,,,,0.0,Dedmeow5,removed,0.0
+BwWK17cbHxwWBKZkUYvzxLcNQ1YVyaFezduWbtm2de6s,91,0.04,89,30,720.0,3.0,0.0,0.77,0.878,BwWK17,discovered x37,0.0
