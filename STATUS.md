@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-09-26 10:45 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-26 11:45 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,661 closed round trips**, all collector v3, Aug 05 to Sep 25
-- Newest trade **11.2 h old**
+- Newest trade **12.2 h old**  ⚠️ collector may be stuck
 - **4 in the last 24h**, 48 in the last 7 days (6.9/day across 5 tracked wallets)
-- **+0 since the last report** (2026-09-26 04:15 UTC)
+- **+0 since the last report** (2026-09-26 10:45 UTC)
 
 ## Detection lag
 
@@ -70,9 +70,9 @@ Same-block execution, copying at a **fixed 0.25 SOL** instead of the wallet's ow
 
 | wallet | n | return/trade | win rate | exit/entry | median hold |
 |---|---|---|---|---|---|
-| Sheep | 15 | +11.9% | 67% | 1.19 | 1.8s |
+| Sheep | 16 | +15.4% | 69% | 1.21 | 2.8s |
 | Dani | 9 | -0.1% | 56% | 1.05 | 3.8s |
-| Kadenox | 4 | -5.3% | 25% | 1.03 | 35.5s |
+| Kadenox | 5 | -6.4% | 20% | 1.02 | 14.0s |
 | theo | 4 | -13.8% | 25% | 0.82 | 50.8s |
 
 **This is a ceiling, not a forecast.** It assumes we land in the same block as the wallet. The collector's real detection lag is ~12s, and a wallet with a 3-second hold has already sold by then.
@@ -83,9 +83,9 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
-| Sheep | +12% (15) | · | · | · | · | -6% (9) | -6% (26) | · |
-| Kadenox | -5% (4) | · | · | · | · | -36% (5) | -16% (30) | · |
-| ALL | +3% (32) | · | · | · | · | -16% (24) | -22% (476) | -15% (385) |
+| Sheep | +15% (16) | · | · | · | · | -6% (9) | -6% (26) | · |
+| Kadenox | -6% (5) | · | · | · | · | -36% (5) | -16% (30) | · |
+| ALL | +5% (34) | · | · | · | · | -16% (24) | -22% (476) | -15% (385) |
 
 ## What we know
 
