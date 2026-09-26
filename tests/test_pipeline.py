@@ -221,3 +221,19 @@ def test_parser_runs_on_real_transactions_in_ci():
     assert "ctest" in wf
     for name in ("pumpfun_sell_v2.json", "pumpfun_buy_new_instruction.json"):
         assert (ROOT / "tests/fixtures" / name).exists(), name
+
+
+def test_nonstandard_curves_are_flagged(tmp_path):
+    """pump.fun now launches coins quoted in other tokens; the collector read
+    their quote-token reserves as SOL and "paid" 326 SOL for one entry. The
+    four confirmed on-chain on 2026-09-26 must come out flagged."""
+    out = tmp_path / "final.csv"
+    r = run(REPORTS / "dedupe_and_clean.py", DATASET, out)
+    assert r.returncode == 0, r.stderr
+    df = pd.read_csv(out)
+    confirmed = {"HQtXAFZwT2gNtPZoUzSoNPfKFWAw34K7FxUJE5r6HJ8d", "FJWuJLzQVL8Di7pvhmkom2nQLrz6ercT8LFbJG4CfRdF",
+                 "9mQGNgd9YK4sUMjQ3v9S8KvJPbsXpkqoPrU5nGX2qTLD", "tTZUQ4BoYcyxE2sTKLU3U2DeoYbLAJTi7kHGf8g3g11"}
+    flagged = set(df.loc[df["nonstandard_curve"] == 1, "mint"])
+    assert confirmed <= flagged
+    # and it is a flag, not a filter: nothing is dropped
+    assert len(df) == len(pd.read_csv(DATASET).drop_duplicates(subset=["sell_signature"]))

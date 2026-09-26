@@ -384,6 +384,12 @@ int main(int argc, char** argv) {
                         continue;
                     }
                     if (!state || state->complete) continue;
+                    if (!parsing::pumpfun::is_standard_sol_curve(*state)) {
+                        LOG_INFO(wallet.label + " BUY mint=" + trade->mint.to_base58() +
+                                 " skipped: not a standard SOL-quoted curve (e.g. quoted in another token) -- "
+                                 "SOL pricing against it would be meaningless");
+                        continue;
+                    }
 
                     double our_cost = parsing::pumpfun::simulate_buy_sol_cost(
                         *state, static_cast<double>(trade->token_amount));

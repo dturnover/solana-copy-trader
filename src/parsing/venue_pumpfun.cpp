@@ -80,6 +80,14 @@ std::optional<BondingCurveState> decode_bonding_curve(const std::vector<uint8_t>
     return state;
 }
 
+bool is_standard_sol_curve(const BondingCurveState& state) {
+    constexpr long double kSolCurveProduct = 30'000'000'000.0L * 1'073'000'000'000'000.0L;
+    long double product = static_cast<long double>(state.virtual_sol_reserves) *
+                          static_cast<long double>(state.virtual_token_reserves);
+    long double rel = product / kSolCurveProduct - 1.0L;
+    return rel < 1e-3L && rel > -1e-3L;
+}
+
 double simulate_buy_sol_cost(const BondingCurveState& state, double token_amount_out) {
     double v_sol = static_cast<double>(state.virtual_sol_reserves);
     double v_tok = static_cast<double>(state.virtual_token_reserves);

@@ -63,6 +63,23 @@ inferred = (df["incomplete_position"].isna()) & (proceeds_ratio > PARTIAL_PROCEE
 df.loc[inferred, "incomplete_position"] = 1
 df["incomplete_position"] = df["incomplete_position"].fillna(0).astype(int)
 
+# Curves our SOL pricing does not describe. A standard pump.fun curve holds
+# vsol * vtok at the constant below; rows off it by >0.1% are flagged.
+# Confirmed on-chain for 4 rows (2026-09-26): coins quoted in ANOTHER token,
+# whose reserves the collector read as SOL -- our simulated fill there is
+# meaningless (one "entry" cost 326 SOL). The wallet's own P&L on those rows
+# is still real SOL (it paid through a router). Also caught: a family at
+# exactly 0.972x (Boomer/Tom, 2026-08), cause unverified. Flag, not drop.
+PUMPFUN_K = 30_000_000_000 * 1_073_000_000_000_000
+if "entry_virtual_sol_reserves" in df.columns:
+    k_ratio = (df["entry_virtual_sol_reserves"].astype(float)
+               * df["entry_virtual_token_reserves"].astype(float) / PUMPFUN_K)
+    df["nonstandard_curve"] = ((k_ratio - 1).abs() > 1e-3) & (df["entry_virtual_sol_reserves"] > 0)
+else:
+    df["nonstandard_curve"] = False
+df["nonstandard_curve"] = df["nonstandard_curve"].astype(int)
+print(f"Non-standard curves (our-side P&L not SOL-priceable): {int(df['nonstandard_curve'].sum())}")
+
 n_blow = int(df["blowup"].sum())
 print(f"Rows: {n0} -> deduped {n1} -> flagged {n_blow} blow-up fill(s), kept all {len(df)}")
 if n_blow:

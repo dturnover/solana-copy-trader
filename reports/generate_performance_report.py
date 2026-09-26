@@ -106,7 +106,9 @@ def main():
     # bot would have eaten, not what the measured strategy did. Both cohorts
     # are sized explicitly in Summary rather than left invisible.
     reverting = (df["would_have_reverted"] == 1) | (df["sell_would_have_reverted"] == 1)
-    clean = df[~df["blowup"] & ~reverting]
+    # Our simulated fill is not SOL-priceable on non-standard curves (see dedupe_and_clean).
+    nonstd = df["nonstandard_curve"].astype(bool) if "nonstandard_curve" in df.columns else False
+    clean = df[~df["blowup"] & ~reverting & ~nonstd]
 
     n, n_clean = len(df), len(clean)
     n_blow = int(df["blowup"].sum())

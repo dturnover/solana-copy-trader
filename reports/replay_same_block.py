@@ -283,6 +283,14 @@ def main():
         & (df["wallet_token_amount"] > 0)
     ]
     excluded_multi = int((df["buy_count"] > 1).sum())
+    # Non-standard curves (e.g. quoted in another token, whose events carry no
+    # SOL reserves) would fail the offset check and read as a layout fault.
+    # They are not one; leave them out before the layout gate sees them.
+    if "nonstandard_curve" in usable.columns:
+        n_quote = int(usable["nonstandard_curve"].fillna(0).astype(int).sum())
+        usable = usable[usable["nonstandard_curve"].fillna(0).astype(int) == 0]
+        if n_quote:
+            print(f"Skipping {n_quote} round trip(s) on non-standard curves")
 
     # Newest first. The dataset is time-ordered, so head() silently selected the
     # oldest rows -- the ones an RPC is least likely to still retain, which is

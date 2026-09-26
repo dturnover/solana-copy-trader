@@ -66,6 +66,20 @@ std::optional<BondingCurveState> decode_bonding_curve(const std::vector<uint8_t>
 // (paper trading, lag-cost estimation), not precise enough for building a
 // real execution instruction later.
 
+// True for a standard SOL-quoted pump.fun curve: vsol * vtok at exactly
+// 30e9 * 1.073e15, which every such curve holds (checked on 98.8% of 1,651
+// snapshots, and exactly on every post-2026-09-24 SOL trade).
+//
+// False for curves our SOL simulation cannot price. Confirmed on-chain for 4
+// trades on 2026-09-26: coins quoted in another token (TradeEvent
+// sol_amount = 0, a second mint moving as payment, BuyExactQuoteIn /
+// GetFeesWithQuoteMint in the logs) whose "virtual_sol_reserves" are in the
+// quote token's units -- one priced a copy at a 326 SOL entry. Also seen:
+// a curve family sitting at exactly 0.972x the constant (Boomer/Tom), cause
+// unverified. Tested on the product, not a byte offset in the account, whose
+// newer fields have no verified layout.
+bool is_standard_sol_curve(const BondingCurveState& state);
+
 // SOL cost to acquire exactly `token_amount_out` tokens via a buy. Returns
 // a negative value if the request would drain more tokens than the curve
 // currently holds (invalid).
