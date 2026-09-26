@@ -142,3 +142,37 @@ collection through the poll budget, caps screening at about three days of
 reach, and caps replay at the same. An endpoint with real historical retention
 would remove all three at once, and is a different and much cheaper purchase
 than the gRPC one the same-block replay ruled out.
+
+## Probation, 2026-09-26: re-added after the collector was found blind
+
+Three wallets above were removed as "inactive" (<=2 closed trades in 5 days).
+That judgement was made by a collector that, we now know, could not read
+version-1 transactions, `sell_v2`, or the newer buy instructions -- so part of
+that inactivity was ours. Re-screened from pump.fun's own TradeEvents
+(reports/discover_wallets.py, two samples on 2026-09-26,
+reports/screened/discovered_20260926.csv), which do not depend on the parser:
+
+| wallet | SOL round trips/day | median hold | copyable (hold >= 10s) | own P&L in sample |
+|---|---|---|---|---|
+| Pikalosi | 31 | 12s | 65% | -1.93 SOL over 17 trips |
+| Pavel | 11-14 | 15-20s | 90% | -0.08 SOL over 13 trips |
+| West | 24-40 | 13-22s | 50-100% | -0.17 SOL over 2 trips (thin) |
+
+**Probation rule.** Re-evaluate on 2026-09-29. Keep a wallet only if it
+produced >= 10 closed rows on standard SOL curves (nonstandard_curve == 0)
+AND the scorecard does not call it a conclusive loser (p_luck > 0.95).
+Profit is not a reason to keep one yet: a few days of fat-tailed data cannot
+show an edge, only rule one out.
+
+**Not re-added:** Zuki and Cope are active again (12 and 130+ trips/day) but
+were removed on conclusive losses (111 and 91 trades), and today's samples
+agree (-1.4 and -0.7 SOL). Activity is not a reason to copy a loser.
+
+## Removed 2026-09-26: nothing we can copy
+
+- `theo` (Bi4rd5FH5bYEN8scZ7wevxNZyNmKHdaBcvewdPFxYdLt) -- 0 SOL-quoted pump.fun
+  trades in either sample; its recent activity is elsewhere. (Its same-block
+  exits were already at 0.82x of entry: copiers are its exit liquidity.)
+- `Dani` (AuPp4YTMTyqxYXQnHc5KUc6pUuCSsHQpBJhgnD45yqrf) -- 0 SOL-quoted trades
+  over ~0.9 days of history; its recent pump.fun trades are on curves quoted
+  in other tokens, which the collector now skips as unpriceable.
