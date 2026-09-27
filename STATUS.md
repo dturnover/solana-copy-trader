@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-09-27 03:46 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-27 11:02 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **1,702 closed round trips**, all collector v3, Aug 05 to Sep 26
-- Newest trade **4.4 h old**
-- **41 in the last 24h**, 88 in the last 7 days (12.6/day across 5 tracked wallets)
-- **+7 since the last report** (2026-09-26 22:28 UTC)
+- **1,717 closed round trips**, all collector v3, Aug 05 to Sep 27
+- Newest trade **12 min old**
+- **56 in the last 24h**, 102 in the last 7 days (14.6/day across 5 tracked wallets)
+- **+15 since the last report** (2026-09-27 03:46 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.6s**, p90 4.0s (50 rows)
-- Before that: median 18.0s, p90 34.4s (1569 rows)
+- Last 2 days: **median 2.5s**, p90 3.9s (60 rows)
+- Before that: median 18.0s, p90 34.3s (1574 rows)
 
 ## Has anything been proven yet?
 
@@ -24,17 +24,17 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 50.2 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 52.0 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 50.5 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 52.3 d ago |
+| West | 2 | 28 more | +0.62 | 50% | 100% | 0.246 | 5.2 h ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 11 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 12 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 10 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 10 days away.
+- West needs 28 more trades; at its recent rate that is roughly 10 days away.
 
 ## Tracked wallets that have gone quiet
 
-- **West** — last trade never seen. Costs ~43,200 RPC calls/day regardless.
-
-A silent wallet is not necessarily a dead one: it may be trading somewhere the collector does not parse. Either way it is spending poll budget for nothing.
+None — every tracked wallet has traded recently.
 
 ## Every wallet
 
@@ -45,11 +45,12 @@ A silent wallet is not necessarily a dead one: it may be trading somewhere the c
 | Dani | UNPROVEN | 147 | +13.95 | 48% | 54% | -21.31 | 0.341 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.251 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
-| Pavel | INSUFFICIENT | 9 | -0.00 | 44% | 0% | -0.09 | 0.522 |
+| West | INSUFFICIENT | 2 | +0.62 | 50% | 100% | — | 0.246 |
+| Pavel | INSUFFICIENT | 21 | -0.11 | 24% | 0% | -0.24 | 0.865 |
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
 | Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.969 |
-| Pikalosi | INSUFFICIENT | 14 | -10.50 | 7% | 0% | -10.72 | 1.000 |
+| Pikalosi | INSUFFICIENT | 15 | -8.16 | 13% | 50% | -10.80 | 0.970 |
 | Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.867 |
 | Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.617 |
 | Kadenox | LOSING | 57 | -6.25 | 49% | 45% | -13.73 | 0.735 |
@@ -85,9 +86,10 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 |---|---|---|---|---|---|---|---|---|
 | Sheep | +15% (16) | · | -31% (7) | -47% (4) | · | -6% (9) | -6% (26) | · |
 | Kadenox | -6% (5) | · | · | · | · | -36% (5) | -16% (30) | · |
-| Pikalosi | · | · | -43% (3) | · | · | · | · | · |
-| Pavel | · | · | -7% (3) | -19% (3) | · | · | · | -6% (3) |
-| ALL | +5% (34) | · | -28% (13) | -31% (10) | · | -16% (24) | -22% (476) | -15% (388) |
+| Pikalosi | · | · | -10% (4) | · | · | · | · | · |
+| Pavel | · | · | -5% (10) | -16% (8) | · | · | · | -6% (3) |
+| West | · | · | · | · | · | · | · | · |
+| ALL | +5% (34) | · | -14% (22) | -24% (16) | · | -16% (24) | -22% (476) | -15% (388) |
 
 ## What we know
 
