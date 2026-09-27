@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-09-27 17:45 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-27 22:06 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,731 closed round trips**, all collector v3, Aug 05 to Sep 27
-- Newest trade **19 min old**
-- **59 in the last 24h**, 116 in the last 7 days (16.6/day across 5 tracked wallets)
-- **+14 since the last report** (2026-09-27 12:58 UTC)
+- Newest trade **4.7 h old**
+- **36 in the last 24h**, 111 in the last 7 days (15.9/day across 5 tracked wallets)
+- **+0 since the last report** (2026-09-27 17:45 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.7s**, p90 3.8s (74 rows)
-- Before that: median 18.0s, p90 34.3s (1574 rows)
+- Last 2 days: **median 2.7s**, p90 3.8s (71 rows)
+- Before that: median 17.9s, p90 34.2s (1577 rows)
 
 ## Has anything been proven yet?
 
@@ -24,13 +24,13 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 50.8 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 52.6 d ago |
-| West | 2 | 28 more | +0.62 | 50% | 100% | 0.246 | 11.9 h ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 51.0 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 52.8 d ago |
+| West | 2 | 28 more | +0.62 | 50% | 100% | 0.246 | 16.3 h ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 8 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 9 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 9 days away.
-- West needs 28 more trades; at its recent rate that is roughly 8 days away.
+- West needs 28 more trades; at its recent rate that is roughly 9 days away.
 
 ## Tracked wallets that have gone quiet
 
