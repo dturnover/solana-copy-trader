@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-09-27 11:02 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-27 12:25 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,717 closed round trips**, all collector v3, Aug 05 to Sep 27
-- Newest trade **12 min old**
-- **56 in the last 24h**, 102 in the last 7 days (14.6/day across 5 tracked wallets)
-- **+15 since the last report** (2026-09-27 03:46 UTC)
+- Newest trade **1.6 h old**
+- **51 in the last 24h**, 102 in the last 7 days (14.6/day across 5 tracked wallets)
+- **+0 since the last report** (2026-09-27 11:02 UTC)
 
 ## Detection lag
 
@@ -24,9 +24,9 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 50.5 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 52.3 d ago |
-| West | 2 | 28 more | +0.62 | 50% | 100% | 0.246 | 5.2 h ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 50.6 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 52.4 d ago |
+| West | 2 | 28 more | +0.62 | 50% | 100% | 0.246 | 6.6 h ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 10 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 10 days away.
@@ -71,10 +71,13 @@ Same-block execution, copying at a **fixed 0.25 SOL** instead of the wallet's ow
 
 | wallet | n | return/trade | win rate | exit/entry | median hold |
 |---|---|---|---|---|---|
-| Sheep | 16 | +15.4% | 69% | 1.21 | 2.8s |
+| Sheep | 28 | +13.4% | 57% | 1.19 | 4.2s |
+| Pavel | 21 | +5.9% | 29% | 0.98 | 24.0s |
+| Pikalosi | 8 | +4.6% | 38% | 0.99 | 21.3s |
 | Dani | 9 | -0.1% | 56% | 1.05 | 3.8s |
 | Kadenox | 5 | -6.4% | 20% | 1.02 | 14.0s |
 | theo | 4 | -13.8% | 25% | 0.82 | 50.8s |
+| West | 2 | -15.0% | 50% | 0.89 | 2.7s |
 
 **This is a ceiling, not a forecast.** It assumes we land in the same block as the wallet. The collector's real detection lag is ~12s, and a wallet with a 3-second hold has already sold by then.
 
@@ -84,12 +87,12 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
-| Sheep | +15% (16) | · | -31% (7) | -47% (4) | · | -6% (9) | -6% (26) | · |
+| Sheep | +13% (28) | · | -31% (7) | -47% (4) | · | -6% (9) | -6% (26) | · |
 | Kadenox | -6% (5) | · | · | · | · | -36% (5) | -16% (30) | · |
-| Pikalosi | · | · | -10% (4) | · | · | · | · | · |
-| Pavel | · | · | -5% (10) | -16% (8) | · | · | · | -6% (3) |
+| Pikalosi | +5% (8) | · | -10% (4) | · | · | · | · | · |
+| Pavel | +6% (21) | · | -5% (10) | -16% (8) | · | · | · | -6% (3) |
 | West | · | · | · | · | · | · | · | · |
-| ALL | +5% (34) | · | -14% (22) | -24% (16) | · | -16% (24) | -22% (476) | -15% (388) |
+| ALL | +5% (77) | · | -14% (22) | -24% (16) | · | -16% (24) | -22% (476) | -15% (388) |
 
 ## What we know
 
