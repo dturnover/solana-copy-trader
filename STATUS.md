@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-09-27 23:05 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-28 04:29 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **1,743 closed round trips**, all collector v3, Aug 05 to Sep 27
-- Newest trade **7 min old**
-- **43 in the last 24h**, 119 in the last 7 days (17.0/day across 5 tracked wallets)
-- **+12 since the last report** (2026-09-27 22:06 UTC)
+- **1,764 closed round trips**, all collector v3, Aug 05 to Sep 28
+- Newest trade **17 min old**
+- **62 in the last 24h**, 140 in the last 7 days (20.0/day across 5 tracked wallets)
+- **+21 since the last report** (2026-09-27 23:05 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.6s**, p90 3.8s (83 rows)
-- Before that: median 17.9s, p90 34.2s (1577 rows)
+- Last 2 days: **median 2.6s**, p90 3.8s (103 rows)
+- Before that: median 17.9s, p90 34.1s (1578 rows)
 
 ## Has anything been proven yet?
 
@@ -24,13 +24,13 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 51.0 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 52.8 d ago |
-| West | 2 | 28 more | +0.62 | 50% | 100% | 0.254 | 17.3 h ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 51.2 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 53.0 d ago |
+| West | 2 | 28 more | +0.62 | 50% | 100% | 0.255 | 22.7 h ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 8 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 9 days away.
-- West needs 28 more trades; at its recent rate that is roughly 8 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 7 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 7 days away.
+- West needs 28 more trades; at its recent rate that is roughly 7 days away.
 
 ## Tracked wallets that have gone quiet
 
@@ -41,19 +41,19 @@ None — every tracked wallet has traded recently.
 | wallet | verdict | trades | P&L | win rate | days up | ex-top-3 | p_luck |
 |---|---|---|---|---|---|---|---|
 | theo | CONSISTENT | 40 | +70.11 | 88% | 95% | +54.49 | 0.000 |
-| Sheep | UNSTABLE | 79 | +30.51 | 57% | 78% | +21.94 | 0.003 |
+| Sheep | UNSTABLE | 97 | +18.70 | 50% | 75% | +10.13 | 0.062 |
 | Dani | UNPROVEN | 147 | +13.95 | 48% | 54% | -21.31 | 0.341 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.251 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
-| West | INSUFFICIENT | 2 | +0.62 | 50% | 100% | — | 0.254 |
-| Pavel | INSUFFICIENT | 31 | -0.24 | 23% | 0% | -0.36 | 0.972 |
+| West | INSUFFICIENT | 2 | +0.62 | 50% | 100% | — | 0.255 |
+| Pavel | INSUFFICIENT | 31 | -0.24 | 23% | 0% | -0.36 | 0.973 |
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
 | Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.969 |
-| Pikalosi | INSUFFICIENT | 18 | -7.27 | 17% | 50% | -11.93 | 0.926 |
-| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.867 |
-| Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.613 |
-| Kadenox | LOSING | 58 | -6.31 | 48% | 44% | -13.79 | 0.743 |
+| Pikalosi | INSUFFICIENT | 18 | -7.27 | 17% | 50% | -11.93 | 0.928 |
+| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.870 |
+| Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.617 |
+| Kadenox | LOSING | 61 | -2.82 | 49% | 46% | -10.30 | 0.611 |
 | Boomer | LOSING | 30 | -7.78 | 27% | 19% | -8.50 | 1.000 |
 | Dedmeow5 | LOSING | 44 | -15.72 | 7% | 0% | -15.86 | 1.000 |
 | Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.996 |
@@ -87,12 +87,12 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
-| Sheep | +13% (28) | · | -21% (10) | -36% (7) | · | -6% (9) | -6% (26) | · |
+| Sheep | +13% (28) | · | -29% (14) | -37% (10) | · | -6% (9) | -6% (26) | · |
 | Kadenox | -6% (5) | · | · | · | · | -36% (5) | -16% (30) | · |
 | Pikalosi | +5% (8) | · | -10% (4) | -29% (3) | · | · | · | · |
 | Pavel | +6% (21) | · | -6% (12) | -16% (16) | · | · | · | -6% (3) |
 | West | · | · | · | · | · | · | · | · |
-| ALL | +5% (77) | · | -13% (27) | -23% (29) | · | -16% (24) | -22% (476) | -15% (388) |
+| ALL | +5% (77) | · | -16% (33) | -25% (32) | · | -16% (24) | -22% (476) | -15% (388) |
 
 ## What we know
 
