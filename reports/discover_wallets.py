@@ -243,6 +243,22 @@ def main():
         print(f"  {label:<12} {source:<14} trips/day={r['trips_per_day']:<6} hold={r['median_hold_s']}s "
               f"copyable={r['copyable_share']} win={r['win_rate']} pnl={r['pnl_sol']} SOL")
 
+    # Stage 2. Eight copies cannot tell +10% from -20%: on 2026-09-29 the
+    # quick pass put Sheep at +8% while 68 copies in the daily replay put it at
+    # -20%. Re-price every stage-1 positive on up to 30 copies from 3x the
+    # history before anything is called a candidate.
+    for r in rows:
+        if (r.get("copy_n") or 0) >= 3 and (r.get("copy_next_block") or -1) > 0:
+            try:
+                deep = profile(endpoint, r["wallet"], args.history * 3, args.sleep, 30)
+            except Exception as e:
+                print(f"  {r['label']}: stage 2 failed ({e})")
+                continue
+            r.update(next_block_deep=deep["copy_next_block"], next_block_deep_win=deep["copy_next_block_win"],
+                     deep_n=deep["copy_n"], same_block_deep=deep["copy_same_block"])
+            print(f"  stage 2 {r['label']:<8} next-block {deep['copy_next_block']} over {deep['copy_n']} copies "
+                  f"(stage 1: {r['copy_next_block']} over {r['copy_n']})")
+
     import pandas as pd
     df = pd.DataFrame(rows)
     # Worth a slot = trades often AND holds long enough to copy. Profit is
@@ -256,11 +272,18 @@ def main():
     out = args.out or f"reports/screened/discovered_{datetime.now(timezone.utc):%Y%m%d}.csv"
     os.makedirs(os.path.dirname(out), exist_ok=True)
     df.to_csv(out, index=False)
-    cols = ["label", "source", "copy_next_block", "copy_next_block_win", "copy_n", "copy_same_block",
+    for c in ("next_block_deep", "deep_n"):
+        if c not in df:
+            df[c] = None
+    cols = ["label", "source", "next_block_deep", "deep_n", "copy_next_block", "copy_n", "copy_same_block",
             "trips_per_day", "median_hold_s", "win_rate", "pnl_sol", "span_days"]
     print("\nRanked by the return of a 0.25 SOL copy filled FIRST IN THE NEXT BLOCK "
           "(the best reachable speed), wallets with >= 3 priced copies first:")
     print(df[cols].head(30).to_string(index=False))
+    passed = df[(df["deep_n"].fillna(0) >= 20) & (df["next_block_deep"].fillna(-1) > 0)]
+    print(f"\nPassed stage 2 (>= 20 copies, positive first-in-next-block): {len(passed)}")
+    for _, r in passed.iterrows():
+        print(f"  {r['label']}  {r['wallet']}  {100 * r['next_block_deep']:+.1f}% over {int(r['deep_n'])}")
     print(f"\nWrote {out}")
 
 
