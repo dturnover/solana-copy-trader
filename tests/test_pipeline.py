@@ -272,3 +272,17 @@ def test_health_check_only_watches_scheduled_workflows():
         text = (ROOT / ".github/workflows" / wf).read_text()
         assert re.search(r"^\s*(schedule|workflow_run):", text, re.M), \
             f"{wf} is watched but never runs on its own"
+
+
+def test_slot_lag_pricing_matches_the_validated_model():
+    """At the wallet's own post-trade curve (offset 0) the slot-lag replay must
+    price a copy exactly as size_sweep does, or its lag curve is not comparable
+    with anything else in the reports."""
+    slot = load_module("replay_slot_lag")
+    sweep = load_module("size_sweep")
+    prop, fixed = sweep.SCENARIOS["measured"]
+    buy_vs, sell_vs = 45e9, 52e9
+    rows = pd.DataFrame({"buy_vs": [buy_vs], "sell_vs": [sell_vs]})
+    want, _, _ = sweep.copy_trade(rows, slot.SIZE_SOL, prop, fixed)
+    got = slot.price(buy_vs, K / buy_vs, sell_vs, K / sell_vs, prop, fixed)
+    assert abs(got - want[0]) < 1e-9
