@@ -201,6 +201,7 @@ def profile(endpoint, wallet, limit, sleep, speed_sample=0):
         "copy_next_block": mean(nxt),
         "copy_next_block_win": round(sum(x > 0 for x in nxt) / len(nxt), 2) if nxt else None,
         "copy_n": len(nxt),
+        "copy_next_block_sd": round(statistics.stdev(nxt), 3) if len(nxt) > 1 else None,
     }
 
 
@@ -227,7 +228,21 @@ def main():
     # and removed here; they are profiled below under their own names.
     found = [w for w, n in seen.most_common() if n >= 2 and w not in tracked and w not in removed][:args.top]
 
+    # Watchlist: wallets that passed stage 2 on any earlier day are re-screened
+    # every day, so evidence on them accumulates across days instead of
+    # resting on one run's thirty copies.
+    import glob as _glob
+    import pandas as _pd
+    watch = {}
+    for f in sorted(_glob.glob("reports/screened/discovered_*.csv")):
+        prev = _pd.read_csv(f)
+        if {"deep_n", "next_block_deep"} <= set(prev.columns):
+            ok = prev[(prev["deep_n"].fillna(0) >= 20) & (prev["next_block_deep"].fillna(-1) > 0)]
+            watch.update({w: l for w, l in zip(ok["wallet"], ok["label"])})
+    found = [w for w in found if w not in watch]
+
     cands = [(w, tracked[w], "tracked") for w in tracked]
+    cands += [(w, watch[w], "watchlist") for w in watch if w not in tracked]
     if args.include_removed:
         cands += [(w, removed[w], "removed") for w in removed]
     cands += [(w, w[:6], f"discovered x{seen[w]}") for w in found]
@@ -248,13 +263,15 @@ def main():
     # -20%. Re-price every stage-1 positive on up to 30 copies from 3x the
     # history before anything is called a candidate.
     for r in rows:
-        if (r.get("copy_n") or 0) >= 3 and (r.get("copy_next_block") or -1) > 0:
+        if r.get("source") == "watchlist" or ((r.get("copy_n") or 0) >= 3 and (r.get("copy_next_block") or -1) > 0):
             try:
                 deep = profile(endpoint, r["wallet"], args.history * 3, args.sleep, 30)
             except Exception as e:
                 print(f"  {r['label']}: stage 2 failed ({e})")
                 continue
             r.update(next_block_deep=deep["copy_next_block"], next_block_deep_win=deep["copy_next_block_win"],
+                     next_block_deep_se=(round(deep["copy_next_block_sd"] / deep["copy_n"] ** 0.5, 3)
+                                         if deep.get("copy_next_block_sd") and deep["copy_n"] else None),
                      deep_n=deep["copy_n"], same_block_deep=deep["copy_same_block"])
             print(f"  stage 2 {r['label']:<8} next-block {deep['copy_next_block']} over {deep['copy_n']} copies "
                   f"(stage 1: {r['copy_next_block']} over {r['copy_n']})")
@@ -272,10 +289,10 @@ def main():
     out = args.out or f"reports/screened/discovered_{datetime.now(timezone.utc):%Y%m%d}.csv"
     os.makedirs(os.path.dirname(out), exist_ok=True)
     df.to_csv(out, index=False)
-    for c in ("next_block_deep", "deep_n"):
+    for c in ("next_block_deep", "deep_n", "next_block_deep_se"):
         if c not in df:
             df[c] = None
-    cols = ["label", "source", "next_block_deep", "deep_n", "copy_next_block", "copy_n", "copy_same_block",
+    cols = ["label", "source", "next_block_deep", "next_block_deep_se", "deep_n", "copy_next_block", "copy_n", "copy_same_block",
             "trips_per_day", "median_hold_s", "win_rate", "pnl_sol", "span_days"]
     print("\nRanked by the return of a 0.25 SOL copy filled FIRST IN THE NEXT BLOCK "
           "(the best reachable speed), wallets with >= 3 priced copies first:")
@@ -283,7 +300,9 @@ def main():
     passed = df[(df["deep_n"].fillna(0) >= 20) & (df["next_block_deep"].fillna(-1) > 0)]
     print(f"\nPassed stage 2 (>= 20 copies, positive first-in-next-block): {len(passed)}")
     for _, r in passed.iterrows():
-        print(f"  {r['label']}  {r['wallet']}  {100 * r['next_block_deep']:+.1f}% over {int(r['deep_n'])}")
+        se = r.get("next_block_deep_se")
+        sig = f" (+/- {100 * se:.1f}% s.e.; {r['next_block_deep'] / se:.1f} s.e. above zero)" if se else ""
+        print(f"  {r['label']}  {r['wallet']}  {100 * r['next_block_deep']:+.1f}% over {int(r['deep_n'])}{sig}")
     print(f"\nWrote {out}")
 
 
