@@ -259,3 +259,16 @@ def test_collector_never_opens_a_copy_on_a_stale_buy():
     src = (ROOT / "src/main_paper_trade.cpp").read_text()
     assert re.search(r"kMaxEntryAgeMs\s*=\s*60'000", src)
     assert "on_chain_age_ms > kMaxEntryAgeMs" in src
+
+
+def test_health_check_only_watches_scheduled_workflows():
+    """A workflow that never starts on its own can never be "recently
+    successful" -- it must run on a schedule or be chained after one. Watching
+    lag-experiment.yml after it went manual-only failed the health check,
+    and emailed about it, four times a day while every real job was green."""
+    src = (ROOT / ".github/scripts/ci_health_check.py").read_text()
+    watched = re.search(r"^WORKFLOWS = \[(.*?)\]", src, re.M).group(1)
+    for wf in re.findall(r'"([^"]+\.yml)"', watched):
+        text = (ROOT / ".github/workflows" / wf).read_text()
+        assert re.search(r"^\s*(schedule|workflow_run):", text, re.M), \
+            f"{wf} is watched but never runs on its own"

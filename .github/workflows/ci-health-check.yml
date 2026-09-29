@@ -1,6 +1,6 @@
 name: CI Health Check
 
-# Watches paper-trade.yml and lag-experiment.yml from the outside: those are
+# Watches paper-trade.yml and merge-paper-trades.yml from the outside: those are
 # long (350min budget), unattended jobs that can silently produce nothing on
 # failure -- see the vcpkg-cache-staleness incident, 2026-07-23 to
 # 2026-07-25, where 8 consecutive runs across both workflows failed or got

@@ -1,5 +1,5 @@
 """
-Watches paper-trade.yml and lag-experiment.yml from the outside and files
+Watches paper-trade.yml and merge-paper-trades.yml from the outside and files
 (or updates) a GitHub issue if either looks broken.
 
 Why a separate watcher instead of a step inside those workflows: they are
@@ -26,7 +26,13 @@ from datetime import datetime, timezone
 # on every run for three days in 2026-08 while both collectors stayed green,
 # so the data was being gathered and then silently never committed. A watcher
 # that only looks at producers misses a broken consumer entirely.
-WORKFLOWS = ["paper-trade.yml", "lag-experiment.yml", "merge-paper-trades.yml"]
+# lag-experiment.yml was dropped 2026-09-29: it was unscheduled on 2026-09-24
+# (manual only -- it competed with the collector for the RPC key), and a
+# job that never runs on a timer can never be "recently successful". Leaving
+# it here failed this check, and emailed a failure, four times a day for five
+# days while every real job was green. tests/test_pipeline.py now fails if a
+# workflow listed here has no schedule.
+WORKFLOWS = ["paper-trade.yml", "merge-paper-trades.yml"]
 LOOKBACK_RUNS = 5
 MIN_SUCCESS_IN_LOOKBACK = 1
 STALE_HOURS = 18  # 3x the 6h schedule cadence -- one missed run is normal jitter, three isn't
