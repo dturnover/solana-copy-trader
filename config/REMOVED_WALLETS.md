@@ -176,3 +176,21 @@ agree (-1.4 and -0.7 SOL). Activity is not a reason to copy a loser.
 - `Dani` (AuPp4YTMTyqxYXQnHc5KUc6pUuCSsHQpBJhgnD45yqrf) -- 0 SOL-quoted trades
   over ~0.9 days of history; its recent pump.fun trades are on curves quoted
   in other tokens, which the collector now skips as unpriceable.
+
+## Probation review, 2026-09-29: all three dropped
+
+Judged on data collected 2026-09-26 11:40 onwards (standard SOL curves, live
+entries only) and, new since the probation started, the slot-lag replay
+(reports/replay_slot_lag.py): the return on a 0.25 SOL copy filled *first in
+the next block* after the wallet -- the best any copier without
+block-builder access can do.
+
+| wallet | clean rows | own P&L | scorecard p_luck | copy, first in next block | decision |
+|---|---|---|---|---|---|
+| Pavel | 35 | -0.44 SOL, 14% win | 0.998 (LOSING) | -13% (29) | drop: conclusive loser |
+| Pikalosi | 21 | -8.15 SOL, 19% win | 0.948 | -11% (12) | drop: just short of "conclusive" on the old rule, but uncopyable even at the best possible speed |
+| West | 2 | +0.62 SOL | -- | -27% (2) | drop: < 10 rows in three days |
+
+The re-screen was right that they were active; it was not evidence they are
+worth copying. What matters now is the "first in next block" column, and
+new candidates are screened on it before they get a slot.
