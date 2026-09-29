@@ -28,7 +28,7 @@ jobs:
           RPC_ENDPOINT: https://rpc.shyft.to?api_key=${{ secrets.SHYFT_API_KEY }}
         run: |
           set -o pipefail
-          python3 reports/discover_wallets.py 2>&1 | tee discover.txt
+          python3 reports/discover_wallets.py --top 40 2>&1 | tee discover.txt
       - name: Publish to the run summary
         if: always()
         run: |

@@ -21,6 +21,13 @@ instruction decoder that failed before.
        - its own SOL P&L and win rate     (is there anything to copy)
   Non-SOL-quoted trades (sol_amount = 0) are skipped: we cannot price them.
 
+Ranking. Candidates are ranked on copy_next_block: what a 0.25 SOL copy of
+their recent round trips returns filled first in the next block after them,
+priced exactly as replay_slot_lag.py prices the tracked wallets. On
+2026-09-29 every tracked wallet was negative there even when strongly
+positive same-block -- the edge was gone within one block -- so activity
+and the wallet's own profit are shown but no longer ranked on.
+
 Output is a ranking, not a decision. Nothing is promoted on looking good
 over a few days of fat-tailed data; this only says who is worth watching.
 """
@@ -37,6 +44,10 @@ from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.dirname(__file__))
 from replay_same_block import TX_OPTS, decode_trade_events, rpc  # noqa: E402
+from replay_slot_lag import curve_sigs_after, price, state_at  # noqa: E402
+from probe_instructions import bonding_curve_pda  # noqa: E402
+from replay_same_block import b58encode  # noqa: E402
+from size_sweep import SCENARIOS  # noqa: E402
 
 PUMPFUN = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
 CONFIG = "config/config.paper_trade.ci.json"
@@ -53,6 +64,8 @@ def sol_events(tx):
     for e in decode_trade_events(tx):
         if e["sol_amount"] > 0 and e["virtual_sol"] > 0:
             e["t"] = tx.get("blockTime") or 0
+            e["slot"] = tx.get("slot")
+            e["sig"] = ((tx.get("transaction") or {}).get("signatures") or [None])[0]
             out.append(e)
     return out
 
@@ -97,15 +110,16 @@ def pair_round_trips(events):
     trips = []
     for e in events:
         if e["is_buy"]:
-            lots[e["mint"]].append([e["token_amount"], e["sol_amount"], e["t"]])
+            lots[e["mint"]].append([e["token_amount"], e["sol_amount"], e["t"], e])
             continue
-        remaining, cost, first_t = e["token_amount"], 0.0, None
+        remaining, cost, first_t, first_buy = e["token_amount"], 0.0, None, None
         q = lots[e["mint"]]
         while remaining > 0 and q:
-            tok, c, t = q[0]
+            tok, c, t, buy_ev = q[0]
             take = min(tok, remaining)
             cost += c * take / tok
-            first_t = t if first_t is None else first_t
+            if first_t is None:
+                first_t, first_buy = t, buy_ev
             q[0][0] -= take
             q[0][1] -= c * take / tok
             remaining -= take
@@ -114,11 +128,34 @@ def pair_round_trips(events):
         if first_t is not None and cost > 0:
             matched = e["token_amount"] - remaining
             trips.append({"pnl": (e["sol_amount"] * matched / e["token_amount"] - cost) / LAMPORTS,
-                          "hold_s": e["t"] - first_t})
+                          "hold_s": e["t"] - first_t, "buy": first_buy, "sell": e})
     return trips
 
 
-def profile(endpoint, wallet, limit, sleep):
+def copy_at_speed(endpoint, trip):
+    """(same-block, first-in-next-block) return on a 0.25 SOL copy of one round
+    trip, priced exactly as reports/replay_slot_lag.py prices the daily data.
+    None where the history cannot be read."""
+    b, s = trip["buy"], trip["sell"]
+    if not (b and s and b.get("sig") and s.get("sig") and b.get("slot") is not None):
+        return None
+    prop, fixed = SCENARIOS["measured"]
+    curve = b58encode(bonding_curve_pda(b["mint"]))
+    b0, s0 = (b["virtual_sol"], b["virtual_token"]), (s["virtual_sol"], s["virtual_token"])
+    same = price(*b0, *s0, prop, fixed)
+    if s["slot"] <= b["slot"]:
+        return same, None   # sold in the block it bought: no copier gets in
+    entry = curve_sigs_after(endpoint, curve, b["sig"], s["sig"])
+    exit_ = curve_sigs_after(endpoint, curve, s["sig"])
+    if entry is None or exit_ is None:
+        return same, None
+    cache = {}
+    vin = state_at(endpoint, entry, b["mint"], b["slot"], b0, cache)
+    vout = state_at(endpoint, exit_, b["mint"], s["slot"], s0, cache)
+    return same, price(*vin, *vout, prop, fixed)
+
+
+def profile(endpoint, wallet, limit, sleep, speed_sample=0):
     sigs = rpc(endpoint, "getSignaturesForAddress", [wallet, {"limit": limit, "commitment": "confirmed"}]) or []
     sigs = [s for s in sigs if s.get("err") is None]
     events = []
@@ -134,6 +171,21 @@ def profile(endpoint, wallet, limit, sleep):
 
     trips = pair_round_trips(events)
     holds = [t["hold_s"] for t in trips]
+
+    # The column that decides a slot: what a copy returns filled first in the
+    # next block. Priced on the most recent round trips (RPC-bounded sample).
+    same, nxt = [], []
+    for t in sorted(trips, key=lambda t: t["sell"]["t"] if t.get("sell") else 0, reverse=True)[:speed_sample]:
+        try:
+            r = copy_at_speed(endpoint, t)
+        except Exception:
+            r = None
+        if r:
+            if r[0] is not None:
+                same.append(r[0])
+            if r[1] is not None:
+                nxt.append(r[1])
+    mean = lambda v: round(statistics.mean(v), 3) if v else None
     return {
         "wallet": wallet,
         "sigs_scanned": len(sigs),
@@ -145,6 +197,10 @@ def profile(endpoint, wallet, limit, sleep):
         "copyable_share": round(sum(h >= MIN_COPYABLE_HOLD_S for h in holds) / len(holds), 2) if holds else None,
         "win_rate": round(sum(t["pnl"] > 0 for t in trips) / len(trips), 2) if trips else None,
         "pnl_sol": round(sum(t["pnl"] for t in trips), 3),
+        "copy_same_block": mean(same),
+        "copy_next_block": mean(nxt),
+        "copy_next_block_win": round(sum(x > 0 for x in nxt) / len(nxt), 2) if nxt else None,
+        "copy_n": len(nxt),
     }
 
 
@@ -156,6 +212,10 @@ def main():
     ap.add_argument("--history", type=int, default=100, help="signatures of history per wallet")
     ap.add_argument("--sleep", type=float, default=0.15)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--speed-sample", type=int, default=8,
+                    help="recent round trips per wallet priced at first-in-next-block")
+    ap.add_argument("--include-removed", action="store_true",
+                    help="re-profile wallets in REMOVED_WALLETS.md too")
     args = ap.parse_args()
     endpoint = os.environ["RPC_ENDPOINT"]
 
@@ -168,12 +228,13 @@ def main():
     found = [w for w, n in seen.most_common() if n >= 2 and w not in tracked and w not in removed][:args.top]
 
     cands = [(w, tracked[w], "tracked") for w in tracked]
-    cands += [(w, removed[w], "removed") for w in removed]
+    if args.include_removed:
+        cands += [(w, removed[w], "removed") for w in removed]
     cands += [(w, w[:6], f"discovered x{seen[w]}") for w in found]
     rows = []
     for w, label, source in cands:
         try:
-            r = profile(endpoint, w, args.history, args.sleep)
+            r = profile(endpoint, w, args.history, args.sleep, args.speed_sample)
         except Exception as e:
             print(f"  {label}: failed ({e})")
             continue
@@ -182,19 +243,47 @@ def main():
         print(f"  {label:<12} {source:<14} trips/day={r['trips_per_day']:<6} hold={r['median_hold_s']}s "
               f"copyable={r['copyable_share']} win={r['win_rate']} pnl={r['pnl_sol']} SOL")
 
+    # Stage 2. Eight copies cannot tell +10% from -20%: on 2026-09-29 the
+    # quick pass put Sheep at +8% while 68 copies in the daily replay put it at
+    # -20%. Re-price every stage-1 positive on up to 30 copies from 3x the
+    # history before anything is called a candidate.
+    for r in rows:
+        if (r.get("copy_n") or 0) >= 3 and (r.get("copy_next_block") or -1) > 0:
+            try:
+                deep = profile(endpoint, r["wallet"], args.history * 3, args.sleep, 30)
+            except Exception as e:
+                print(f"  {r['label']}: stage 2 failed ({e})")
+                continue
+            r.update(next_block_deep=deep["copy_next_block"], next_block_deep_win=deep["copy_next_block_win"],
+                     deep_n=deep["copy_n"], same_block_deep=deep["copy_same_block"])
+            print(f"  stage 2 {r['label']:<8} next-block {deep['copy_next_block']} over {deep['copy_n']} copies "
+                  f"(stage 1: {r['copy_next_block']} over {r['copy_n']})")
+
     import pandas as pd
     df = pd.DataFrame(rows)
     # Worth a slot = trades often AND holds long enough to copy. Profit is
     # shown, not ranked on: a few days of it says little.
     df["copyable_trips_per_day"] = (df["trips_per_day"] * df["copyable_share"].fillna(0)).round(1)
-    df = df.sort_values("copyable_trips_per_day", ascending=False)
+    # Ranked on what a copy would actually return at the best reachable speed,
+    # among wallets with at least 3 such copies priced. Activity breaks ties.
+    df["rankable"] = df["copy_n"].fillna(0) >= 3
+    df = df.sort_values(["rankable", "copy_next_block", "copyable_trips_per_day"],
+                        ascending=[False, False, False])
     out = args.out or f"reports/screened/discovered_{datetime.now(timezone.utc):%Y%m%d}.csv"
     os.makedirs(os.path.dirname(out), exist_ok=True)
     df.to_csv(out, index=False)
-    cols = ["label", "source", "copyable_trips_per_day", "trips_per_day", "median_hold_s",
-            "copyable_share", "win_rate", "pnl_sol", "span_days"]
-    print("\nRanked by copyable round trips per day (hold >= %.0fs):" % MIN_COPYABLE_HOLD_S)
+    for c in ("next_block_deep", "deep_n"):
+        if c not in df:
+            df[c] = None
+    cols = ["label", "source", "next_block_deep", "deep_n", "copy_next_block", "copy_n", "copy_same_block",
+            "trips_per_day", "median_hold_s", "win_rate", "pnl_sol", "span_days"]
+    print("\nRanked by the return of a 0.25 SOL copy filled FIRST IN THE NEXT BLOCK "
+          "(the best reachable speed), wallets with >= 3 priced copies first:")
     print(df[cols].head(30).to_string(index=False))
+    passed = df[(df["deep_n"].fillna(0) >= 20) & (df["next_block_deep"].fillna(-1) > 0)]
+    print(f"\nPassed stage 2 (>= 20 copies, positive first-in-next-block): {len(passed)}")
+    for _, r in passed.iterrows():
+        print(f"  {r['label']}  {r['wallet']}  {100 * r['next_block_deep']:+.1f}% over {int(r['deep_n'])}")
     print(f"\nWrote {out}")
 
 
