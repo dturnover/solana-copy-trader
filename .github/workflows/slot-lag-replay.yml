@@ -1,0 +1,50 @@
+name: Slot-Lag Replay
+
+# Prices recorded round trips as if copied N slots behind the wallet -- the
+# speed a paid gRPC stream would give -- from free data
+# (reports/replay_slot_lag.py). Daily, because the RPC forgets transactions
+# after a few days: a round trip not priced while fresh never can be.
+on:
+  schedule:
+    - cron: "10 7 * * *"   # after the same-block replay (06:40)
+  workflow_dispatch: {}
+  push:
+    branches: ["fix/**"]
+    paths:
+      - "reports/replay_slot_lag.py"
+      - ".github/workflows/slot-lag-replay.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: pip install --quiet pandas numpy
+      - name: Replay at slot offsets
+        env:
+          RPC_ENDPOINT: https://rpc.shyft.to?api_key=${{ secrets.SHYFT_API_KEY }}
+        run: |
+          set -o pipefail
+          python3 reports/replay_slot_lag.py 2>&1 | tee slot_lag.txt
+      - name: Publish to the run summary
+        if: always()
+        run: |
+          { echo '```'; cat slot_lag.txt 2>/dev/null || echo "(no output)"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      # Only master commits. A branch test run must never push to master.
+      - name: Commit
+        if: github.ref == 'refs/heads/master'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/slot_lag 2>/dev/null || true
+          git diff --staged --quiet && { echo "nothing new"; exit 0; }
+          git commit -m "Slot-lag pricing $(date -u +%Y-%m-%d) [skip ci]"
+          for attempt in 1 2 3 4; do
+            git pull --rebase --quiet origin master && git push origin HEAD:master && break
+            sleep $((attempt * 2))
+          done
