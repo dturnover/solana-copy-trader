@@ -14,6 +14,7 @@ that says nothing changed is saying that deliberately.
 """
 
 import json
+import glob
 import os
 import subprocess
 import sys
@@ -251,6 +252,32 @@ def main():
             L.append(f"| {w} | " + " | ".join(cells) + " |")
         L.append("")
 
+    # Simulated gRPC speed (reports/replay_slot_lag.py). Priced from pump.fun's
+    # own trade events, block by block after the wallet, so it answers "would
+    # paying for speed help?" without paying.
+    slot_files = sorted(glob.glob("reports/slot_lag/*.csv"))
+    if slot_files:
+        sl = pd.concat([pd.read_csv(f) for f in slot_files])
+        sl = sl.drop_duplicates(subset=["entry_signature", "offset_slots"], keep="last")
+        sl = sl[sl["status"] == "priced"]
+        offs = [(0, "same block"), (0.5, "first in next block"), (1, "+1 block"), (3, "+3 blocks"), (10, "+10 blocks")]
+        L.append("## At simulated gRPC speed")
+        L.append("")
+        L.append("Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after "
+                 "the wallet, on both buy and sell. **\"First in next block\" is the best any "
+                 "copier can do** -- nothing lands inside the wallet's own block. Cells are "
+                 "`return (copies)`; `·` means fewer than 3.")
+        L.append("")
+        L.append("| wallet | " + " | ".join(lbl for _, lbl in offs) + " |")
+        L.append("|---|" + "---|" * len(offs))
+        for w in sorted(set(sl["wallet_label"])):
+            cells = []
+            for o, _ in offs:
+                hit = sl[(sl["wallet_label"] == w) & (sl["offset_slots"] == o)]["ret"]
+                cells.append("·" if len(hit) < 3 else f"{100 * hit.mean():+.0f}% ({len(hit)})")
+            L.append(f"| {w} | " + " | ".join(cells) + " |")
+        L.append("")
+
     L.append("## What we know")
     L.append("")
     L.append("- **Copy size is the biggest cost lever, not speed.** Mirroring the "
@@ -267,6 +294,12 @@ def main():
              "transactions, which Solana only produces ~12.8s after they land. Switched "
              "to *confirmed* (~1s) on 2026-09-24. The table above will show whether "
              "that is fast enough before anything is spent on paid infrastructure.")
+    L.append("- **Speed will not rescue these wallets (2026-09-29).** Simulated block by "
+             "block, their edge exists only inside their own block: Sheep +25% same-block, "
+             "-20% if first in the next one, and every tracked wallet is negative from there "
+             "on. Bots swarm the same coins in the same block. Paying for gRPC buys ~1s; "
+             "the edge is gone in 0.4s. The roster search must find wallets whose trades "
+             "are still profitable at \"first in next block\".")
     L.append("- **Execution costs ~2% per leg all-in**, measured. The live collector "
              "applies none, so its simulated copy P&L is optimistic.")
     L.append("- **The RPC forgets transactions in ~2 days.** Same-block pricing now runs "
