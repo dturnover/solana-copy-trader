@@ -5,6 +5,10 @@ name: Discover Wallets
 # Shares the collector's RPC key; the collector retries rate-limited calls,
 # and this paces itself.
 on:
+  # Daily: fresh candidates, plus a re-screen of every earlier stage-2 passer
+  # (the watchlist), so evidence on them accumulates day over day.
+  schedule:
+    - cron: "40 7 * * *"
   workflow_dispatch: {}
   push:
     branches: ["fix/**"]
