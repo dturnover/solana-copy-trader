@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-09-29 11:30 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-29 13:19 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,826 closed round trips**, all collector v3, Aug 05 to Sep 29
-- Newest trade **1.2 h old**
+- Newest trade **3.0 h old**
 - **55 in the last 24h**, 196 in the last 7 days (28.0/day across 2 tracked wallets)
-- **+11 since the last report** (2026-09-29 04:54 UTC)
+- **+0 since the last report** (2026-09-29 11:30 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.6s**, p90 3.6s (109 rows)
-- Before that: median 17.7s, p90 33.8s (1634 rows)
+- Last 2 days: **median 2.5s**, p90 3.7s (101 rows)
+- Before that: median 17.7s, p90 33.5s (1642 rows)
 
 ## Has anything been proven yet?
 
@@ -24,9 +24,9 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 52.5 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 54.3 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.407 | 1.7 h ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 52.6 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 54.4 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.407 | 3.5 h ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 2 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 2 days away.
@@ -71,9 +71,9 @@ Same-block execution, copying at a **fixed 0.25 SOL** instead of the wallet's ow
 
 | wallet | n | return/trade | win rate | exit/entry | median hold |
 |---|---|---|---|---|---|
-| Sheep | 52 | +34.7% | 62% | 1.27 | 4.7s |
-| Kadenox | 8 | +11.2% | 25% | 0.99 | 16.4s |
-| Pikalosi | 9 | +0.6% | 33% | 0.94 | 28.5s |
+| Sheep | 85 | +37.5% | 66% | 1.38 | 4.5s |
+| Kadenox | 9 | +9.5% | 22% | 1.01 | 14.0s |
+| Pikalosi | 11 | +1.4% | 36% | 0.94 | 22.3s |
 | Dani | 9 | -0.1% | 56% | 1.05 | 3.8s |
 | Pavel | 38 | -3.2% | 21% | 0.91 | 25.0s |
 | theo | 4 | -13.8% | 25% | 0.82 | 50.8s |
@@ -87,9 +87,9 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
-| Sheep | +35% (52) | · | -32% (24) | -32% (25) | · | -6% (9) | -6% (26) | -0% (3) |
-| Kadenox | +11% (8) | · | -5% (3) | · | · | -36% (5) | -16% (30) | · |
-| ALL | +14% (122) | · | -21% (48) | -26% (52) | · | -16% (24) | -22% (476) | -15% (389) |
+| Sheep | +38% (85) | · | -32% (24) | -32% (25) | · | -6% (9) | -6% (26) | -0% (3) |
+| Kadenox | +9% (9) | · | -5% (3) | · | · | -36% (5) | -16% (30) | · |
+| ALL | +20% (158) | · | -21% (48) | -26% (52) | · | -16% (24) | -22% (476) | -15% (389) |
 
 ## At simulated gRPC speed
 
