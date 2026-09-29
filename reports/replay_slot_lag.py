@@ -24,7 +24,10 @@ Choices, all conservative:
     the late position is the realistic one.
   - If the wallet has already sold by the time our entry would land, the
     copy never happened (recorded as missed, not as a loss or a win).
-  - N = 0 is the wallet's own post-trade curve: the same-block ceiling.
+  - N = 0 is the wallet's own post-trade curve: the same-block ceiling,
+    reachable only from inside the wallet's block.
+  - N = 0.5 is first in the next block: after every trade in the wallet's
+    slot, before any in the next. The best a real copier can do.
 
 Size is fixed (0.25 SOL) and fees are the "measured" scenario from
 size_sweep.py, so these numbers line up with the rest of the reports.
@@ -41,7 +44,11 @@ import pandas as pd  # noqa: E402
 from replay_same_block import TX_OPTS, decode_trade_events, rpc  # noqa: E402
 from size_sweep import SCENARIOS  # noqa: E402
 
-OFFSETS = [0, 1, 2, 3, 5, 10]
+# 0.5 = FIRST in the next block: the curve after every trade in the wallet's
+# own slot, before anything in the next one. The best any bot without
+# block-builder access can do (there is no public mempool to land in the
+# wallet's own block), so it bounds the whole question from above.
+OFFSETS = [0, 0.5, 1, 2, 3, 5, 10]
 SIZE_SOL = 0.25
 LAMPORTS = 1e9
 MAX_PAGES = 6
@@ -123,11 +130,13 @@ def replay_row(endpoint, r, prop, fixed):
     out = []
     for n in OFFSETS:
         row = {"offset_slots": n}
-        if n and b_slot + n >= s_slot:
+        if n >= 1 and b_slot + n >= s_slot:
             row["status"] = "missed: wallet sold before our entry landed"
         else:
-            vin = b0 if n == 0 else state_at(endpoint, entry_sigs, r["mint"], b_slot + n, b0, cache)
-            vout = s0 if n == 0 else state_at(endpoint, exit_sigs, r["mint"], s_slot + n, s0, cache)
+            # n = 0.5 -> end of the wallet's own slot; n >= 1 -> end of slot + n.
+            k = 0 if n == 0.5 else n
+            vin = b0 if n == 0 else state_at(endpoint, entry_sigs, r["mint"], b_slot + k, b0, cache)
+            vout = s0 if n == 0 else state_at(endpoint, exit_sigs, r["mint"], s_slot + k, s0, cache)
             ret = price(*vin, *vout, prop, fixed)
             row.update(status="priced" if ret is not None else "unpriceable", ret=ret,
                        entry_vsol=vin[0], exit_vsol=vout[0])
