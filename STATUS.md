@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-09-30 11:19 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-30 12:59 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,854 closed round trips**, all collector v3, Aug 05 to Sep 30
-- Newest trade **3.2 h old**
+- Newest trade **4.9 h old**
 - **28 in the last 24h**, 205 in the last 7 days (29.3/day across 2 tracked wallets)
-- **+7 since the last report** (2026-09-30 03:59 UTC)
+- **+0 since the last report** (2026-09-30 11:19 UTC)
 
 ## Detection lag
 
@@ -24,9 +24,9 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 53.5 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 55.3 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.402 | 25.5 h ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 53.6 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 55.4 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.402 | 27.2 h ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 2 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 2 days away.
@@ -71,8 +71,8 @@ Same-block execution, copying at a **fixed 0.25 SOL** instead of the wallet's ow
 
 | wallet | n | return/trade | win rate | exit/entry | median hold |
 |---|---|---|---|---|---|
-| Sheep | 85 | +37.5% | 66% | 1.38 | 4.5s |
-| Kadenox | 9 | +9.5% | 22% | 1.01 | 14.0s |
+| Sheep | 107 | +32.6% | 66% | 1.30 | 4.4s |
+| Kadenox | 10 | +8.2% | 20% | 1.01 | 16.4s |
 | Pikalosi | 11 | +1.4% | 36% | 0.94 | 22.3s |
 | Dani | 9 | -0.1% | 56% | 1.05 | 3.8s |
 | Pavel | 38 | -3.2% | 21% | 0.91 | 25.0s |
@@ -87,9 +87,9 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
-| Sheep | +38% (85) | · | -29% (32) | -29% (29) | · | -6% (9) | -6% (26) | -0% (3) |
-| Kadenox | +9% (9) | · | -5% (3) | -34% (3) | · | -36% (5) | -16% (30) | · |
-| ALL | +20% (158) | · | -22% (56) | -25% (57) | · | -16% (24) | -22% (476) | -15% (389) |
+| Sheep | +33% (107) | · | -29% (32) | -29% (29) | · | -6% (9) | -6% (26) | -0% (3) |
+| Kadenox | +8% (10) | · | -5% (3) | -34% (3) | · | -36% (5) | -16% (30) | · |
+| ALL | +19% (181) | · | -22% (56) | -25% (57) | · | -16% (24) | -22% (476) | -15% (389) |
 
 ## At simulated gRPC speed
 
