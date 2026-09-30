@@ -194,3 +194,19 @@ block-builder access can do.
 The re-screen was right that they were active; it was not evidence they are
 worth copying. What matters now is the "first in next block" column, and
 new candidates are screened on it before they get a slot.
+
+## Probation, 2026-09-30: 6SB1n4 (first screener passer)
+
+`6SB1n4` (6SB1n4SngPoTxehjUkwnsweVApUtrxCJz4kTajzBAyuh) is the only wallet
+to pass stage 2 of the gRPC-speed screener (reports/discover_wallets.py),
+and it passed on two separate days: a 0.25 SOL copy filled first in the
+next block returned +4.9% over 29 copies (2026-09-29) and +9.8% +/- 8.3%
+over 23 (2026-09-30). Positive both times, but ~1.3 standard errors from
+zero pooled -- not yet evidence of an edge. On 09-29 it traded ~770 round
+trips/day (too many for the serial collector); on 09-30 ~10/day, so it can
+be tracked.
+
+Tracked so the daily slot-lag replay prices its trades every day. **Keep
+only if its "first in next block" column stays positive and reaches 2
+standard errors above zero; drop at 60 copies if it has not.** Profit in
+the collector's own ~4s column is not the test -- nothing passes that.
