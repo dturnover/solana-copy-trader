@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-09-30 13:38 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-09-30 18:22 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **1,854 closed round trips**, all collector v3, Aug 05 to Sep 30
-- Newest trade **5.5 h old**
-- **28 in the last 24h**, 205 in the last 7 days (29.3/day across 2 tracked wallets)
-- **+0 since the last report** (2026-09-30 12:59 UTC)
+- **1,882 closed round trips**, all collector v3, Aug 05 to Sep 30
+- Newest trade **1.9 h old**
+- **56 in the last 24h**, 231 in the last 7 days (33.0/day across 2 tracked wallets)
+- **+28 since the last report** (2026-09-30 13:38 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.4s**, p90 3.4s (83 rows)
-- Before that: median 17.6s, p90 32.4s (1688 rows)
+- Last 2 days: **median 2.5s**, p90 3.5s (85 rows)
+- Before that: median 17.5s, p90 32.2s (1714 rows)
 
 ## Has anything been proven yet?
 
@@ -24,9 +24,9 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 53.6 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 55.4 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.402 | 27.8 h ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 53.8 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 55.6 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 32.6 h ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 2 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 2 days away.
@@ -41,11 +41,11 @@ None — every tracked wallet has traded recently.
 | wallet | verdict | trades | P&L | win rate | days up | ex-top-3 | p_luck |
 |---|---|---|---|---|---|---|---|
 | theo | CONSISTENT | 40 | +70.11 | 88% | 95% | +54.49 | 0.000 |
-| Sheep | UNPROVEN | 172 | +14.97 | 45% | 69% | +6.40 | 0.143 |
 | Dani | UNPROVEN | 147 | +13.95 | 48% | 54% | -21.31 | 0.341 |
+| Sheep | UNPROVEN | 200 | +3.80 | 44% | 69% | -4.77 | 0.405 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.251 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
-| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.402 |
+| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.405 |
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
 | Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.969 |
@@ -87,9 +87,9 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
-| Sheep | +33% (107) | · | -29% (32) | -29% (29) | · | -6% (9) | -6% (26) | -0% (3) |
+| Sheep | +33% (107) | · | -29% (40) | -28% (34) | · | -6% (9) | -6% (26) | -0% (3) |
 | Kadenox | +8% (10) | · | -5% (3) | -34% (3) | · | -36% (5) | -16% (30) | · |
-| ALL | +19% (181) | · | -22% (56) | -25% (57) | · | -16% (24) | -22% (476) | -15% (389) |
+| ALL | +19% (181) | · | -22% (64) | -25% (62) | · | -16% (24) | -22% (476) | -15% (389) |
 
 ## At simulated gRPC speed
 
@@ -97,10 +97,10 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 
 | wallet | same block | first in next block | +1 block | +3 blocks | +10 blocks |
 |---|---|---|---|---|---|
-| Kadenox | +11% (7) | -4% (7) | -5% (7) | -7% (7) | -7% (7) |
+| Kadenox | +9% (8) | -7% (8) | -8% (8) | -10% (8) | -10% (8) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +25% (68) | -20% (68) | -22% (66) | -21% (63) | -28% (60) |
+| Sheep | +20% (105) | -19% (105) | -21% (100) | -20% (94) | -26% (88) |
 | West | · | · | · | · | · |
 
 ## What we know
