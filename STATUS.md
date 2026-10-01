@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-09-30 22:59 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-01 03:54 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **1,882 closed round trips**, all collector v3, Aug 05 to Sep 30
-- Newest trade **6.5 h old**
-- **53 in the last 24h**, 231 in the last 7 days (33.0/day across 2 tracked wallets)
-- **+0 since the last report** (2026-09-30 18:22 UTC)
+- Newest trade **11.5 h old**
+- **35 in the last 24h**, 231 in the last 7 days (33.0/day across 3 tracked wallets)
+- **+0 since the last report** (2026-09-30 22:59 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.4s**, p90 3.5s (83 rows)
-- Before that: median 17.5s, p90 32.2s (1716 rows)
+- Last 2 days: **median 2.3s**, p90 3.4s (68 rows)
+- Before that: median 17.5s, p90 31.6s (1731 rows)
 
 ## Has anything been proven yet?
 
@@ -24,17 +24,19 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 54.0 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 55.8 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 37.2 h ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.251 | 54.2 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 56.0 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 42.1 h ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 2 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 2 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 3 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 3 days away.
 - West needs 27 more trades; at its recent rate that is roughly 2 days away.
 
 ## Tracked wallets that have gone quiet
 
-None — every tracked wallet has traded recently.
+- **6SB1n4** — last trade never seen. Costs ~43,200 RPC calls/day regardless.
+
+A silent wallet is not necessarily a dead one: it may be trading somewhere the collector does not parse. Either way it is spending poll budget for nothing.
 
 ## Every wallet
 
