@@ -1,0 +1,10 @@
+wallet,sigs_scanned,span_days,sol_trades,round_trips,trips_per_day,median_hold_s,copyable_share,win_rate,pnl_sol,copy_same_block,copy_next_block,copy_next_block_win,copy_n,copy_next_block_sd,label,source,next_block_deep,next_block_deep_win,next_block_deep_se,deep_n,same_block_deep,copyable_trips_per_day,rankable
+9ybgiGdRbLX4zMbYwrTU5riX3GbM1RPgftkKQhSPnkNh,88,0.04,88,3,72.0,19.0,0.67,0.67,3.129,3.462,3.461,0.67,3,6.546,9ybgiG,discovered x2,0.465,0.31,0.719,16.0,0.461,48.2,True
+wizfdevox8SG82o5B7KCVkJqAaHE8uucKCNidjPJPzD,58,0.04,56,26,624.0,10.5,0.58,0.58,0.001,-0.004,0.001,0.5,8,0.09,wizfde,discovered x2,-0.079,0.34,0.049,29.0,-0.08,361.9,True
+6SB1n4SngPoTxehjUkwnsweVApUtrxCJz4kTajzBAyuh,100,0.04,15,6,144.0,19.5,0.83,0.67,0.157,-0.019,-0.018,0.5,6,0.098,6SB1n4,watchlist,0.089,0.54,0.066,28.0,0.077,119.5,True
+8D1gqaCWBriJx3mFajQVMj5myDSXspP1xH5fwyXJNhEh,99,0.15,79,39,258.8,30.0,0.95,0.33,-0.12,-0.133,-0.073,0.38,8,0.432,8D1gqa,discovered x2,,,,,,245.9,True
+BwWK17cbHxwWBKZkUYvzxLcNQ1YVyaFezduWbtm2de6s,96,0.04,88,23,552.0,2.0,0.0,0.87,0.228,-0.28,-0.28,0.25,8,0.271,BwWK17,discovered x29,,,,,,0.0,True
+Hx44ecKZzK2UqZfVSxBp6B46jLBc2KGUwp4x9bLoR9GJ,70,0.04,65,28,672.0,4.0,0.0,0.57,0.091,-0.264,-0.294,0.25,8,0.516,Hx44ec,discovered x2,,,,,,0.0,True
+EpvvuMJn4vAWxMey9aF47d3N2CJ2o4Q93RcJ48ZgA8Yw,89,0.04,89,41,984.0,4.0,0.22,0.37,-0.046,-0.455,-0.454,0.25,8,0.609,EpvvuM,discovered x4,,,,,,216.5,True
+78N177fzNJpp8pG49xDv1efYcTMSzo9tPTKEA9mAVkh2,77,0.38,0,0,0.0,,,,0.0,,,,0,,Sheep,tracked,,,,,,0.0,False
+B32QbbdDAyhvUQzjcaM5j6ZVKwjCxAwGH5Xgvb9SJqnC,0,,0,0,0.0,,,,0.0,,,,0,,Kadenox,tracked,,,,,,0.0,False
