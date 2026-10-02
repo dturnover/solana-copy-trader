@@ -93,7 +93,11 @@ def test_size_sweep_reproduces_the_replay_exactly():
     f = d.our_cost_lamports / d.raw_cost_lamports - 1
     gross = d.sell_vs - K / (K / d.sell_vs + T)
     model = (gross * (1 - f) - d.raw_cost_lamports * (1 + f)) / 1e9
-    assert np.allclose(model, d.same_block_pnl_sol, atol=1e-9)
+    # 1e-6 SOL, not 1e-9: pump.fun's integer math lets a busy curve's reserves
+    # drift a few lamports off the exact constant product. On 2026-10-01 one
+    # row differed by 17 lamports (1.6e-8 SOL on a 1 SOL trade) and failed a
+    # 1e-9 bound. A wrong model is off by ~1e-2 SOL; this still catches it.
+    assert np.allclose(model, d.same_block_pnl_sol, atol=1e-6)
 
 
 # --- dataset invariants that were each silently violated once ------------------

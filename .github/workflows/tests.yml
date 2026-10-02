@@ -12,6 +12,11 @@ name: Tests
 # The bot's own dataset commits carry [skip ci], so this does not fire every
 # few hours on data refreshes -- only when code or config changes.
 on:
+  # Daily too: the bot's data commits carry [skip ci], so a test that new
+  # data breaks would otherwise stay broken unseen. On 2026-10-02 one did
+  # (a 17-lamport rounding difference against a 1e-9 SOL tolerance).
+  schedule:
+    - cron: "30 9 * * *"
   push:
     branches: [master]
   pull_request:
