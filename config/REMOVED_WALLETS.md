@@ -210,3 +210,15 @@ Tracked so the daily slot-lag replay prices its trades every day. **Keep
 only if its "first in next block" column stays positive and reaches 2
 standard errors above zero; drop at 60 copies if it has not.** Profit in
 the collector's own ~4s column is not the test -- nothing passes that.
+
+## 6SB1n4 dropped, 2026-10-02: the screener's two positives were noise
+
+Tracked from 2026-09-30, 6SB1n4 gave the slot-lag replay 114 copies in two
+days. Filled first in the next block a copy returns **-3.8% +/- 2.6%**; even
+same-block it is -3.6%. The screener's +4.9% (29) and +9.8% (23) were
+sampling noise, as their ~1.3 s.e. said they might be. Dropped under the
+rule set when it was added (positive and >= 2 s.e. by 60 copies, or out).
+
+Lesson for the screener: a stage-2 pass on ~25 copies is a reason to look,
+not a result. Tracking a wallet for a day or two is the cheap way to get
+100+ copies and settle it.
