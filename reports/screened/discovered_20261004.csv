@@ -1,0 +1,7 @@
+wallet,sigs_scanned,span_days,sol_trades,round_trips,trips_per_day,median_hold_s,copyable_share,win_rate,pnl_sol,copy_same_block,copy_next_block,copy_next_block_win,copy_n,copy_next_block_sd,label,source,next_block_deep,next_block_deep_win,next_block_deep_se,deep_n,same_block_deep,copyable_trips_per_day,rankable
+4opeQ1PbEbeJeejupBDi4cHzuDnYsHnyWJiw7JErfXGd,99,0.04,26,8,192.0,37.5,1.0,0.25,0.043,0.263,0.269,0.25,8,0.962,4opeQ1,watchlist,0.126,0.23,0.151,30.0,0.124,192.0,True
+6SB1n4SngPoTxehjUkwnsweVApUtrxCJz4kTajzBAyuh,100,0.63,56,31,49.2,23.0,0.68,0.58,-0.512,-0.084,-0.085,0.25,8,0.238,6SB1n4,watchlist,0.209,0.5,0.092,30.0,0.204,33.5,True
+78N177fzNJpp8pG49xDv1efYcTMSzo9tPTKEA9mAVkh2,97,0.43,0,0,0.0,,,,0.0,,,,0,,Sheep,tracked,,,,,,0.0,False
+B32QbbdDAyhvUQzjcaM5j6ZVKwjCxAwGH5Xgvb9SJqnC,72,0.37,0,0,0.0,,,,0.0,,,,0,,Kadenox,tracked,,,,,,0.0,False
+BwWK17cbHxwWBKZkUYvzxLcNQ1YVyaFezduWbtm2de6s,100,0.04,5,0,0.0,,,,0.0,,,,0,,BwWK17,discovered x4,,,,,,0.0,False
+HqpPCUewmzXc6Wj5akqsif5xw1gYXpn6UhCfwSSoZYfy,0,,0,0,0.0,,,,0.0,,,,0,,HqpPCU,discovered x2,,,,,,0.0,False
