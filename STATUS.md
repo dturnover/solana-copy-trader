@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-10-06 14:08 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-06 23:01 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,227 closed round trips**, all collector v3, Aug 05 to Oct 06
-- Newest trade **9.0 h old**
-- **17 in the last 24h**, 401 in the last 7 days (57.3/day across 2 tracked wallets)
-- **+0 since the last report** (2026-10-06 13:36 UTC)
+- Newest trade **17.9 h old**  ⚠️ collector may be stuck
+- **12 in the last 24h**, 398 in the last 7 days (56.9/day across 2 tracked wallets)
+- **+0 since the last report** (2026-10-06 14:08 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.3s**, p90 3.2s (33 rows)
-- Before that: median 16.5s, p90 28.1s (2111 rows)
+- Last 2 days: **median 2.3s**, p90 3.3s (31 rows)
+- Before that: median 16.5s, p90 28.0s (2113 rows)
 
 ## Has anything been proven yet?
 
@@ -24,9 +24,9 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 59.6 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 61.4 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.411 | 7.2 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 60.0 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 61.8 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.411 | 7.6 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 1 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 1 days away.
@@ -100,10 +100,10 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | wallet | same block | first in next block | +1 block | +3 blocks | +10 blocks |
 |---|---|---|---|---|---|
 | 6SB1n4 | -4% (114) | -4% (114) | -4% (114) | -5% (114) | -4% (110) |
-| Kadenox | -4% (50) | -23% (50) | -24% (50) | -25% (50) | -23% (46) |
+| Kadenox | -5% (51) | -23% (51) | -24% (51) | -25% (51) | -24% (47) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +12% (169) | -20% (169) | -22% (162) | -21% (154) | -26% (141) |
+| Sheep | +10% (184) | -21% (184) | -22% (176) | -22% (167) | -27% (150) |
 | West | · | · | · | · | · |
 
 ## What we know
