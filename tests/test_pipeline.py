@@ -290,3 +290,15 @@ def test_slot_lag_pricing_matches_the_validated_model():
     want, _, _ = sweep.copy_trade(rows, slot.SIZE_SOL, prop, fixed)
     got = slot.price(buy_vs, K / buy_vs, sell_vs, K / sell_vs, prop, fixed)
     assert abs(got - want[0]) < 1e-9
+
+
+def test_screener_prices_one_copy_per_buy():
+    """Partial sells of one buy are one copy, not several -- counting each
+    shrank the standard error and produced a false 2.3 s.e. "pass"."""
+    one = load_module("discover_wallets").one_copy_per_buy
+    b = {"sig": "B1", "t": 0}
+    trips = [{"buy": b, "sell": {"t": 30}}, {"buy": b, "sell": {"t": 10}}, {"buy": b, "sell": {"t": 20}},
+             {"buy": {"sig": "B2", "t": 5}, "sell": {"t": 40}}]
+    got = one(trips)
+    assert len(got) == 2
+    assert {t["buy"]["sig"]: t["sell"]["t"] for t in got} == {"B1": 10, "B2": 40}

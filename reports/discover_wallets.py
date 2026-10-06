@@ -132,6 +132,26 @@ def pair_round_trips(events):
     return trips
 
 
+def one_copy_per_buy(trips):
+    """One copy per buy, exiting at the FIRST sell after it -- exactly what the
+    collector and the daily slot-lag replay price.
+
+    pair_round_trips emits a trip per sell, so a buy closed by three partial
+    sells used to count as three copies. They are one trade: counting them
+    separately inflated n, shrank the standard error, and on 2026-10-06 put
+    6SB1n4 at +21% "2.3 s.e. above zero" days after 114 tracked copies had
+    measured it at -3.8% +/- 2.6%.
+    """
+    first = {}
+    for t in trips:
+        b, s = t.get("buy"), t.get("sell")
+        if not b or not s or not b.get("sig"):
+            continue
+        if b["sig"] not in first or s["t"] < first[b["sig"]]["sell"]["t"]:
+            first[b["sig"]] = t
+    return list(first.values())
+
+
 def copy_at_speed(endpoint, trip):
     """(same-block, first-in-next-block) return on a 0.25 SOL copy of one round
     trip, priced exactly as reports/replay_slot_lag.py prices the daily data.
@@ -175,7 +195,8 @@ def profile(endpoint, wallet, limit, sleep, speed_sample=0):
     # The column that decides a slot: what a copy returns filled first in the
     # next block. Priced on the most recent round trips (RPC-bounded sample).
     same, nxt = [], []
-    for t in sorted(trips, key=lambda t: t["sell"]["t"] if t.get("sell") else 0, reverse=True)[:speed_sample]:
+    for t in sorted(one_copy_per_buy(trips), key=lambda t: t["sell"]["t"] if t.get("sell") else 0,
+                    reverse=True)[:speed_sample]:
         try:
             r = copy_at_speed(endpoint, t)
         except Exception:
