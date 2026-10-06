@@ -1,0 +1,24 @@
+name: Kolscan Fetch
+
+# Fetches KOL wallets from kolscan.io (reports/fetch_kolscan.py). The dev
+# sandbox cannot reach the site; the runner can.
+on:
+  workflow_dispatch: {}
+  push:
+    branches: ["fix/**"]
+    paths:
+      - "reports/fetch_kolscan.py"
+      - ".github/workflows/kolscan-probe.yml"
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch
+        run: python3 reports/fetch_kolscan.py 2>&1 | tee kol.txt
+      - name: Publish to the run summary
+        if: always()
+        run: |
+          { echo '```'; cat kol.txt 2>/dev/null || echo "(no output)"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
