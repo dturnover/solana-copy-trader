@@ -132,6 +132,26 @@ def pair_round_trips(events):
     return trips
 
 
+def one_copy_per_buy(trips):
+    """One copy per buy, exiting at the FIRST sell after it -- exactly what the
+    collector and the daily slot-lag replay price.
+
+    pair_round_trips emits a trip per sell, so a buy closed by three partial
+    sells used to count as three copies. They are one trade: counting them
+    separately inflated n, shrank the standard error, and on 2026-10-06 put
+    6SB1n4 at +21% "2.3 s.e. above zero" days after 114 tracked copies had
+    measured it at -3.8% +/- 2.6%.
+    """
+    first = {}
+    for t in trips:
+        b, s = t.get("buy"), t.get("sell")
+        if not b or not s or not b.get("sig"):
+            continue
+        if b["sig"] not in first or s["t"] < first[b["sig"]]["sell"]["t"]:
+            first[b["sig"]] = t
+    return list(first.values())
+
+
 def copy_at_speed(endpoint, trip):
     """(same-block, first-in-next-block) return on a 0.25 SOL copy of one round
     trip, priced exactly as reports/replay_slot_lag.py prices the daily data.
@@ -175,7 +195,8 @@ def profile(endpoint, wallet, limit, sleep, speed_sample=0):
     # The column that decides a slot: what a copy returns filled first in the
     # next block. Priced on the most recent round trips (RPC-bounded sample).
     same, nxt = [], []
-    for t in sorted(trips, key=lambda t: t["sell"]["t"] if t.get("sell") else 0, reverse=True)[:speed_sample]:
+    for t in sorted(one_copy_per_buy(trips), key=lambda t: t["sell"]["t"] if t.get("sell") else 0,
+                    reverse=True)[:speed_sample]:
         try:
             r = copy_at_speed(endpoint, t)
         except Exception:
@@ -215,6 +236,9 @@ def main():
     ap.add_argument("--out", default=None)
     ap.add_argument("--speed-sample", type=int, default=8,
                     help="recent round trips per wallet priced at first-in-next-block")
+    ap.add_argument("--wallets-json", default=None,
+                    help="screen these wallets (e.g. reports/screened/kolscan_wallets.json) "
+                         "instead of sampling random program traffic")
     ap.add_argument("--include-removed", action="store_true",
                     help="re-profile wallets in REMOVED_WALLETS.md too")
     args = ap.parse_args()
@@ -223,7 +247,14 @@ def main():
     tracked = {w["pubkey"]: w["label"] for w in json.load(open(CONFIG))["tracked_wallets"]}
     removed = dict((pk, name) for name, pk in re.findall(r"`([^`]+)` \(([1-9A-HJ-NP-Za-km-z]{32,44})\)",
                                                           open(REMOVED).read()))
-    seen = discover(endpoint, args.pages, args.sample_every, args.sleep)
+    listed = {}
+    if args.wallets_json:
+        listed = {w["pubkey"]: (w.get("label") or w["pubkey"][:6])
+                  for w in json.load(open(args.wallets_json))}
+        print(f"screening {len(listed)} listed wallet(s) from {args.wallets_json}")
+        seen = collections.Counter()
+    else:
+        seen = discover(endpoint, args.pages, args.sample_every, args.sleep)
     # Seen more than once in a thin sample = trades often. Skip the tracked
     # and removed here; they are profiled below under their own names.
     found = [w for w, n in seen.most_common() if n >= 2 and w not in tracked and w not in removed][:args.top]
@@ -243,6 +274,7 @@ def main():
 
     cands = [(w, tracked[w], "tracked") for w in tracked]
     cands += [(w, watch[w], "watchlist") for w in watch if w not in tracked]
+    cands += [(w, listed[w], "kolscan") for w in listed if w not in tracked and w not in watch]
     if args.include_removed:
         cands += [(w, removed[w], "removed") for w in removed]
     cands += [(w, w[:6], f"discovered x{seen[w]}") for w in found]

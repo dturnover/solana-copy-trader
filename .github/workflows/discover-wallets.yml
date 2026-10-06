@@ -14,6 +14,7 @@ on:
     branches: ["fix/**"]
     paths:
       - "reports/discover_wallets.py"
+      - "reports/fetch_kolscan.py"
       - ".github/workflows/discover-wallets.yml"
 
 permissions:
@@ -22,17 +23,30 @@ permissions:
 jobs:
   discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
       - name: Install deps
         run: pip install --quiet pandas
+      # Screen the KOLs people actually follow (kolscan.io leaderboard), not
+      # random program traffic. Falls back to random sampling if the fetch
+      # finds nobody, so a site change cannot silently empty the screen.
+      - name: Fetch kolscan.io wallets
+        run: |
+          set -o pipefail
+          python3 reports/fetch_kolscan.py reports/screened/kolscan_wallets.json 2>&1 | tail -5 || true
       - name: Discover and profile
         env:
           RPC_ENDPOINT: https://rpc.shyft.to?api_key=${{ secrets.SHYFT_API_KEY }}
         run: |
           set -o pipefail
-          python3 reports/discover_wallets.py --top 40 2>&1 | tee discover.txt
+          if [ -s reports/screened/kolscan_wallets.json ] && grep -q pubkey reports/screened/kolscan_wallets.json; then
+            SRC="--wallets-json reports/screened/kolscan_wallets.json"
+          else
+            echo "::warning::kolscan fetch found no wallets -- falling back to random sampling"
+            SRC="--top 40"
+          fi
+          python3 reports/discover_wallets.py $SRC 2>&1 | tee discover.txt
       - name: Publish to the run summary
         if: always()
         run: |
@@ -42,7 +56,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports/screened/discovered_*.csv
+          git add reports/screened/discovered_*.csv reports/screened/kolscan_wallets.json
           git diff --staged --quiet && exit 0
           git commit -m "Wallet discovery $(date -u +%Y-%m-%d) [skip ci]"
           for attempt in 1 2 3 4; do
