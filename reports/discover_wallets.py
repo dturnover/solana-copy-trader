@@ -215,6 +215,9 @@ def main():
     ap.add_argument("--out", default=None)
     ap.add_argument("--speed-sample", type=int, default=8,
                     help="recent round trips per wallet priced at first-in-next-block")
+    ap.add_argument("--wallets-json", default=None,
+                    help="screen these wallets (e.g. reports/screened/kolscan_wallets.json) "
+                         "instead of sampling random program traffic")
     ap.add_argument("--include-removed", action="store_true",
                     help="re-profile wallets in REMOVED_WALLETS.md too")
     args = ap.parse_args()
@@ -223,7 +226,14 @@ def main():
     tracked = {w["pubkey"]: w["label"] for w in json.load(open(CONFIG))["tracked_wallets"]}
     removed = dict((pk, name) for name, pk in re.findall(r"`([^`]+)` \(([1-9A-HJ-NP-Za-km-z]{32,44})\)",
                                                           open(REMOVED).read()))
-    seen = discover(endpoint, args.pages, args.sample_every, args.sleep)
+    listed = {}
+    if args.wallets_json:
+        listed = {w["pubkey"]: (w.get("label") or w["pubkey"][:6])
+                  for w in json.load(open(args.wallets_json))}
+        print(f"screening {len(listed)} listed wallet(s) from {args.wallets_json}")
+        seen = collections.Counter()
+    else:
+        seen = discover(endpoint, args.pages, args.sample_every, args.sleep)
     # Seen more than once in a thin sample = trades often. Skip the tracked
     # and removed here; they are profiled below under their own names.
     found = [w for w, n in seen.most_common() if n >= 2 and w not in tracked and w not in removed][:args.top]
@@ -243,6 +253,7 @@ def main():
 
     cands = [(w, tracked[w], "tracked") for w in tracked]
     cands += [(w, watch[w], "watchlist") for w in watch if w not in tracked]
+    cands += [(w, listed[w], "kolscan") for w in listed if w not in tracked and w not in watch]
     if args.include_removed:
         cands += [(w, removed[w], "removed") for w in removed]
     cands += [(w, w[:6], f"discovered x{seen[w]}") for w in found]
