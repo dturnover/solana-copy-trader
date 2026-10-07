@@ -1,0 +1,49 @@
+name: Exit-Rule Replay
+
+# Does the KOL buy signal make money with our own exit instead of following
+# the KOL's sell? (reports/replay_exit_rules.py). Daily, after the kolscan
+# list is refreshed, so each day is fresh out-of-sample data for any rule
+# that looked good before.
+on:
+  schedule:
+    - cron: "30 9 * * *"
+  workflow_dispatch: {}
+  push:
+    branches: ["fix/**"]
+    paths:
+      - "reports/replay_exit_rules.py"
+      - ".github/workflows/exit-rules.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: pip install --quiet pandas numpy
+      - name: Replay exit rules
+        env:
+          RPC_ENDPOINT: https://rpc.shyft.to?api_key=${{ secrets.SHYFT_API_KEY }}
+        run: |
+          set -o pipefail
+          python3 reports/replay_exit_rules.py 2>&1 | tee exit_rules.txt
+      - name: Publish to the run summary
+        if: always()
+        run: |
+          { echo '```'; tail -40 exit_rules.txt 2>/dev/null || echo "(no output)"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Commit
+        if: github.ref == 'refs/heads/master'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/exit_rules 2>/dev/null || true
+          git diff --staged --quiet && { echo "nothing new"; exit 0; }
+          git commit -m "Exit-rule pricing $(date -u +%Y-%m-%d) [skip ci]"
+          for attempt in 1 2 3 4; do
+            git pull --rebase --quiet origin master && git push origin HEAD:master && break
+            sleep $((attempt * 2))
+          done

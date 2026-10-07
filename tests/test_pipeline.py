@@ -302,3 +302,25 @@ def test_screener_prices_one_copy_per_buy():
     got = one(trips)
     assert len(got) == 2
     assert {t["buy"]["sig"]: t["sell"]["t"] for t in got} == {"B1": 10, "B2": 40}
+
+
+def test_exit_rules():
+    ex = load_module("replay_exit_rules")
+    slot = load_module("replay_slot_lag")
+    prop, fixed = load_module("size_sweep").SCENARIOS["measured"]
+    entry = (45e9, K / 45e9)
+    # Same pricing as the slot-lag replay, so the two reports are comparable.
+    assert abs(ex.copy_value(*entry, 52e9, K / 52e9, prop, fixed)
+               - slot.price(*entry, 52e9, K / 52e9, prop, fixed)) < 1e-12
+    # Curve pumps then dumps: TP should bank the pump, follow/hold-late eat the dump.
+    path = [(k, vs, K / vs) for k, vs in zip(ex.CHECKPOINTS, [46e9, 50e9, 60e9, 58e9, 50e9, 44e9, 40e9,
+                                                             38e9, 36e9, 35e9, 34e9, 33e9, 32e9])]
+    r = ex.evaluate_rules(entry, path, (36e9, K / 36e9), prop, fixed)
+    assert r["TP 20% / SL 10%"] >= 0.20
+    assert r["follow wallet"] < 0
+    assert r["hold 150 slots"] < r["hold 3 slots"]
+    # Nothing hit: TP/SL exits at the last checkpoint.
+    flat = [(k, 45e9, K / 45e9) for k in ex.CHECKPOINTS]
+    r = ex.evaluate_rules(entry, flat, None, prop, fixed)
+    assert "follow wallet" not in r
+    assert r["TP 100% / SL 30%"] == r["hold 150 slots"]
