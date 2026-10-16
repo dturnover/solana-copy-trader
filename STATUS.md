@@ -1,19 +1,19 @@
 # Status
 
-Generated 2026-10-16 22:03 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-16 22:36 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **2,301 closed round trips**, all collector v3, Aug 05 to Oct 16
-- Newest trade **5.0 h old**
-- **19 in the last 24h**, 57 in the last 7 days (8.1/day across 2 tracked wallets)
-- **+0 since the last report** (2026-10-16 17:12 UTC)
+- **2,311 closed round trips**, all collector v3, Aug 05 to Oct 16
+- Newest trade **35 min old**
+- **24 in the last 24h**, 67 in the last 7 days (9.6/day across 2 tracked wallets)
+- **+10 since the last report** (2026-10-16 22:03 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.7s**, p90 3.2s (35 rows)
+- Last 2 days: **median 2.8s**, p90 3.4s (45 rows)
 - Before that: median 16.3s, p90 27.1s (2183 rows)
 
 ## Has anything been proven yet?
@@ -26,11 +26,11 @@ How stale a trade already was when the collector noticed it. This is what execut
 |---|---|---|---|---|---|---|---|
 | Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 70.0 d ago |
 | Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 71.8 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.402 | 17.5 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.403 | 17.5 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 7 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 7 days away.
-- West needs 27 more trades; at its recent rate that is roughly 7 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 6 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 6 days away.
+- West needs 27 more trades; at its recent rate that is roughly 6 days away.
 
 ## Tracked wallets that have gone quiet
 
@@ -44,7 +44,7 @@ None — every tracked wallet has traded recently.
 | Dani | UNPROVEN | 147 | +13.95 | 48% | 54% | -21.31 | 0.349 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.250 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
-| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.402 |
+| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.403 |
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
 | Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.968 |
@@ -56,11 +56,11 @@ None — every tracked wallet has traded recently.
 | Boomer | LOSING | 30 | -7.78 | 27% | 19% | -8.50 | 1.000 |
 | Dedmeow5 | LOSING | 44 | -15.72 | 7% | 0% | -15.86 | 1.000 |
 | Kadenox | LOSING | 117 | -25.42 | 44% | 45% | -34.26 | 0.961 |
-| Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.998 |
+| Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.997 |
 | Doji | LOSING | 59 | -41.68 | 20% | 20% | -44.39 | 1.000 |
 | Insyder | LOSING | 193 | -42.79 | 19% | 0% | -48.74 | 1.000 |
 | Cope | LOSING | 98 | -54.73 | 18% | 0% | -63.17 | 1.000 |
-| Sheep | LOSING | 320 | -63.46 | 37% | 50% | -73.01 | 0.999 |
+| Sheep | LOSING | 330 | -74.36 | 37% | 50% | -83.91 | 1.000 |
 | KOREAN | LOSING | 445 | -147.63 | 24% | 0% | -155.55 | 1.000 |
 | Tom | LOSING | 265 | -171.25 | 26% | 10% | -186.12 | 1.000 |
 
@@ -89,9 +89,9 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
-| Sheep | +19% (214) | · | -28% (63) | -25% (60) | -28% (3) | -6% (9) | -6% (26) | -0% (3) |
+| Sheep | +19% (214) | · | -28% (63) | -25% (64) | -28% (3) | -6% (9) | -6% (26) | -0% (3) |
 | Kadenox | -2% (47) | · | -19% (18) | -28% (21) | · | -36% (5) | -16% (30) | · |
-| ALL | +6% (483) | · | -16% (173) | -17% (189) | -30% (4) | -16% (24) | -22% (476) | -15% (390) |
+| ALL | +6% (483) | · | -16% (173) | -17% (193) | -30% (4) | -16% (24) | -22% (476) | -15% (390) |
 
 ## At simulated gRPC speed
 
