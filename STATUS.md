@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-10-17 11:34 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-17 16:32 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,316 closed round trips**, all collector v3, Aug 05 to Oct 17
-- Newest trade **9.2 h old**
-- **17 in the last 24h**, 70 in the last 7 days (10.0/day across 2 tracked wallets)
-- **+0 since the last report** (2026-10-17 11:10 UTC)
+- Newest trade **14.2 h old**  ⚠️ collector may be stuck
+- **16 in the last 24h**, 70 in the last 7 days (10.0/day across 2 tracked wallets)
+- **+0 since the last report** (2026-10-17 11:34 UTC)
 
 ## Detection lag
 
@@ -24,9 +24,9 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 70.5 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 72.3 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.401 | 18.1 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 70.7 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 72.5 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.401 | 18.3 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 6 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 6 days away.
@@ -100,10 +100,10 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | wallet | same block | first in next block | +1 block | +3 blocks | +10 blocks |
 |---|---|---|---|---|---|
 | 6SB1n4 | -4% (114) | -4% (114) | -4% (114) | -5% (114) | -4% (110) |
-| Kadenox | -4% (58) | -23% (58) | -25% (58) | -26% (58) | -25% (54) |
+| Kadenox | -4% (61) | -23% (61) | -25% (61) | -26% (61) | -26% (56) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +9% (247) | -20% (247) | -21% (238) | -21% (227) | -26% (205) |
+| Sheep | +9% (258) | -19% (258) | -21% (249) | -20% (237) | -26% (209) |
 | West | · | · | · | · | · |
 
 ## What we know
