@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-10-17 16:32 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-17 21:25 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,316 closed round trips**, all collector v3, Aug 05 to Oct 17
-- Newest trade **14.2 h old**  ⚠️ collector may be stuck
-- **16 in the last 24h**, 70 in the last 7 days (10.0/day across 2 tracked wallets)
-- **+0 since the last report** (2026-10-17 11:34 UTC)
+- Newest trade **19.1 h old**  ⚠️ collector may be stuck
+- **8 in the last 24h**, 65 in the last 7 days (9.3/day across 2 tracked wallets)
+- **+0 since the last report** (2026-10-17 16:32 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.9s**, p90 3.6s (50 rows)
-- Before that: median 16.3s, p90 27.1s (2183 rows)
+- Last 2 days: **median 2.9s**, p90 3.6s (42 rows)
+- Before that: median 16.2s, p90 27.0s (2191 rows)
 
 ## Has anything been proven yet?
 
@@ -24,13 +24,13 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 70.7 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 72.5 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.401 | 18.3 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 70.9 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 72.7 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.401 | 18.5 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 6 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 6 days away.
-- West needs 27 more trades; at its recent rate that is roughly 5 days away.
+- West needs 27 more trades; at its recent rate that is roughly 6 days away.
 
 ## Tracked wallets that have gone quiet
 
