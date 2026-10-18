@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-10-18 03:08 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-18 10:26 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,337 closed round trips**, all collector v3, Aug 05 to Oct 18
-- Newest trade **2.7 h old**
-- **21 in the last 24h**, 74 in the last 7 days (10.6/day across 2 tracked wallets)
-- **+4 since the last report** (2026-10-17 21:51 UTC)
+- Newest trade **10.0 h old**
+- **21 in the last 24h**, 73 in the last 7 days (10.4/day across 2 tracked wallets)
+- **+0 since the last report** (2026-10-18 03:08 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.7s**, p90 3.5s (42 rows)
-- Before that: median 16.2s, p90 26.9s (2212 rows)
+- Last 2 days: **median 2.7s**, p90 3.6s (38 rows)
+- Before that: median 16.2s, p90 26.9s (2216 rows)
 
 ## Has anything been proven yet?
 
@@ -24,12 +24,12 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 71.2 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 73.0 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.410 | 18.7 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 71.5 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 73.3 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.410 | 19.0 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 5 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 5 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 6 days away.
 - West needs 27 more trades; at its recent rate that is roughly 5 days away.
 
 ## Tracked wallets that have gone quiet
