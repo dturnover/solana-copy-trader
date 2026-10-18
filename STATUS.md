@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-10-17 21:51 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-18 03:08 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **2,333 closed round trips**, all collector v3, Aug 05 to Oct 17
-- Newest trade **53 min old**
-- **25 in the last 24h**, 82 in the last 7 days (11.7/day across 2 tracked wallets)
-- **+17 since the last report** (2026-10-17 21:25 UTC)
+- **2,337 closed round trips**, all collector v3, Aug 05 to Oct 18
+- Newest trade **2.7 h old**
+- **21 in the last 24h**, 74 in the last 7 days (10.6/day across 2 tracked wallets)
+- **+4 since the last report** (2026-10-17 21:51 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.7s**, p90 3.6s (54 rows)
-- Before that: median 16.2s, p90 27.0s (2196 rows)
+- Last 2 days: **median 2.7s**, p90 3.5s (42 rows)
+- Before that: median 16.2s, p90 26.9s (2212 rows)
 
 ## Has anything been proven yet?
 
@@ -24,9 +24,9 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 70.9 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 72.7 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.399 | 18.5 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 71.2 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 73.0 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.410 | 18.7 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 5 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 5 days away.
@@ -44,7 +44,7 @@ None — every tracked wallet has traded recently.
 | Dani | UNPROVEN | 147 | +13.95 | 48% | 54% | -21.31 | 0.349 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.250 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
-| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.399 |
+| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.410 |
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
 | Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.968 |
@@ -60,7 +60,7 @@ None — every tracked wallet has traded recently.
 | Doji | LOSING | 59 | -41.68 | 20% | 20% | -44.39 | 1.000 |
 | Insyder | LOSING | 193 | -42.79 | 19% | 0% | -48.74 | 1.000 |
 | Cope | LOSING | 98 | -54.73 | 18% | 0% | -63.17 | 1.000 |
-| Sheep | LOSING | 349 | -78.03 | 36% | 49% | -87.58 | 1.000 |
+| Sheep | LOSING | 353 | -75.16 | 36% | 50% | -84.71 | 1.000 |
 | KOREAN | LOSING | 445 | -147.63 | 24% | 0% | -155.55 | 1.000 |
 | Tom | LOSING | 265 | -171.25 | 26% | 10% | -186.12 | 1.000 |
 
@@ -89,9 +89,9 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
-| Sheep | +18% (225) | · | -27% (68) | -25% (72) | -28% (3) | -6% (9) | -6% (26) | -0% (3) |
+| Sheep | +18% (225) | · | -26% (72) | -25% (72) | -28% (3) | -6% (9) | -6% (26) | -0% (3) |
 | Kadenox | +2% (51) | · | -20% (19) | -28% (22) | · | -36% (5) | -16% (30) | · |
-| ALL | +7% (498) | · | -16% (179) | -17% (202) | -30% (4) | -16% (24) | -22% (476) | -15% (390) |
+| ALL | +7% (498) | · | -16% (183) | -17% (202) | -30% (4) | -16% (24) | -22% (476) | -15% (390) |
 
 ## At simulated gRPC speed
 
