@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-10-20 12:41 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-20 17:27 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **2,380 closed round trips**, all collector v3, Aug 05 to Oct 20
-- Newest trade **10.1 h old**
-- **8 in the last 24h**, 116 in the last 7 days (16.6/day across 2 tracked wallets)
-- **+0 since the last report** (2026-10-20 12:08 UTC)
+- **2,381 closed round trips**, all collector v3, Aug 05 to Oct 20
+- Newest trade **1.8 h old**
+- **4 in the last 24h**, 117 in the last 7 days (16.7/day across 2 tracked wallets)
+- **+1 since the last report** (2026-10-20 12:41 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.2s**, p90 3.3s (43 rows)
-- Before that: median 16.0s, p90 26.7s (2254 rows)
+- Last 2 days: **median 2.3s**, p90 3.3s (38 rows)
+- Before that: median 16.0s, p90 26.6s (2260 rows)
 
 ## Has anything been proven yet?
 
@@ -24,9 +24,9 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 73.6 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 75.4 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 21.1 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 73.8 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 75.6 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 21.3 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 3 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 3 days away.
@@ -48,15 +48,15 @@ None — every tracked wallet has traded recently.
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
 | Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.968 |
-| Pikalosi | INSUFFICIENT | 21 | -8.15 | 19% | 33% | -12.81 | 0.949 |
-| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.870 |
+| Pikalosi | INSUFFICIENT | 21 | -8.15 | 19% | 33% | -12.81 | 0.946 |
+| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.871 |
 | 6SB1n4 | INSUFFICIENT | 247 | -19.26 | 29% | 50% | -22.20 | 1.000 |
-| Pavel | LOSING | 38 | -0.38 | 18% | 0% | -0.51 | 0.998 |
+| Pavel | LOSING | 38 | -0.38 | 18% | 0% | -0.51 | 0.997 |
 | Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.623 |
 | Boomer | LOSING | 30 | -7.78 | 27% | 19% | -8.50 | 1.000 |
 | Dedmeow5 | LOSING | 44 | -15.72 | 7% | 0% | -15.86 | 1.000 |
 | Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.997 |
-| Kadenox | LOSING | 123 | -35.34 | 42% | 43% | -44.17 | 0.990 |
+| Kadenox | LOSING | 124 | -34.09 | 43% | 44% | -42.93 | 0.989 |
 | Doji | LOSING | 59 | -41.68 | 20% | 20% | -44.39 | 1.000 |
 | Insyder | LOSING | 193 | -42.79 | 19% | 0% | -48.74 | 1.000 |
 | Cope | LOSING | 98 | -54.73 | 18% | 0% | -63.17 | 1.000 |
@@ -103,7 +103,7 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | Kadenox | -1% (65) | -19% (65) | -20% (65) | -20% (65) | -19% (59) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +10% (306) | -16% (306) | -18% (294) | -17% (280) | -23% (250) |
+| Sheep | +9% (313) | -16% (313) | -18% (301) | -17% (287) | -23% (257) |
 | West | · | · | · | · | · |
 
 ## What we know
