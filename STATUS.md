@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-10-21 12:54 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-21 17:40 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **2,383 closed round trips**, all collector v3, Aug 05 to Oct 20
-- Newest trade **13.3 h old**  ⚠️ collector may be stuck
-- **3 in the last 24h**, 117 in the last 7 days (16.7/day across 2 tracked wallets)
-- **+0 since the last report** (2026-10-21 12:21 UTC)
+- **2,384 closed round trips**, all collector v3, Aug 05 to Oct 21
+- Newest trade **1.3 h old**
+- **3 in the last 24h**, 118 in the last 7 days (16.9/day across 2 tracked wallets)
+- **+1 since the last report** (2026-10-21 12:54 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.2s**, p90 3.3s (11 rows)
-- Before that: median 16.0s, p90 26.4s (2289 rows)
+- Last 2 days: **median 2.4s**, p90 3.3s (7 rows)
+- Before that: median 16.0s, p90 26.3s (2294 rows)
 
 ## Has anything been proven yet?
 
@@ -24,9 +24,9 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 74.6 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 76.4 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.415 | 22.1 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 74.8 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 76.6 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.410 | 22.3 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 3 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 3 days away.
@@ -44,19 +44,19 @@ None — every tracked wallet has traded recently.
 | Dani | UNPROVEN | 147 | +13.95 | 48% | 54% | -21.31 | 0.349 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.250 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
-| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.415 |
+| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.410 |
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
 | Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.968 |
-| Pikalosi | INSUFFICIENT | 21 | -8.15 | 19% | 33% | -12.81 | 0.948 |
-| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.870 |
+| Pikalosi | INSUFFICIENT | 21 | -8.15 | 19% | 33% | -12.81 | 0.947 |
+| Loopierr | INSUFFICIENT | 14 | -12.34 | 43% | 50% | -18.36 | 0.871 |
 | 6SB1n4 | INSUFFICIENT | 247 | -19.26 | 29% | 50% | -22.20 | 1.000 |
 | Pavel | LOSING | 38 | -0.38 | 18% | 0% | -0.51 | 0.998 |
-| Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.620 |
+| Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.622 |
 | Boomer | LOSING | 30 | -7.78 | 27% | 19% | -8.50 | 1.000 |
 | Dedmeow5 | LOSING | 44 | -15.72 | 7% | 0% | -15.86 | 1.000 |
 | Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.997 |
-| Kadenox | LOSING | 126 | -33.94 | 43% | 44% | -42.78 | 0.988 |
+| Kadenox | LOSING | 127 | -33.95 | 42% | 44% | -42.79 | 0.990 |
 | Doji | LOSING | 59 | -41.68 | 20% | 20% | -44.39 | 1.000 |
 | Insyder | LOSING | 193 | -42.79 | 19% | 0% | -48.74 | 1.000 |
 | Cope | LOSING | 98 | -54.73 | 18% | 0% | -63.17 | 1.000 |
@@ -100,10 +100,10 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | wallet | same block | first in next block | +1 block | +3 blocks | +10 blocks |
 |---|---|---|---|---|---|
 | 6SB1n4 | -4% (114) | -4% (114) | -4% (114) | -5% (114) | -4% (110) |
-| Kadenox | -1% (65) | -19% (65) | -20% (65) | -20% (65) | -19% (59) |
+| Kadenox | -1% (69) | -18% (69) | -19% (69) | -19% (69) | -18% (63) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +9% (313) | -16% (313) | -18% (301) | -17% (287) | -23% (257) |
+| Sheep | +9% (314) | -16% (314) | -17% (302) | -17% (288) | -22% (258) |
 | West | · | · | · | · | · |
 
 ## What we know
