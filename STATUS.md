@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-10-25 10:33 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-25 11:58 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,454 closed round trips**, all collector v3, Aug 05 to Oct 24
-- Newest trade **15.9 h old**  ⚠️ collector may be stuck
+- Newest trade **17.3 h old**  ⚠️ collector may be stuck
 - **1 in the last 24h**, 117 in the last 7 days (16.7/day across 2 tracked wallets)
-- **+0 since the last report** (2026-10-25 03:31 UTC)
+- **+0 since the last report** (2026-10-25 10:33 UTC)
 
 ## Detection lag
 
@@ -26,7 +26,7 @@ How stale a trade already was when the collector noticed it. This is what execut
 |---|---|---|---|---|---|---|---|
 | Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 78.5 d ago |
 | Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 80.3 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.409 | 26.0 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.409 | 26.1 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 3 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 3 days away.
@@ -73,8 +73,8 @@ Same-block execution, copying at a **fixed 0.25 SOL** instead of the wallet's ow
 | wallet | n | return/trade | win rate | exit/entry | median hold |
 |---|---|---|---|---|---|
 | Sheep | 325 | +15.5% | 59% | 1.15 | 4.6s |
-| Kadenox | 64 | +1.9% | 41% | 1.01 | 12.3s |
 | Pikalosi | 11 | +1.4% | 36% | 0.94 | 22.3s |
+| Kadenox | 65 | +0.7% | 40% | 1.01 | 12.3s |
 | Dani | 9 | -0.1% | 56% | 1.05 | 3.8s |
 | Pavel | 38 | -3.2% | 21% | 0.91 | 25.0s |
 | 6SB1n4 | 158 | -4.0% | 34% | 0.96 | 11.5s |
@@ -90,8 +90,8 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
 | Sheep | +16% (325) | · | -27% (106) | -23% (90) | -30% (4) | -6% (9) | -6% (26) | -0% (3) |
-| Kadenox | +2% (64) | · | -20% (23) | -27% (26) | · | -36% (5) | -16% (30) | · |
-| ALL | +7% (611) | · | -18% (221) | -17% (224) | -31% (5) | -16% (24) | -22% (476) | -15% (390) |
+| Kadenox | +1% (65) | · | -20% (23) | -27% (26) | · | -36% (5) | -16% (30) | · |
+| ALL | +7% (612) | · | -18% (221) | -17% (224) | -31% (5) | -16% (24) | -22% (476) | -15% (390) |
 
 ## At simulated gRPC speed
 
