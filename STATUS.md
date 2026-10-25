@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-10-25 21:43 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-25 22:40 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **2,454 closed round trips**, all collector v3, Aug 05 to Oct 24
-- Newest trade **27.1 h old**  ⚠️ collector may be stuck
-- **0 in the last 24h**, 101 in the last 7 days (14.4/day across 2 tracked wallets)
-- **+0 since the last report** (2026-10-25 17:19 UTC)
+- **2,455 closed round trips**, all collector v3, Aug 05 to Oct 25
+- Newest trade **2.5 h old**
+- **1 in the last 24h**, 101 in the last 7 days (14.4/day across 2 tracked wallets)
+- **+1 since the last report** (2026-10-25 21:43 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 1.3s**, p90 1.8s (2 rows)
-- Before that: median 15.8s, p90 25.6s (2369 rows)
+- Last 2 days: **median 1.9s**, p90 1.9s (2 rows)
+- Before that: median 15.8s, p90 25.6s (2370 rows)
 
 ## Has anything been proven yet?
 
@@ -24,9 +24,9 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 78.9 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 80.7 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.409 | 26.5 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 79.0 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 80.8 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.418 | 26.5 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 4 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 4 days away.
@@ -44,7 +44,7 @@ None — every tracked wallet has traded recently.
 | Dani | UNPROVEN | 147 | +13.95 | 48% | 54% | -21.31 | 0.349 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.250 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
-| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.409 |
+| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.418 |
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
 | Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.968 |
@@ -55,12 +55,12 @@ None — every tracked wallet has traded recently.
 | Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.622 |
 | Boomer | LOSING | 30 | -7.78 | 27% | 19% | -8.50 | 1.000 |
 | Dedmeow5 | LOSING | 44 | -15.72 | 7% | 0% | -15.86 | 1.000 |
-| Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.997 |
+| Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.996 |
 | Doji | LOSING | 59 | -41.68 | 20% | 20% | -44.39 | 1.000 |
 | Insyder | LOSING | 193 | -42.79 | 19% | 0% | -48.74 | 1.000 |
 | Kadenox | LOSING | 135 | -42.89 | 42% | 41% | -51.73 | 0.998 |
 | Cope | LOSING | 98 | -54.73 | 18% | 0% | -63.17 | 1.000 |
-| Sheep | LOSING | 455 | -136.61 | 33% | 44% | -146.16 | 1.000 |
+| Sheep | LOSING | 456 | -135.47 | 33% | 45% | -145.02 | 1.000 |
 | KOREAN | LOSING | 445 | -147.63 | 24% | 0% | -155.55 | 1.000 |
 | Tom | LOSING | 265 | -171.25 | 26% | 10% | -186.12 | 1.000 |
 
@@ -89,9 +89,9 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
-| Sheep | +16% (325) | · | -27% (106) | -23% (90) | -30% (4) | -6% (9) | -6% (26) | -0% (3) |
+| Sheep | +16% (325) | · | -26% (107) | -23% (90) | -30% (4) | -6% (9) | -6% (26) | -0% (3) |
 | Kadenox | +1% (65) | · | -20% (23) | -27% (26) | · | -36% (5) | -16% (30) | · |
-| ALL | +7% (612) | · | -18% (221) | -17% (224) | -31% (5) | -16% (24) | -22% (476) | -15% (390) |
+| ALL | +7% (612) | · | -18% (222) | -17% (224) | -31% (5) | -16% (24) | -22% (476) | -15% (390) |
 
 ## At simulated gRPC speed
 
