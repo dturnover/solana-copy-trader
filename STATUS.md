@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-10-26 13:32 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-26 14:12 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,462 closed round trips**, all collector v3, Aug 05 to Oct 26
-- Newest trade **7.3 h old**
+- Newest trade **8.0 h old**
 - **8 in the last 24h**, 90 in the last 7 days (12.9/day across 2 tracked wallets)
-- **+0 since the last report** (2026-10-26 10:36 UTC)
+- **+0 since the last report** (2026-10-26 13:32 UTC)
 
 ## Detection lag
 
@@ -100,10 +100,10 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | wallet | same block | first in next block | +1 block | +3 blocks | +10 blocks |
 |---|---|---|---|---|---|
 | 6SB1n4 | -4% (114) | -4% (114) | -4% (114) | -5% (114) | -4% (110) |
-| Kadenox | +0% (78) | -15% (78) | -16% (78) | -17% (78) | -15% (70) |
+| Kadenox | -0% (79) | -15% (79) | -15% (79) | -16% (79) | -16% (71) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +8% (372) | -14% (372) | -15% (359) | -15% (344) | -19% (313) |
+| Sheep | +8% (381) | -12% (381) | -13% (367) | -13% (352) | -17% (321) |
 | West | · | · | · | · | · |
 
 ## What we know
