@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-10-28 13:31 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-28 13:58 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,470 closed round trips**, all collector v3, Aug 05 to Oct 27
-- Newest trade **14.2 h old**  ⚠️ collector may be stuck
+- Newest trade **14.7 h old**  ⚠️ collector may be stuck
 - **1 in the last 24h**, 87 in the last 7 days (12.4/day across 2 tracked wallets)
-- **+0 since the last report** (2026-10-28 11:35 UTC)
+- **+0 since the last report** (2026-10-28 13:31 UTC)
 
 ## Detection lag
 
