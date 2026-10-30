@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-10-30 14:04 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-30 18:51 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **2,474 closed round trips**, all collector v3, Aug 05 to Oct 29
-- Newest trade **15.1 h old**  ⚠️ collector may be stuck
-- **1 in the last 24h**, 42 in the last 7 days (6.0/day across 2 tracked wallets)
-- **+0 since the last report** (2026-10-30 13:31 UTC)
+- **2,484 closed round trips**, all collector v3, Aug 05 to Oct 30
+- Newest trade **4.5 h old**
+- **11 in the last 24h**, 32 in the last 7 days (4.6/day across 2 tracked wallets)
+- **+10 since the last report** (2026-10-30 14:04 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.1s**, p90 3.1s (4 rows)
-- Before that: median 15.8s, p90 25.5s (2387 rows)
+- Last 2 days: **median 2.5s**, p90 3.2s (13 rows)
+- Before that: median 15.8s, p90 25.5s (2388 rows)
 
 ## Has anything been proven yet?
 
@@ -24,13 +24,13 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 83.6 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 85.4 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.408 | 31.2 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 83.8 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 85.6 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.409 | 31.4 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 9 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 10 days away.
-- West needs 27 more trades; at its recent rate that is roughly 9 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 12 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 13 days away.
+- West needs 27 more trades; at its recent rate that is roughly 12 days away.
 
 ## Tracked wallets that have gone quiet
 
@@ -44,7 +44,7 @@ None — every tracked wallet has traded recently.
 | Dani | UNPROVEN | 147 | +13.95 | 48% | 54% | -21.31 | 0.349 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.250 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
-| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.408 |
+| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.409 |
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
 | Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.968 |
@@ -55,13 +55,13 @@ None — every tracked wallet has traded recently.
 | Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.623 |
 | Boomer | LOSING | 30 | -7.78 | 27% | 19% | -8.50 | 1.000 |
 | Dedmeow5 | LOSING | 44 | -15.72 | 7% | 0% | -15.86 | 1.000 |
-| Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.997 |
+| Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.996 |
 | Doji | LOSING | 59 | -41.68 | 20% | 20% | -44.39 | 1.000 |
 | Insyder | LOSING | 193 | -42.79 | 19% | 0% | -48.74 | 1.000 |
 | Kadenox | LOSING | 146 | -42.90 | 42% | 42% | -51.74 | 0.996 |
 | Cope | LOSING | 98 | -54.73 | 18% | 0% | -63.17 | 1.000 |
-| Sheep | LOSING | 464 | -137.61 | 33% | 43% | -147.16 | 1.000 |
 | KOREAN | LOSING | 445 | -147.63 | 24% | 0% | -155.55 | 1.000 |
+| Sheep | LOSING | 474 | -149.35 | 32% | 42% | -158.91 | 1.000 |
 | Tom | LOSING | 265 | -171.25 | 26% | 10% | -186.12 | 1.000 |
 
 `ex-top-3` is P&L with the three best trades removed. A wallet whose edge vanishes there has shown you three good trades, not an edge -- which is how Zuki looked best-in-class on censored data while actually losing 26 SOL.
@@ -89,9 +89,9 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
-| Sheep | +15% (333) | · | -27% (111) | -23% (93) | -30% (4) | -6% (9) | -6% (26) | -0% (3) |
+| Sheep | +15% (333) | · | -27% (113) | -24% (96) | -30% (4) | -6% (9) | -6% (26) | -0% (3) |
 | Kadenox | -1% (72) | · | -23% (27) | -29% (28) | · | -36% (5) | -16% (30) | · |
-| ALL | +6% (627) | · | -18% (230) | -18% (229) | -31% (5) | -16% (24) | -22% (476) | -15% (390) |
+| ALL | +6% (627) | · | -18% (232) | -18% (232) | -31% (5) | -16% (24) | -22% (476) | -15% (390) |
 
 ## At simulated gRPC speed
 
