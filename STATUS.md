@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-10-31 13:02 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-10-31 13:36 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,485 closed round trips**, all collector v3, Aug 05 to Oct 31
-- Newest trade **12.0 h old**
-- **11 in the last 24h**, 32 in the last 7 days (4.6/day across 2 tracked wallets)
-- **+0 since the last report** (2026-10-31 11:33 UTC)
+- Newest trade **12.5 h old**  ⚠️ collector may be stuck
+- **8 in the last 24h**, 32 in the last 7 days (4.6/day across 2 tracked wallets)
+- **+0 since the last report** (2026-10-31 13:02 UTC)
 
 ## Detection lag
 
@@ -26,7 +26,7 @@ How stale a trade already was when the collector noticed it. This is what execut
 |---|---|---|---|---|---|---|---|
 | Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 84.6 d ago |
 | Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 86.4 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.410 | 32.1 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.410 | 32.2 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 12 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 13 days away.
@@ -100,10 +100,10 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | wallet | same block | first in next block | +1 block | +3 blocks | +10 blocks |
 |---|---|---|---|---|---|
 | 6SB1n4 | -4% (114) | -4% (114) | -4% (114) | -5% (114) | -4% (110) |
-| Kadenox | -1% (87) | -15% (87) | -16% (87) | -16% (87) | -16% (78) |
+| Kadenox | +0% (90) | -13% (90) | -14% (90) | -14% (90) | -14% (81) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +8% (386) | -12% (386) | -13% (372) | -13% (357) | -17% (326) |
+| Sheep | +8% (393) | -12% (393) | -13% (379) | -13% (364) | -17% (329) |
 | West | · | · | · | · | · |
 
 ## What we know
