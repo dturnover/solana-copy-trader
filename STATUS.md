@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-11-01 13:45 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-01 14:14 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,486 closed round trips**, all collector v3, Aug 05 to Nov 01
-- Newest trade **13.1 h old**  ⚠️ collector may be stuck
+- Newest trade **13.6 h old**  ⚠️ collector may be stuck
 - **1 in the last 24h**, 32 in the last 7 days (4.6/day across 2 tracked wallets)
-- **+0 since the last report** (2026-11-01 12:07 UTC)
+- **+0 since the last report** (2026-11-01 13:45 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.7s**, p90 3.4s (9 rows)
-- Before that: median 15.8s, p90 25.5s (2394 rows)
+- Last 2 days: **median 2.7s**, p90 3.3s (3 rows)
+- Before that: median 15.7s, p90 25.5s (2400 rows)
 
 ## Has anything been proven yet?
 
