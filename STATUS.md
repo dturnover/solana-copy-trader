@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-11-01 14:14 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-01 22:45 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,486 closed round trips**, all collector v3, Aug 05 to Nov 01
-- Newest trade **13.6 h old**  ⚠️ collector may be stuck
-- **1 in the last 24h**, 32 in the last 7 days (4.6/day across 2 tracked wallets)
-- **+0 since the last report** (2026-11-01 13:45 UTC)
+- Newest trade **22.1 h old**  ⚠️ collector may be stuck
+- **1 in the last 24h**, 31 in the last 7 days (4.4/day across 2 tracked wallets)
+- **+0 since the last report** (2026-11-01 14:14 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.7s**, p90 3.3s (3 rows)
-- Before that: median 15.7s, p90 25.5s (2400 rows)
+- Last 2 days: **median 2.5s**, p90 3.3s (2 rows)
+- Before that: median 15.7s, p90 25.5s (2401 rows)
 
 ## Has anything been proven yet?
 
@@ -24,11 +24,11 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 85.6 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 87.4 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.410 | 33.2 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 86.0 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 87.8 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.410 | 33.5 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 12 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 13 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 13 days away.
 - West needs 27 more trades; at its recent rate that is roughly 12 days away.
 
@@ -100,7 +100,7 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | wallet | same block | first in next block | +1 block | +3 blocks | +10 blocks |
 |---|---|---|---|---|---|
 | 6SB1n4 | -4% (114) | -4% (114) | -4% (114) | -5% (114) | -4% (110) |
-| Kadenox | +0% (90) | -13% (90) | -14% (90) | -14% (90) | -14% (81) |
+| Kadenox | -0% (91) | -13% (91) | -14% (91) | -14% (91) | -14% (82) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
 | Sheep | +8% (393) | -12% (393) | -13% (379) | -13% (364) | -17% (329) |
