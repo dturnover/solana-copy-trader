@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-11-02 17:00 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-03 01:32 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,490 closed round trips**, all collector v3, Aug 05 to Nov 02
-- Newest trade **13.7 h old**  ⚠️ collector may be stuck
-- **4 in the last 24h**, 27 in the last 7 days (3.9/day across 2 tracked wallets)
-- **+0 since the last report** (2026-11-02 16:33 UTC)
+- Newest trade **22.2 h old**  ⚠️ collector may be stuck
+- **3 in the last 24h**, 21 in the last 7 days (3.0/day across 2 tracked wallets)
+- **+0 since the last report** (2026-11-02 17:00 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 1.4s**, p90 1.8s (5 rows)
-- Before that: median 15.7s, p90 25.5s (2402 rows)
+- Last 2 days: **median 1.4s**, p90 1.8s (4 rows)
+- Before that: median 15.7s, p90 25.5s (2403 rows)
 
 ## Has anything been proven yet?
 
@@ -24,13 +24,13 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 86.7 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 88.5 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.404 | 34.3 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 87.1 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 88.9 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.404 | 34.7 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 15 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 15 days away.
-- West needs 27 more trades; at its recent rate that is roughly 14 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 19 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 19 days away.
+- West needs 27 more trades; at its recent rate that is roughly 18 days away.
 
 ## Tracked wallets that have gone quiet
 
@@ -100,10 +100,10 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | wallet | same block | first in next block | +1 block | +3 blocks | +10 blocks |
 |---|---|---|---|---|---|
 | 6SB1n4 | -4% (114) | -4% (114) | -4% (114) | -5% (114) | -4% (110) |
-| Kadenox | -0% (91) | -13% (91) | -14% (91) | -14% (91) | -14% (82) |
+| Kadenox | -1% (94) | -13% (94) | -14% (94) | -14% (94) | -14% (85) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +8% (393) | -12% (393) | -13% (379) | -13% (364) | -17% (329) |
+| Sheep | +7% (396) | -12% (396) | -13% (382) | -13% (367) | -17% (332) |
 | West | · | · | · | · | · |
 
 ## What we know
