@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-11-06 14:35 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-06 14:58 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,502 closed round trips**, all collector v3, Aug 05 to Nov 05
-- Newest trade **15.9 h old**  ⚠️ collector may be stuck
+- Newest trade **16.2 h old**  ⚠️ collector may be stuck
 - **2 in the last 24h**, 18 in the last 7 days (2.6/day across 2 tracked wallets)
-- **+0 since the last report** (2026-11-06 12:36 UTC)
+- **+0 since the last report** (2026-11-06 14:35 UTC)
 
 ## Detection lag
 
@@ -24,8 +24,8 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 90.6 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 92.4 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 90.7 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 92.5 d ago |
 | West | 3 | 27 more | +0.08 | 33% | 50% | 0.417 | 38.2 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 22 days away.
@@ -100,10 +100,10 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | wallet | same block | first in next block | +1 block | +3 blocks | +10 blocks |
 |---|---|---|---|---|---|
 | 6SB1n4 | -4% (114) | -4% (114) | -4% (114) | -5% (114) | -4% (110) |
-| Kadenox | -1% (101) | -13% (101) | -13% (101) | -14% (101) | -14% (92) |
+| Kadenox | -2% (103) | -13% (103) | -14% (103) | -14% (103) | -14% (94) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +7% (399) | -12% (399) | -13% (385) | -13% (370) | -17% (335) |
+| Sheep | +7% (400) | -12% (400) | -13% (386) | -13% (371) | -17% (336) |
 | West | · | · | · | · | · |
 
 ## What we know
