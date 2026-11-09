@@ -1,19 +1,19 @@
 # Status
 
-Generated 2026-11-09 04:44 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-09 12:27 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **2,508 closed round trips**, all collector v3, Aug 05 to Nov 09
-- Newest trade **2.7 h old**
-- **4 in the last 24h**, 18 in the last 7 days (2.6/day across 2 tracked wallets)
-- **+2 since the last report** (2026-11-08 23:25 UTC)
+- **2,509 closed round trips**, all collector v3, Aug 05 to Nov 09
+- Newest trade **9 min old**
+- **5 in the last 24h**, 19 in the last 7 days (2.7/day across 2 tracked wallets)
+- **+1 since the last report** (2026-11-09 04:44 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.6s**, p90 3.1s (4 rows)
+- Last 2 days: **median 2.7s**, p90 3.4s (5 rows)
 - Before that: median 15.7s, p90 25.4s (2421 rows)
 
 ## Has anything been proven yet?
@@ -24,19 +24,17 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 93.2 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 95.0 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.413 | 40.8 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 93.6 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 95.4 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.411 | 41.1 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 22 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 23 days away.
-- West needs 27 more trades; at its recent rate that is roughly 21 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 21 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 21 days away.
+- West needs 27 more trades; at its recent rate that is roughly 20 days away.
 
 ## Tracked wallets that have gone quiet
 
-- **Sheep** — last trade 5.7 d ago. Costs ~43,200 RPC calls/day regardless.
-
-A silent wallet is not necessarily a dead one: it may be trading somewhere the collector does not parse. Either way it is spending poll budget for nothing.
+None — every tracked wallet has traded recently.
 
 ## Every wallet
 
@@ -46,7 +44,7 @@ A silent wallet is not necessarily a dead one: it may be trading somewhere the c
 | Dani | UNPROVEN | 147 | +13.95 | 48% | 54% | -21.31 | 0.349 |
 | Cented | INSUFFICIENT | 2 | +2.49 | 50% | 50% | — | 0.250 |
 | Sebastian | INSUFFICIENT | 1 | +2.26 | 100% | 100% | — | — |
-| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.413 |
+| West | INSUFFICIENT | 3 | +0.08 | 33% | 50% | — | 0.411 |
 | Letterbomb | INSUFFICIENT | 1 | -0.50 | 0% | 0% | — | — |
 | dov7 | INSUFFICIENT | 4 | -3.24 | 0% | 0% | -0.87 | 1.000 |
 | Felix | INSUFFICIENT | 12 | -4.18 | 8% | 0% | -5.19 | 0.968 |
@@ -57,13 +55,13 @@ A silent wallet is not necessarily a dead one: it may be trading somewhere the c
 | Monki | LOSING | 88 | -2.65 | 46% | 20% | -9.43 | 0.619 |
 | Boomer | LOSING | 30 | -7.78 | 27% | 19% | -8.50 | 1.000 |
 | Dedmeow5 | LOSING | 44 | -15.72 | 7% | 0% | -15.86 | 1.000 |
-| Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.996 |
+| Zuki | LOSING | 112 | -26.44 | 29% | 20% | -32.61 | 0.998 |
 | Doji | LOSING | 59 | -41.68 | 20% | 20% | -44.39 | 1.000 |
 | Insyder | LOSING | 193 | -42.79 | 19% | 0% | -48.74 | 1.000 |
 | Kadenox | LOSING | 166 | -50.21 | 43% | 42% | -59.04 | 0.999 |
 | Cope | LOSING | 98 | -54.73 | 18% | 0% | -63.17 | 1.000 |
 | KOREAN | LOSING | 445 | -147.63 | 24% | 0% | -155.55 | 1.000 |
-| Sheep | LOSING | 478 | -151.06 | 32% | 41% | -160.61 | 1.000 |
+| Sheep | LOSING | 479 | -152.62 | 32% | 40% | -162.17 | 1.000 |
 | Tom | LOSING | 265 | -171.25 | 26% | 10% | -186.12 | 1.000 |
 
 `ex-top-3` is P&L with the three best trades removed. A wallet whose edge vanishes there has shown you three good trades, not an edge -- which is how Zuki looked best-in-class on censored data while actually losing 26 SOL.
