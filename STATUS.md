@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-11-09 16:50 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-09 17:26 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,509 closed round trips**, all collector v3, Aug 05 to Nov 09
-- Newest trade **4.5 h old**
+- Newest trade **5.1 h old**
 - **5 in the last 24h**, 19 in the last 7 days (2.7/day across 2 tracked wallets)
-- **+0 since the last report** (2026-11-09 12:27 UTC)
+- **+0 since the last report** (2026-11-09 16:50 UTC)
 
 ## Detection lag
 
@@ -24,8 +24,8 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 93.7 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 95.5 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 93.8 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 95.6 d ago |
 | West | 3 | 27 more | +0.08 | 33% | 50% | 0.411 | 41.3 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 21 days away.
@@ -100,10 +100,10 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | wallet | same block | first in next block | +1 block | +3 blocks | +10 blocks |
 |---|---|---|---|---|---|
 | 6SB1n4 | -4% (114) | -4% (114) | -4% (114) | -5% (114) | -4% (110) |
-| Kadenox | -2% (104) | -13% (104) | -14% (104) | -14% (104) | -14% (95) |
+| Kadenox | -2% (107) | -12% (107) | -13% (107) | -13% (107) | -13% (98) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +7% (400) | -12% (400) | -13% (386) | -13% (371) | -17% (336) |
+| Sheep | +7% (401) | -12% (401) | -13% (387) | -13% (372) | -17% (337) |
 | West | · | · | · | · | · |
 
 ## What we know
