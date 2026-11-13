@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-11-13 14:53 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-13 15:20 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,521 closed round trips**, all collector v3, Aug 05 to Nov 12
-- Newest trade **38.5 h old**  ⚠️ collector may be stuck
+- Newest trade **38.9 h old**  ⚠️ collector may be stuck
 - **0 in the last 24h**, 19 in the last 7 days (2.7/day across 2 tracked wallets)
-- **+0 since the last report** (2026-11-13 12:30 UTC)
+- **+0 since the last report** (2026-11-13 14:53 UTC)
 
 ## Detection lag
 
@@ -103,7 +103,7 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | Kadenox | -1% (112) | -11% (112) | -12% (112) | -12% (112) | -12% (103) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +8% (409) | -12% (409) | -13% (395) | -13% (380) | -17% (345) |
+| Sheep | +8% (409) | -11% (409) | -12% (395) | -12% (380) | -16% (345) |
 | West | · | · | · | · | · |
 
 ## What we know
