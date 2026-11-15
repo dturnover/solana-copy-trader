@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-11-15 12:27 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-15 14:17 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,525 closed round trips**, all collector v3, Aug 05 to Nov 15
-- Newest trade **1.2 h old**
+- Newest trade **3.0 h old**
 - **4 in the last 24h**, 21 in the last 7 days (3.0/day across 2 tracked wallets)
-- **+3 since the last report** (2026-11-15 05:10 UTC)
+- **+0 since the last report** (2026-11-15 12:27 UTC)
 
 ## Detection lag
 
@@ -26,7 +26,7 @@ How stale a trade already was when the collector noticed it. This is what execut
 |---|---|---|---|---|---|---|---|
 | Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 99.6 d ago |
 | Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 101.4 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.403 | 47.1 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.403 | 47.2 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 19 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 19 days away.
@@ -72,7 +72,7 @@ Same-block execution, copying at a **fixed 0.25 SOL** instead of the wallet's ow
 
 | wallet | n | return/trade | win rate | exit/entry | median hold |
 |---|---|---|---|---|---|
-| Sheep | 354 | +14.3% | 57% | 1.14 | 4.7s |
+| Sheep | 356 | +14.4% | 57% | 1.14 | 4.7s |
 | Pikalosi | 11 | +1.4% | 36% | 0.94 | 22.3s |
 | Kadenox | 90 | +1.0% | 41% | 1.01 | 12.9s |
 | Dani | 9 | -0.1% | 56% | 1.05 | 3.8s |
@@ -89,9 +89,9 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
-| Sheep | +14% (354) | · | -28% (119) | -24% (97) | -30% (4) | -6% (9) | -6% (26) | -0% (3) |
+| Sheep | +14% (356) | · | -28% (119) | -24% (97) | -30% (4) | -6% (9) | -6% (26) | -0% (3) |
 | Kadenox | +1% (90) | · | -25% (34) | -29% (32) | · | -36% (5) | -16% (30) | · |
-| ALL | +6% (666) | · | -19% (245) | -18% (237) | -31% (5) | -16% (24) | -22% (476) | -15% (390) |
+| ALL | +7% (668) | · | -19% (245) | -18% (237) | -31% (5) | -16% (24) | -22% (476) | -15% (390) |
 
 ## At simulated gRPC speed
 
