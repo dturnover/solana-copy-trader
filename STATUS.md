@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-11-17 03:53 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-17 13:47 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,528 closed round trips**, all collector v3, Aug 05 to Nov 17
-- Newest trade **2.4 h old**
-- **1 in the last 24h**, 16 in the last 7 days (2.3/day across 2 tracked wallets)
-- **+1 since the last report** (2026-11-17 02:26 UTC)
+- Newest trade **12.3 h old**  ⚠️ collector may be stuck
+- **1 in the last 24h**, 8 in the last 7 days (1.1/day across 2 tracked wallets)
+- **+0 since the last report** (2026-11-17 03:53 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 1.9s**, p90 2.9s (6 rows)
-- Before that: median 15.6s, p90 25.3s (2439 rows)
+- Last 2 days: **median 2.4s**, p90 2.8s (3 rows)
+- Before that: median 15.6s, p90 25.3s (2442 rows)
 
 ## Has anything been proven yet?
 
@@ -24,13 +24,13 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 101.2 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 103.0 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 48.8 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 101.6 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 103.4 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 49.2 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 24 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 25 days away.
-- West needs 27 more trades; at its recent rate that is roughly 24 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 49 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 51 days away.
+- West needs 27 more trades; at its recent rate that is roughly 47 days away.
 
 ## Tracked wallets that have gone quiet
 
