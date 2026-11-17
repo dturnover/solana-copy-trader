@@ -7,7 +7,11 @@ name: Paper Trade
 # bounded scheduled runs (not a true daemon) are the right shape.
 on:
   schedule:
-    - cron: "30 */6 * * *" # every 6 hours, offset 30m from lag-experiment.yml
+    # Weekly since 2026-11-17: six weeks of daily data settled the question
+    # (no tracked wallet is profitable to copy), so this keeps a pulse on it
+    # without burning runner minutes. One ~6h run Monday 00:30 UTC; the
+    # replays below run the same morning, inside RPC retention.
+    - cron: "30 0 * * 1"
   workflow_dispatch: {}
 
 # Never two collectors at once. A manual run on 2026-09-24 14:48 was still

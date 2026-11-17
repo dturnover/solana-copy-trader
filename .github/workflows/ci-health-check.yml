@@ -9,7 +9,7 @@ name: CI Health Check
 # job-timeout kill in either one can't also prevent this check from firing.
 on:
   schedule:
-    - cron: "45 */6 * * *" # offset from lag-experiment.yml (:00) and paper-trade.yml (:30)
+    - cron: "45 12 * * *" # daily; the jobs it watches run weekly since 2026-11-17
   workflow_dispatch: {}
 
 permissions:

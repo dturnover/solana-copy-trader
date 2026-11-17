@@ -10,7 +10,7 @@ name: Status Report
 # Twice a day, into a file in the repo root, readable on a phone.
 on:
   schedule:
-    - cron: "15 7,19 * * *"
+    - cron: "15 19 * * 1"   # weekly; also fires after new data lands (below)
   # Also right after new data lands, so the file is never stale relative to
   # the dataset it describes.
   workflow_run:

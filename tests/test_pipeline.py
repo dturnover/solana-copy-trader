@@ -324,3 +324,31 @@ def test_exit_rules():
     r = ex.evaluate_rules(entry, flat, None, prop, fixed)
     assert "follow wallet" not in r
     assert r["TP 100% / SL 30%"] == r["hold 150 slots"]
+
+
+def test_consensus_signals():
+    cs = load_module("replay_consensus")
+    b = lambda mint, slot: {"mint": mint, "slot": slot, "sig": f"{mint}{slot}"}  # noqa: E731
+    buys = [
+        ("A", b("m1", 100)), ("A", b("m1", 105)),   # A's repeat buy is not agreement
+        ("B", b("m1", 120)), ("C", b("m1", 400)),
+        ("A", b("m2", 10)), ("B", b("m2", 10 + 2000)),  # second KOL too late
+        ("C", b("m3", 50)),                          # one KOL only
+    ]
+    got = {(k, m): (e["slot"], lag, ws) for k, m, e, lag, ws in cs.consensus_signals(buys, ks=[2, 3, 4], window_slots=1500)}
+    assert got == {(2, "m1"): (120, 20, ["A", "B"]), (3, "m1"): (400, 300, ["A", "B", "C"])}
+
+
+def test_weekly_schedule_stays_consistent():
+    """Since 2026-11-17 the collector runs weekly. The health check must not
+    call a week-old success stale, and the daily consensus replay must not
+    share the RPC key with the collector's Monday 00:30-06:05 run."""
+    spec = importlib.util.spec_from_file_location("ci_health_check", ROOT / ".github/scripts/ci_health_check.py")
+    hc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(hc)
+    assert hc.STALE_HOURS > 7 * 24
+    pt = (ROOT / ".github/workflows/paper-trade.yml").read_text()
+    assert re.search(r'cron: "30 0 \* \* 1"', pt)
+    cons = (ROOT / ".github/workflows/consensus.yml").read_text()
+    hour = int(re.search(r'cron: "\d+ (\d+) ', cons).group(1))
+    assert hour >= 7

@@ -17,7 +17,7 @@ on:
   # can never be priced at all. Running this only on request is why 1,475 of
   # 1,476 recorded round trips are now permanently unpriceable.
   schedule:
-    - cron: "40 6 * * *"
+    - cron: "40 6 * * 1"   # weekly, after Monday's paper-trade run
   workflow_dispatch:
     inputs:
       limit:

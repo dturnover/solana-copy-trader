@@ -16,7 +16,7 @@ on:
   # data breaks would otherwise stay broken unseen. On 2026-10-02 one did
   # (a 17-lamport rounding difference against a 1e-9 SOL tolerance).
   schedule:
-    - cron: "30 9 * * *"
+    - cron: "30 9 * * 1"   # weekly (was daily until 2026-11-17)
   push:
     branches: [master]
   pull_request:

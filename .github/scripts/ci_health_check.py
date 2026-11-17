@@ -35,7 +35,9 @@ from datetime import datetime, timezone
 WORKFLOWS = ["paper-trade.yml", "merge-paper-trades.yml"]
 LOOKBACK_RUNS = 5
 MIN_SUCCESS_IN_LOOKBACK = 1
-STALE_HOURS = 18  # 3x the 6h schedule cadence -- one missed run is normal jitter, three isn't
+# Paper Trade runs weekly since 2026-11-17: a week plus a day of jitter.
+# One failed Monday run is caught by the following Tuesday.
+STALE_HOURS = 8 * 24
 ISSUE_LABEL = "ci-broken"
 
 

@@ -6,7 +6,7 @@ name: Exit-Rule Replay
 # that looked good before.
 on:
   schedule:
-    - cron: "30 9 * * *"
+    - cron: "30 9 * * 1"   # weekly (was daily until 2026-11-17)
   workflow_dispatch: {}
   push:
     branches: ["fix/**"]
