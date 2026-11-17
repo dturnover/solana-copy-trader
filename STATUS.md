@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-11-16 16:57 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-17 02:26 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,527 closed round trips**, all collector v3, Aug 05 to Nov 15
-- Newest trade **19.0 h old**  ⚠️ collector may be stuck
-- **2 in the last 24h**, 18 in the last 7 days (2.6/day across 2 tracked wallets)
-- **+0 since the last report** (2026-11-16 16:24 UTC)
+- Newest trade **28.4 h old**  ⚠️ collector may be stuck
+- **0 in the last 24h**, 16 in the last 7 days (2.3/day across 2 tracked wallets)
+- **+0 since the last report** (2026-11-16 16:57 UTC)
 
 ## Detection lag
 
@@ -24,13 +24,13 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 100.7 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 102.5 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.407 | 48.3 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 101.1 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 102.9 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.407 | 48.7 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 22 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 23 days away.
-- West needs 27 more trades; at its recent rate that is roughly 21 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 24 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 25 days away.
+- West needs 27 more trades; at its recent rate that is roughly 24 days away.
 
 ## Tracked wallets that have gone quiet
 
@@ -100,7 +100,7 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | wallet | same block | first in next block | +1 block | +3 blocks | +10 blocks |
 |---|---|---|---|---|---|
 | 6SB1n4 | -4% (114) | -4% (114) | -4% (114) | -5% (114) | -4% (110) |
-| Kadenox | -2% (114) | -11% (114) | -12% (114) | -12% (114) | -12% (104) |
+| Kadenox | -2% (115) | -12% (115) | -12% (115) | -12% (115) | -12% (105) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
 | Sheep | +8% (411) | -11% (411) | -12% (397) | -12% (382) | -16% (347) |
