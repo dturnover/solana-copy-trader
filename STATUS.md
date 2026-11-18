@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-11-17 16:51 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-18 02:38 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,528 closed round trips**, all collector v3, Aug 05 to Nov 17
-- Newest trade **15.4 h old**  ⚠️ collector may be stuck
-- **1 in the last 24h**, 8 in the last 7 days (1.1/day across 2 tracked wallets)
-- **+0 since the last report** (2026-11-17 16:27 UTC)
+- Newest trade **25.2 h old**  ⚠️ collector may be stuck
+- **0 in the last 24h**, 8 in the last 7 days (1.1/day across 2 tracked wallets)
+- **+0 since the last report** (2026-11-17 16:51 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.4s**, p90 2.8s (3 rows)
-- Before that: median 15.6s, p90 25.3s (2442 rows)
+- Last 2 days: **median 2.4s**, p90 2.4s (1 rows)
+- Before that: median 15.6s, p90 25.3s (2444 rows)
 
 ## Has anything been proven yet?
 
@@ -24,9 +24,9 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 101.7 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 103.5 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 49.3 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 102.1 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 103.9 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 49.7 d ago |
 
 - Cented needs 28 more trades; at its recent rate that is roughly 49 days away.
 - Sebastian needs 29 more trades; at its recent rate that is roughly 51 days away.
@@ -103,7 +103,7 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | Kadenox | -2% (115) | -12% (115) | -12% (115) | -12% (115) | -12% (105) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +8% (411) | -11% (411) | -12% (397) | -12% (382) | -16% (347) |
+| Sheep | +8% (412) | -11% (412) | -12% (398) | -12% (383) | -16% (348) |
 | West | · | · | · | · | · |
 
 ## What we know
