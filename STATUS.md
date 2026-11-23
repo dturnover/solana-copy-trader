@@ -1,20 +1,20 @@
 # Status
 
-Generated 2026-11-18 02:38 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-23 13:19 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
-- **2,528 closed round trips**, all collector v3, Aug 05 to Nov 17
-- Newest trade **25.2 h old**  ⚠️ collector may be stuck
-- **0 in the last 24h**, 8 in the last 7 days (1.1/day across 2 tracked wallets)
-- **+0 since the last report** (2026-11-17 16:51 UTC)
+- **2,536 closed round trips**, all collector v3, Aug 05 to Nov 23
+- Newest trade **19 min old**
+- **8 in the last 24h**, 9 in the last 7 days (1.3/day across 2 tracked wallets)
+- **+8 since the last report** (2026-11-18 02:38 UTC)
 
 ## Detection lag
 
 How stale a trade already was when the collector noticed it. This is what execution lag a row actually represents.
 
-- Last 2 days: **median 2.4s**, p90 2.4s (1 rows)
-- Before that: median 15.6s, p90 25.3s (2444 rows)
+- Last 2 days: **median 1.8s**, p90 2.7s (8 rows)
+- Before that: median 15.6s, p90 25.3s (2445 rows)
 
 ## Has anything been proven yet?
 
@@ -24,17 +24,19 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 102.1 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 103.9 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 49.7 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 107.6 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 109.4 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 55.1 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 49 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 51 days away.
-- West needs 27 more trades; at its recent rate that is roughly 47 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 44 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 45 days away.
+- West needs 27 more trades; at its recent rate that is roughly 42 days away.
 
 ## Tracked wallets that have gone quiet
 
-None — every tracked wallet has traded recently.
+- **Kadenox** — last trade 6.5 d ago. Costs ~43,200 RPC calls/day regardless.
+
+A silent wallet is not necessarily a dead one: it may be trading somewhere the collector does not parse. Either way it is spending poll budget for nothing.
 
 ## Every wallet
 
@@ -61,7 +63,7 @@ None — every tracked wallet has traded recently.
 | Kadenox | LOSING | 174 | -50.61 | 44% | 44% | -59.45 | 0.998 |
 | Cope | LOSING | 98 | -54.73 | 18% | 0% | -63.17 | 1.000 |
 | KOREAN | LOSING | 445 | -147.63 | 24% | 0% | -155.55 | 1.000 |
-| Sheep | LOSING | 490 | -160.54 | 31% | 39% | -170.09 | 1.000 |
+| Sheep | LOSING | 498 | -165.30 | 31% | 38% | -174.85 | 1.000 |
 | Tom | LOSING | 265 | -171.25 | 26% | 10% | -186.12 | 1.000 |
 
 `ex-top-3` is P&L with the three best trades removed. A wallet whose edge vanishes there has shown you three good trades, not an edge -- which is how Zuki looked best-in-class on censored data while actually losing 26 SOL.
@@ -89,9 +91,9 @@ Return per trade copying at 0.25 SOL, by time from the wallet's trade to our fil
 
 | wallet | same-block | 0-2s | 2-4s | 4-6s | 6-9s | 9-13s | 13-20s | 20s+ |
 |---|---|---|---|---|---|---|---|---|
-| Sheep | +14% (356) | · | -28% (119) | -24% (97) | -30% (4) | -6% (9) | -6% (26) | -0% (3) |
+| Sheep | +14% (356) | · | -28% (122) | -24% (97) | -30% (4) | -6% (9) | -6% (26) | -0% (3) |
 | Kadenox | +1% (93) | · | -24% (36) | -28% (33) | · | -36% (5) | -16% (30) | · |
-| ALL | +7% (671) | · | -19% (247) | -18% (238) | -31% (5) | -16% (24) | -22% (476) | -15% (390) |
+| ALL | +7% (671) | · | -20% (250) | -18% (238) | -31% (5) | -16% (24) | -22% (476) | -15% (390) |
 
 ## At simulated gRPC speed
 
