@@ -1,13 +1,13 @@
 # Status
 
-Generated 2026-11-23 18:44 UTC. This file is written by a scheduled job -- nobody has to ask for it.
+Generated 2026-11-24 04:19 UTC. This file is written by a scheduled job -- nobody has to ask for it.
 
 ## Collection
 
 - **2,536 closed round trips**, all collector v3, Aug 05 to Nov 23
-- Newest trade **5.7 h old**
-- **8 in the last 24h**, 9 in the last 7 days (1.3/day across 2 tracked wallets)
-- **+0 since the last report** (2026-11-23 13:19 UTC)
+- Newest trade **15.3 h old**  ⚠️ collector may be stuck
+- **8 in the last 24h**, 8 in the last 7 days (1.1/day across 2 tracked wallets)
+- **+0 since the last report** (2026-11-23 18:44 UTC)
 
 ## Detection lag
 
@@ -24,17 +24,17 @@ How stale a trade already was when the collector noticed it. This is what execut
 
 | wallet | trades | needs | P&L | win rate | days up | p_luck | last trade |
 |---|---|---|---|---|---|---|---|
-| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 107.8 d ago |
-| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 109.6 d ago |
-| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 55.4 d ago |
+| Cented | 2 | 28 more | +2.49 | 50% | 50% | 0.250 | 108.2 d ago |
+| Sebastian | 1 | 29 more | +2.26 | 100% | 100% | nan | 110.0 d ago |
+| West | 3 | 27 more | +0.08 | 33% | 50% | 0.405 | 55.8 d ago |
 
-- Cented needs 28 more trades; at its recent rate that is roughly 44 days away.
-- Sebastian needs 29 more trades; at its recent rate that is roughly 45 days away.
-- West needs 27 more trades; at its recent rate that is roughly 42 days away.
+- Cented needs 28 more trades; at its recent rate that is roughly 49 days away.
+- Sebastian needs 29 more trades; at its recent rate that is roughly 51 days away.
+- West needs 27 more trades; at its recent rate that is roughly 47 days away.
 
 ## Tracked wallets that have gone quiet
 
-- **Kadenox** — last trade 6.7 d ago. Costs ~43,200 RPC calls/day regardless.
+- **Kadenox** — last trade 7.1 d ago. Costs ~43,200 RPC calls/day regardless.
 
 A silent wallet is not necessarily a dead one: it may be trading somewhere the collector does not parse. Either way it is spending poll budget for nothing.
 
@@ -105,7 +105,7 @@ Return per copy at 0.25 SOL (measured fees), filled N blocks (~0.4s each) after 
 | Kadenox | -2% (115) | -12% (115) | -12% (115) | -12% (115) | -12% (105) |
 | Pavel | -12% (29) | -12% (29) | -14% (29) | -13% (29) | -15% (29) |
 | Pikalosi | +5% (12) | -11% (12) | -11% (12) | -12% (11) | -20% (11) |
-| Sheep | +8% (412) | -11% (412) | -12% (398) | -12% (383) | -16% (348) |
+| Sheep | +8% (415) | -11% (415) | -12% (400) | -12% (385) | -16% (350) |
 | West | · | · | · | · | · |
 
 ## What we know
